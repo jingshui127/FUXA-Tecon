@@ -207,7 +207,7 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
         data = JSON.parse(JSON.stringify(_data));
         memory = {};
         varsValue = [];
-        // memItemsMap = {};
+        memItemsMap = {};
         mixItemsMap = {};   // Map the fragmented tag { key = start address, value = MemoryItems }
         var stepsMap = {};  // Map the tag start address and size { key = start address, value = signal size and offset }
         var count = 0;
@@ -596,7 +596,7 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                                 v.changed = value !== v.rawValue;
                                 v.rawValue = value;
                             } catch (err) {
-                                console.error(err);
+                                logger.error(err);
                             }
                         });
                     }
@@ -617,7 +617,7 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                     }
                     resolve(vars);
                 }, reason => {
-                    console.error(reason);
+                    logger.error(reason);
                     reject(reason);
                 });
             } else {
@@ -638,7 +638,7 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                 client.writeCoil(start, value).then(res => {
                     resolve();
                 }, reason => {
-                    console.error(reason);
+                    logger.error(reason);
                     reject(reason);
                 });
             } else if (memoryAddress === ModbusMemoryAddress.DigitalInputs) {           // Digital Inputs (Read 100001-165536)
@@ -651,14 +651,14 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                     client.writeRegisters(start, value).then(res => {
                         resolve();
                     }, reason => {
-                        console.error(reason);
+                        logger.error(reason);
                         reject(reason);
                     });
                 } else {
                     client.writeRegister(start, value).then(res => {
                         resolve();
                     }, reason => {
-                        console.error(reason);
+                        logger.error(reason);
                         reject(reason);
                     });
                 }
@@ -725,12 +725,10 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
             const timestamp = new Date().getTime();
             var result = {};
             for (var id in tempTags) {
-                if (!utils.isNullOrUndefined(tempTags[id].rawValue)) {
-                    tempTags[id].value = await deviceUtils.tagValueCompose(tempTags[id].rawValue, varsValue[id] ? varsValue[id].value : null, tempTags[id].tagref, runtime);
-                    tempTags[id].timestamp = timestamp;
-                    if (this.addDaq && deviceUtils.tagDaqToSave(tempTags[id], timestamp)) {
-                        result[id] = tempTags[id];
-                    }
+                tempTags[id].value = await deviceUtils.tagValueCompose(tempTags[id].rawValue, varsValue[id] ? varsValue[id].value : null, tempTags[id].tagref, runtime);
+                tempTags[id].timestamp = timestamp;
+                if (this.addDaq && deviceUtils.tagDaqToSave(tempTags[id], timestamp)) {
+                    result[id] = tempTags[id];
                 }
                 varsValue[id] = tempTags[id];
                 varsValue[id].changed = false;
@@ -872,6 +870,8 @@ function MemoryItem(type, offset) {
     this.type = type;
     this.bit = -1;
     this.Tags = [];
+    this.rawValue = null;
+    this.changed = false;
 }
 
 function MemoryItems() {

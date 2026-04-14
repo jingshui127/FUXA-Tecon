@@ -561,13 +561,27 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                         vars.map(v => {
                             let bitoffset = Math.trunc((v.offset - start) / 8);
                             let bit = (v.offset - start) % 8;
-                            let value = datatypes[v.type].parser(res.buffer, bitoffset, bit);
+                            let buffer;
+                            if (res.buffer) {
+                                buffer = res.buffer;
+                            } else if (res.data.buffer) {
+                                buffer = res.data.buffer;
+                            } else {
+                                // 手动构建Buffer
+                                let data = res.data;
+                                buffer = Buffer.alloc(data.length);
+                                for (let i = 0; i < data.length; i++) {
+                                    buffer.writeUInt8(data[i], i);
+                                }
+                            }
+                            let value = datatypes[v.type].parser(buffer, bitoffset, bit);
                             v.changed = value !== v.rawValue;
                             v.rawValue = value;
                         });
                     }
                     resolve(vars);
                 }, reason => {
+                    logger.error(reason);
                     reject(reason);
                 });
             } else if (memoryAddress === ModbusMemoryAddress.DigitalInputs) {          // Digital Inputs (Read 100001-165536)
@@ -576,13 +590,27 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                         vars.map(v => {
                             let bitoffset = Math.trunc((v.offset - start) / 8);
                             let bit = (v.offset - start) % 8;
-                            let value = datatypes[v.type].parser(res.buffer, bitoffset, bit);
+                            let buffer;
+                            if (res.buffer) {
+                                buffer = res.buffer;
+                            } else if (res.data.buffer) {
+                                buffer = res.data.buffer;
+                            } else {
+                                // 手动构建Buffer
+                                let data = res.data;
+                                buffer = Buffer.alloc(data.length);
+                                for (let i = 0; i < data.length; i++) {
+                                    buffer.writeUInt8(data[i], i);
+                                }
+                            }
+                            let value = datatypes[v.type].parser(buffer, bitoffset, bit);
                             v.changed = value !== v.rawValue;
                             v.rawValue = value;
                         });
                     }
                     resolve(vars);
                 }, reason => {
+                    logger.error(reason);
                     reject(reason);
                 });
             } else if (memoryAddress === ModbusMemoryAddress.InputRegisters) {          // Input Registers (Read  300001-365536)
@@ -591,7 +619,23 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                         vars.map(v => {
                             try {
                                 let byteoffset = (v.offset - start) * 2;
-                                let buffer = Buffer.from(res.buffer.slice(byteoffset, byteoffset + datatypes[v.type].bytes))
+                                let buffer;
+                                if (res.buffer) {
+                                    buffer = Buffer.from(res.buffer.slice(byteoffset, byteoffset + datatypes[v.type].bytes));
+                                } else if (res.data.buffer) {
+                                    buffer = Buffer.from(res.data.buffer.slice(byteoffset, byteoffset + datatypes[v.type].bytes));
+                                } else {
+                                    // 手动构建Buffer
+                                    let data = res.data;
+                                    let startWord = byteoffset / 2;
+                                    let endWord = startWord + datatypes[v.type].WordLen;
+                                    buffer = Buffer.alloc(datatypes[v.type].bytes);
+                                    for (let i = 0; i < datatypes[v.type].WordLen; i++) {
+                                        if (data[startWord + i] !== undefined) {
+                                            buffer.writeUInt16BE(data[startWord + i], i * 2);
+                                        }
+                                    }
+                                }
                                 let value = datatypes[v.type].parser(buffer);
                                 v.changed = value !== v.rawValue;
                                 v.rawValue = value;
@@ -602,17 +646,38 @@ function MODBUSclient(_data, _logger, _events, _runtime) {
                     }
                     resolve(vars);
                 }, reason => {
+                    logger.error(reason);
                     reject(reason);
                 });
             } else if (memoryAddress === ModbusMemoryAddress.HoldingRegisters) {          // Holding Registers (Read/Write  400001-465535)
                 client.readHoldingRegisters(start, size).then(res => {
                     if (res.data) {
                         vars.map(v => {
-                            let byteoffset = (v.offset - start) * 2;
-                            let buffer = Buffer.from(res.buffer.slice(byteoffset, byteoffset + datatypes[v.type].bytes))
-                            let value = datatypes[v.type].parser(buffer);
-                            v.changed = value !== v.rawValue;
-                            v.rawValue = value;
+                            try {
+                                let byteoffset = (v.offset - start) * 2;
+                                let buffer;
+                                if (res.buffer) {
+                                    buffer = Buffer.from(res.buffer.slice(byteoffset, byteoffset + datatypes[v.type].bytes));
+                                } else if (res.data.buffer) {
+                                    buffer = Buffer.from(res.data.buffer.slice(byteoffset, byteoffset + datatypes[v.type].bytes));
+                                } else {
+                                    // 手动构建Buffer
+                                    let data = res.data;
+                                    let startWord = byteoffset / 2;
+                                    let endWord = startWord + datatypes[v.type].WordLen;
+                                    buffer = Buffer.alloc(datatypes[v.type].bytes);
+                                    for (let i = 0; i < datatypes[v.type].WordLen; i++) {
+                                        if (data[startWord + i] !== undefined) {
+                                            buffer.writeUInt16BE(data[startWord + i], i * 2);
+                                        }
+                                    }
+                                }
+                                let value = datatypes[v.type].parser(buffer);
+                                v.changed = value !== v.rawValue;
+                                v.rawValue = value;
+                            } catch (err) {
+                                logger.error(err);
+                            }
                         });
                     }
                     resolve(vars);

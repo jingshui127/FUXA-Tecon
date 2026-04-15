@@ -3,22 +3,12 @@ const fs = require('fs');
 const os = require('os');
 const { fork } = require('child_process');
 
-/**
- * FUXA Headless Entry Point
- * 
- * This script is the entry point for standalone binaries.
- * It ensures the project data directory exists in the user's home folder
- * and then launches the FUXA server.
- */
-
 async function bootstrap() {
     console.log('FUXA Headless starting...');
 
-    // 1. Determine the user data directory (similar to Electron app)
     const homeDir = os.homedir();
     const fuxaDataDir = path.join(homeDir, 'fuxa-headless-data');
     
-    // 2. Ensure the directory exists (Electron-style)
     if (!fs.existsSync(fuxaDataDir)) {
         console.log(`Creating initial data directory: ${fuxaDataDir}`);
         try {
@@ -31,7 +21,12 @@ async function bootstrap() {
         console.log(`Using existing data directory: ${fuxaDataDir}`);
     }
 
-    // 3. Resolve the server path
+    const nativeCachePath = path.join(fuxaDataDir, 'pkg-native-cache');
+    if (!fs.existsSync(nativeCachePath)) {
+        fs.mkdirSync(nativeCachePath, { recursive: true });
+    }
+    process.env.PKG_NATIVE_CACHE_PATH = nativeCachePath;
+
     const serverPath = path.join(__dirname, 'server', 'main.js');
 
     if (!fs.existsSync(serverPath)) {
@@ -39,11 +34,14 @@ async function bootstrap() {
         process.exit(1);
     }
 
-    // 4. Launch the server (fork like Electron does)
     console.log(`Launching FUXA server with userDir: ${fuxaDataDir}`);
     
     const serverProcess = fork(serverPath, [], {
-        env: { ...process.env, userDir: fuxaDataDir },
+        env: { 
+            ...process.env, 
+            userDir: fuxaDataDir,
+            PKG_NATIVE_CACHE_PATH: nativeCachePath
+        },
         stdio: 'inherit'
     });
 
@@ -52,7 +50,6 @@ async function bootstrap() {
         process.exit(1);
     });
 
-    // Keep the process running
     process.on('SIGINT', () => {
         console.log('Shutting down FUXA server...');
         serverProcess.kill('SIGTERM');

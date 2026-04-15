@@ -3,7 +3,7 @@ name: Build FUXA Headless (Tecon)
 on:
   workflow_dispatch:
   push:
-    branches: [1.3.1]
+    branches: [1.3.1-minimal]
     paths-ignore:
       - '**.md'
       - 'docs/**'

@@ -13,6 +13,11 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            arch: x64
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -21,6 +26,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+
+
 
     - name: Install server dependencies
       run: |
@@ -45,9 +52,11 @@ jobs:
         mkdir -p fuxa-headless/server
         mkdir -p fuxa-headless/client/dist
         
+        # Copy everything just like the Electron workflow does
         cp -r server/. fuxa-headless/server/
         cp -r client/dist/. fuxa-headless/client/dist/
         
+        # Use the entry point as the main file for pkg
         cp app/headless/headless-entry.js fuxa-headless/main.js
       shell: bash
 
@@ -56,7 +65,7 @@ jobs:
         cat > fuxa-headless/package.json <<EOF
         {
           "name": "fuxa-headless",
-          "version": "1.3.1-tecon",
+          "version": "1.0.0",
           "bin": "main.js",
           "pkg": {
             "assets": [
@@ -64,7 +73,6 @@ jobs:
               "client/dist/**/*",
               "_reports/**/*"
             ],
-            "publicPackages": ["node-snap7", "bindings", "nan"],
             "compression": "Brotli"
           }
         }
@@ -74,18 +82,23 @@ jobs:
     - name: Install yao-pkg
       run: npm install -g @yao-pkg/pkg
 
+
     - name: Build Standalone Binaries (Headless)
-      run: pkg fuxa-headless/package.json --targets node18-win-x64 --out-path artifacts --public-packages "node-snap7,bindings,nan"
+      run: |
+        TARGET="node18-win-x64"
+        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
       shell: bash
       working-directory: .
 
+
     - name: Prepare artifacts
-      run: mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
+      run: |
+        mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
       shell: bash
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FUXA-headless-windows-x64
+        name: FUXA-single
         path: artifacts/*
         retention-days: 30

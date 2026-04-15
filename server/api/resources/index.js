@@ -7,7 +7,6 @@ const path = require('path');
 var express = require("express");
 const authJwt = require('../jwt-helper');
 const Report = require('../../runtime/jobs/report');
-const fontkit = require('fontkit');
 const os = require('os');
 const { resolveWithin } = require('../path-helper');
 
@@ -81,11 +80,7 @@ module.exports = {
                 for (var x = 0; x < files.length; x++) {
                     const fileName = files[x];
                     const filePath = path.join(wwwSubDir, files[x]).split(path.sep).join(path.posix.sep);
-                    var fileLabel;
-                    if (resourcesFilter.fonts.some(suffix => fileName.endsWith(suffix))) {
-                        const font = fontkit.openSync(filePath);
-                        fileLabel = font.fullName;
-                    }
+                    var fileLabel = fileName;
 
                     group.items.push({
                         path: filePath,

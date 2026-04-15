@@ -12,14 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            arch: x64
-          - os: ubuntu-latest
-            arch: x64
+    runs-on: windows-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -28,10 +21,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-
-    - name: Install build dependencies
-      if: startsWith(matrix.os, 'ubuntu')
-      run: sudo apt-get update && sudo apt-get install -y build-essential unixodbc unixodbc-dev
 
     - name: Install server dependencies
       run: |
@@ -86,28 +75,17 @@ jobs:
       run: npm install -g @yao-pkg/pkg
 
     - name: Build Standalone Binaries (Headless)
-      run: |
-        if [ "$RUNNER_OS" = "Linux" ]; then
-          TARGET="node18-linux-x64"
-        elif [ "$RUNNER_OS" = "Windows" ]; then
-          TARGET="node18-win-x64"
-        fi
-        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
+      run: pkg fuxa-headless/package.json --targets node18-win-x64 --out-path artifacts --public-packages "node-snap7,bindings,nan"
       shell: bash
       working-directory: .
 
     - name: Prepare artifacts
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
-        elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          mv artifacts/fuxa-headless-linux-x64 artifacts/FUXA-headless-linux-x64 || true
-        fi
+      run: mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
       shell: bash
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}
+        name: FUXA-headless-windows-x64
         path: artifacts/*
         retention-days: 30

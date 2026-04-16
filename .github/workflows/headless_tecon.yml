@@ -93,7 +93,7 @@ jobs:
 
     - name: Prepare artifacts
       run: |
-        mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
+        mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-single-windows-x64.exe || true
       shell: bash
 
     - name: Upload artifact

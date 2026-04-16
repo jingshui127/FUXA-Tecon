@@ -1,10 +1,14 @@
-name: Build FUXA Electron App (Latest)
+name: Build FUXA PRO Electron App
 
 on:
-  #push:
-    #branches:
-  #pull_request:
   workflow_dispatch:
+  push:
+    branches: [1.3.1-PRO]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - 'wiki/**'
 
 jobs:
   build:
@@ -42,13 +46,7 @@ jobs:
       run: npm install
       working-directory: ./server
 
-    - name: Install client dependencies
-      run: npm install
-      working-directory: ./client
 
-    - name: Build client
-      run: npm run build -- --configuration=production
-      working-directory: ./client
 
     - name: Install app dependencies
       run: npm install
@@ -92,15 +90,15 @@ jobs:
       run: |
         mkdir -p artifacts
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          mv dist/*.exe artifacts/FUXA-windows-x64.exe
+          mv dist/*.exe artifacts/FUXA-PRO-windows-x64.exe
         elif [ "${{ matrix.os }}" = "ubuntu-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
-          mv dist/*.AppImage artifacts/FUXA-linux-x64.AppImage
+          mv dist/*.AppImage artifacts/FUXA-PRO-linux-x64.AppImage
         elif [ "${{ matrix.os }}" = "ubuntu-24.04-arm" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
-          mv dist/*.AppImage artifacts/FUXA-linux-arm64.AppImage
+          mv dist/*.AppImage artifacts/FUXA-PRO-linux-arm64.AppImage
         elif [ "${{ matrix.os }}" = "macos-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
-          mv dist/*.dmg artifacts/FUXA-macos-x64.dmg
+          mv dist/*.dmg artifacts/FUXA-PRO-macos-x64.dmg
         elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          mv dist/*.dmg artifacts/FUXA-macos-arm64.dmg
+          mv dist/*.dmg artifacts/FUXA-PRO-macos-arm64.dmg
         fi
       working-directory: ./app/electron
       shell: bash
@@ -108,5 +106,5 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FUXA-${{ matrix.os }}-${{ matrix.arch }}
+        name: FUXA-PRO-${{ matrix.os }}-${{ matrix.arch }}
         path: app/electron/artifacts/*

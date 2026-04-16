@@ -1,7 +1,7 @@
-name: Build and Publish DHI RC
+name: Build and Publish FUXA PRO RC
 
 env:
-  app: fuxa
+  app: fuxa-pro
   version: rc1
   # for available platforms see output of a previous run -
   # ie the "Setup Docker BuildX" / "Inspect Builder" section
@@ -41,4 +41,4 @@ jobs:
           context: .
           push: true
           platforms: ${{ env.platforms }}
-          tags: frangoteam/${{ env.app }}:${{ env.version }}
+          tags: jingshui127/${{ env.app }}:${{ env.version }}

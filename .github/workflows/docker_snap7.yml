@@ -1,7 +1,7 @@
-name: Build and Publish DHI snap7
+name: Build and Publish FUXA PRO snap7
 
 env:
-  app: fuxa
+  app: fuxa-pro
   version: snap7-1.3.1
   # for available platforms see output of a previous run -
   # ie the "Setup Docker BuildX" / "Inspect Builder" section
@@ -43,6 +43,6 @@ jobs:
           context: .
           push: true
           platforms: ${{ env.platforms }}
-          tags: frangoteam/${{ env.app }}:${{ env.version }}
+          tags: jingshui127/${{ env.app }}:${{ env.version }}
           build-args: |
             NODE_SNAP=${{ env.NODE_SNAP }}

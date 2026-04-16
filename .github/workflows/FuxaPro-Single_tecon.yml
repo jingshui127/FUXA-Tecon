@@ -1,4 +1,4 @@
-name: Build FUXA PRO (Tecon)
+name: Build FUXA PRO-Single (Tecon)
 
 on:
   workflow_dispatch:
@@ -27,7 +27,11 @@ jobs:
       with:
         node-version: '18'
 
-
+    - name: Display contact information
+      run: |
+        echo "Build FUXA PRO-Single (TC)"
+        echo "Contact information: QQ 2492123056"
+      shell: bash
 
     - name: Install server dependencies
       run: |
@@ -84,12 +88,12 @@ jobs:
 
     - name: Prepare artifacts
       run: |
-        mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-single-windows-x64.exe || true
+        mv artifacts/fuxa-headless-win-x64.exe artifacts/FuxaPro-Single-windows-x64.exe || true
       shell: bash
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FUXA-single
+        name: FuxaPro-Single
         path: artifacts/*
         retention-days: 30

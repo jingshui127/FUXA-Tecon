@@ -1,0 +1,24 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+	<g id="shadow">
+		<polygon fill="#666666" points="54.808,86.187 54.808,71.345 1.027,71.345 1.027,30.712 54.808,30.712 54.808,15.871 
+			101.025,51.028 	"></polygon>
+	</g>
+	<g id="shape">
+		<polygon fill="#666666" points="97.247,49.442 55.351,17.572 55.351,30.756 1.57,30.756 1.57,68.128 55.351,68.128 
+			55.351,81.311 	"></polygon>
+	</g>
+	<g id="linear">
+		<linearGradient class="linear" id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="71.274" y1="102.2057" x2="45.664" y2="51.3492">
+			<stop offset="0" style="stop-color:#333333"></stop>
+			<stop offset="1" style="stop-color:#808080"></stop>
+		</linearGradient>
+		<polygon class="linear" fill="url(#SVGID_1_)" points="97.247,49.442 55.351,17.572 55.351,30.756 1.57,30.756 1.57,68.128 55.351,68.128 
+			55.351,81.311 	"></polygon>
+	</g>
+	<g id="dark">
+		<polygon fill="none" stroke="#000000" points="97.247,49.442 55.351,17.572 55.351,30.756 1.57,30.756 1.57,68.128 
+			55.351,68.128 55.351,81.311 	"></polygon>
+	</g>
+</g>
+</svg>

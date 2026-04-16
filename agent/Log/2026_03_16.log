@@ -1,0 +1,114 @@
+﻿#Software: 进程守护
+#ProcessID: 44912 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\Fuxa_pro\agent\Agent.exe
+#BaseDirectory: D:\FUXA\Fuxa_pro\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\Fuxa_pro\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32765/1000
+#SystemStarted: 6.01:47:39.6870000
+#Date: 2026-03-16
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/长任务LT 消息内容
+#Fields: Time ThreadId Kind Name Message
+10:17:56.864 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+10:17:56.880 01 N - 进程守护 ©2002-2026 TC
+10:17:56.880 01 N - CurrentDirectory: D:\FUXA\Fuxa_pro\agent
+10:17:56.880 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+10:17:56.880 01 N - 进程守护 ©2002-2026 TC
+10:17:57.391 01 N - Host: WindowsService
+
+#Software: 进程守护
+#ProcessID: 48624 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\Fuxa_pro\agent\Agent.exe
+#BaseDirectory: D:\FUXA\Fuxa_pro\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\Fuxa_pro\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32765/1000
+#SystemStarted: 6.01:49:14.0310000
+#Date: 2026-03-16
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/长任务LT 消息内容
+#Fields: Time ThreadId Kind Name Message
+10:19:31.296 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+10:19:31.310 01 N - 进程守护 ©2002-2026 TC
+10:19:31.310 01 N - CurrentDirectory: D:\FUXA\Fuxa_pro\agent
+10:19:31.310 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+10:19:31.310 01 N - 进程守护 ©2002-2026 TC
+10:19:31.653 01 N - Host: WindowsService
+10:19:44.004 01 N - 正在初始化星尘……
+10:19:44.023 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@48624
+10:19:44.094 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+10:19:44.159 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+10:19:44.171 01 N - 应用服务配置变更
+10:19:44.208 01 N - 启动[Api]
+10:19:44.210 01 N - 编码：NewLife.Remoting.JsonEncoder
+10:19:44.210 01 N - 处理：NewLife.Remoting.ApiHandler
+10:19:44.265 01 N - Api 准备开始监听4个服务器
+10:19:44.265 07 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+10:19:44.297 01 N - Api 开始监听 tcp://0.0.0.0:5500
+10:19:44.300 01 N - Api 开始监听 tcp://[::]:5500
+10:19:44.342 01 N - Api 开始监听 udp://0.0.0.0:5500
+10:19:44.347 01 N - Api 开始监听 udp://[::]:5500
+10:19:44.347 01 N - Api 初始化管道：
+10:19:44.348 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+10:19:44.348 01 N - Api    NewLife.Remoting.Http.HttpCodec
+10:19:44.348 01 N - Api    NewLife.Net.Handlers.StandardCodec
+10:19:44.351 01 N - Api 准备就绪！
+10:19:44.354 01 N - Api 可用服务9个：
+10:19:44.362 01 N - 	Api/All        String[] All()
+10:19:44.362 01 N - 	Api/Info       Object Info(String state)
+10:19:44.362 01 N - 	Info           AgentInfo Info(AgentInfo info)
+10:19:44.362 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+10:19:44.362 01 N - 	SetServer      String SetServer(String server)
+10:19:44.362 01 N - 	GetServices    ServicesInfo GetServices()
+10:19:44.362 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+10:19:44.362 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+10:19:44.362 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+10:19:44.365 01 N - 初始化服务端地址：http://47.113.219.65:6600
+10:19:44.395 01 N - 启动应用服务管理
+10:19:44.490 01 N - 启动插件[StarAgent]
+10:19:44.561 01 N - 服务启动 模拟运行开始
+10:19:45.554 09 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\Fuxa_pro\server\ Mode=Default Times=1
+10:19:45.586 09 Y T [1/fuxaScada]工作目录: D:\FUXA\Fuxa_pro\server\
+10:19:45.586 09 Y T [1/fuxaScada]启动文件: D:\FUXA\Fuxa_pro\server\node.exe
+10:19:45.586 09 Y T [1/fuxaScada]启动参数: main.js -p 1881
+10:19:49.160 19 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@48624
+10:19:51.794 09 Y T [1/fuxaScada]启动成功 PID=46940/node
+10:19:53.080 05 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+10:19:54.256 15 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+10:19:58.537 10 Y - [App]登录：StarAgent，序号：2，来源：TryConnectServer
+10:19:59.400 17 Y - [App]登录失败：[App/Login]已取消一个任务。，序号：1，来源：Config/GetAll
+10:20:07.344 22 Y - [App]登录成功：星尘代理，序号：2，来源：TryConnectServer
+10:20:07.744 22 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+10:20:07.744 22 Y - [Node]下发密钥：0FC88C29/qBP7eqB7ZZzXJmVr
+10:20:14.916 20 Y T [Node]检查更新
+10:20:25.685 10 Y T 上报应用服务 fuxaScada
+10:20:25.881 11 Y - 拉取应用服务：（所有）
+10:20:25.971 11 Y - 重新加载应用服务
+10:22:02.377 01 N - 服务停止 模拟运行停止
+10:22:02.377 01 N - 停止插件[StarAgent]
+10:22:02.379 01 N - 停止应用服务管理：模拟运行停止
+10:22:02.382 01 N - [Node]注销：0FC88C29 模拟运行停止
+10:22:02.386 01 N - 停止ApiServer ApiServerDispose
+10:22:02.390 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+10:22:02.390 01 N - Api 停止监听 tcp://0.0.0.0:5500
+10:22:02.394 01 N - Api 停止监听 tcp://[::]:5500
+10:22:02.394 01 N - Api 停止监听 udp://0.0.0.0:5500
+10:22:02.404 01 N - Api 停止监听 udp://[::]:5500
+10:22:02.404 01 N - Api 准备释放网络会话0个！
+10:22:02.404 01 N - Api 准备释放服务4个！
+10:22:02.406 01 N - Api 已停止！
+10:22:04.625 02 N - TimerScheduler.ClearAll [1]
+10:22:04.628 02 N - DefaultTimer.ClearAll [18]

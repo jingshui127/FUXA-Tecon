@@ -1,0 +1,24 @@
+{
+  "OSName": "Windows 11 专业版",
+  "OSVersion": "10.0.26200.0",
+  "Product": "20S4A001CD",
+  "Vendor": "LENOVO",
+  "Processor": "Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz",
+  "UUID": "9460944C-2EC0-11B2-A85C-DC7670E0738D",
+  "Guid": "bdee697f-8b76-4a66-91d7-1df901053033",
+  "Serial": "PF2DWDJX",
+  "Board": "L1HF07A01B1",
+  "DiskID": "8CE3_8E05_0027_2CDE.",
+  "Memory": 16918597632,
+  "AvailableMemory": 5065080832,
+  "FreeMemory": 5065080832,
+  "CpuRate": 0.2627,
+  "UplinkSpeed": 25990,
+  "DownlinkSpeed": 445618,
+  "Temperature": 0,
+  "Battery": 0.949999988079071,
+  "Ssid": {
+    
+  },
+  "Signal": 95
+}

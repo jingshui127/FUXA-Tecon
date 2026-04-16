@@ -1,0 +1,1268 @@
+﻿#Software: 进程守护
+#ProcessID: 14488 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe
+#BaseDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32765/1000
+#SystemStarted: 14:56:41.2810000
+#Date: 2026-04-13
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/长任务LT 消息内容
+#Fields: Time ThreadId Kind Name Message
+22:05:15.065 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+22:05:15.074 01 N - 进程守护 ©2002-2026 TC
+22:05:15.074 01 N - CurrentDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent
+22:05:15.074 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+22:05:15.074 01 N - 进程守护 ©2002-2026 TC
+22:05:15.225 01 N - Host: WindowsService
+
+#Software: 进程守护
+#ProcessID: 24236 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe
+#BaseDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32763/1000
+#SystemStarted: 14:57:26.1090000
+#Date: 2026-04-13
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/线程池P/长任务L 消息内容
+#Fields: Time ThreadId Kind Name Message
+22:05:59.770 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:01:52 .NET Framework 4.6.1
+22:05:59.779 01 N - 进程守护 ©2002-2026 TC
+22:05:59.779 01 N - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\Star.config，原："Address>\r\n  <!--跟踪采样周期。定期上报埋点数据到星尘平台，默认60s-->\r\n "，新："Address>\r\n  <!--允许的主机。多个主机名逗号隔开，支持*模糊匹配，用于验证请求的H"
+22:05:59.859 01 N - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："</Mode>\r\n      <Environments></Environments>\r\n  "，新："</Mode>\r\n      <AllowMultiple>false</AllowMultip"
+22:05:59.868 01 N - CurrentDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent
+22:05:59.868 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:01:52 .NET Framework 4.6.1
+22:05:59.868 01 N - 进程守护 ©2002-2026 TC
+22:06:00.146 13 Y - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："模式读取-->\r\n  <Dpi>96*96</Dpi>\r\n  <!--分辨率。例如1024*76"，新："模式读取-->\r\n  <Dpi>192*192</Dpi>\r\n  <!--分辨率。例如1024*"
+22:06:00.187 01 N - Host: WindowsService
+22:06:16.723 01 N - 正在初始化星尘……
+22:06:16.730 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@24236
+22:06:16.764 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:06:16.798 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:06:16.805 01 N - 应用服务配置变更
+22:06:16.836 01 N - 启动[Api]
+22:06:16.836 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:06:16.836 01 N - 处理：NewLife.Remoting.ApiHandler
+22:06:16.862 14 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:06:16.870 01 N - Api 准备开始监听4个服务器
+22:06:16.882 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:06:16.883 01 N - Api 开始监听 tcp://[::]:5500
+22:06:16.900 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:06:16.901 01 N - Api 开始监听 udp://[::]:5500
+22:06:16.901 01 N - Api 初始化管道：
+22:06:16.901 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:06:16.902 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:06:16.902 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:06:16.902 01 N - Api 准备就绪！
+22:06:16.904 01 N - Api 可用服务9个：
+22:06:16.906 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:06:16.906 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:06:16.906 01 N - 	SetServer      String SetServer(String server)
+22:06:16.906 01 N - 	GetServices    ServicesInfo GetServices()
+22:06:16.906 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:06:16.906 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:06:16.906 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:06:16.906 01 N - 	Api/All        String[] All()
+22:06:16.906 01 N - 	Api/Info       Object Info(String state)
+22:06:16.907 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:06:16.921 01 N - 启动应用服务管理
+22:06:16.970 01 N - 启动插件[StarAgent]
+22:06:17.013 01 N - 服务启动 模拟运行开始
+22:06:17.999 17 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:06:18.006 17 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:06:18.027 17 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:06:18.041 17 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:06:18.042 17 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:06:18.042 17 Y T [1/fuxaScada]启动参数: -p 1881
+22:06:18.059 17 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:06:18.082 17 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:06:20.287 18 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:06:20.479 05 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:06:21.780 13 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@24236
+22:06:22.841 03 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:06:22.842 03 Y - [App]下发密钥：StarAgent/jyhtVKrZA06OLh4j
+22:06:22.843 03 Y - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\Star.config，原："心-->\r\n  <Secret>pE8ExUIe3p7aoj9k</Secret>\r\n  <!-"，新："心-->\r\n  <Secret>jyhtVKrZA06OLh4j</Secret>\r\n  <!-"
+22:06:25.721 25 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:06:25.721 25 Y - [Node]下发密钥：0FC88C29/YhhGMLqSTD1QMK88
+22:06:25.723 25 Y - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："钥-->\r\n  <Secret>VJGYMHSuKgI5St61</Secret>\r\n  <!-"，新："钥-->\r\n  <Secret>YhhGMLqSTD1QMK88</Secret>\r\n  <!-"
+22:06:25.725 25 Y - 重新加载应用服务
+22:06:33.004 15 Y T [Node]检查更新
+22:06:48.086 17 Y T 上报应用服务 fuxaScada
+22:06:48.253 23 Y - 拉取应用服务：（所有）
+22:06:48.335 23 Y - 重新加载应用服务
+22:06:48.340 23 Y - [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=2
+22:06:48.340 23 Y - [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:06:48.341 23 Y - [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:06:48.341 23 Y - [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:06:48.341 23 Y - [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:06:48.341 23 Y - [1/fuxaScada]启动参数: -p 1881
+22:06:48.343 23 Y - [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:06:48.343 23 Y - [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:07:18.340 16 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=3
+22:07:18.340 16 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:07:18.341 16 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:07:18.341 16 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:07:18.341 16 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:07:18.341 16 Y T [1/fuxaScada]启动参数: -p 1881
+22:07:18.342 16 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:07:18.343 16 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+
+#Software: 进程守护
+#ProcessID: 22868 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe
+#BaseDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32764/1000
+#SystemStarted: 14:59:47.1560000
+#Date: 2026-04-13
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/线程池P/长任务L 消息内容
+#Fields: Time ThreadId Kind Name Message
+22:08:20.964 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:01:52 .NET Framework 4.6.1
+22:08:20.974 01 N - 进程守护 ©2002-2026 TC
+22:08:20.974 01 N - CurrentDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent
+22:08:20.974 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:01:52 .NET Framework 4.6.1
+22:08:20.974 01 N - 进程守护 ©2002-2026 TC
+22:08:21.181 01 N - Host: WindowsService
+22:08:23.592 01 N - 正在初始化星尘……
+22:08:26.060 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@22868
+22:08:26.098 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:08:26.159 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:08:26.167 01 N - 应用服务配置变更
+22:08:26.199 01 N - 启动[Api]
+22:08:26.199 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:08:26.199 01 N - 处理：NewLife.Remoting.ApiHandler
+22:08:26.231 13 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:08:26.243 01 N - Api 准备开始监听4个服务器
+22:08:26.265 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:08:26.267 01 N - Api 开始监听 tcp://[::]:5500
+22:08:26.295 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:08:26.296 01 N - Api 开始监听 udp://[::]:5500
+22:08:26.296 01 N - Api 初始化管道：
+22:08:26.296 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:08:26.296 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:08:26.296 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:08:26.297 01 N - Api 准备就绪！
+22:08:26.305 01 N - Api 可用服务9个：
+22:08:26.309 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:08:26.309 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:08:26.309 01 N - 	SetServer      String SetServer(String server)
+22:08:26.310 01 N - 	GetServices    ServicesInfo GetServices()
+22:08:26.310 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:08:26.310 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:08:26.310 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:08:26.310 01 N - 	Api/All        String[] All()
+22:08:26.310 01 N - 	Api/Info       Object Info(String state)
+22:08:26.312 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:08:26.333 01 N - 启动应用服务管理
+22:08:26.367 01 N - 启动插件[StarAgent]
+22:08:26.410 01 N - 服务启动 模拟运行开始
+22:08:27.403 08 Y T [1/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\agent\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:08:27.416 08 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:08:27.466 08 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:08:27.498 08 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:08:27.498 08 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:08:27.498 08 Y T [1/fuxaScada]启动参数: -p 1881
+22:08:27.540 08 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:08:27.581 08 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:08:30.609 10 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:08:30.791 14 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:08:31.122 06 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@22868
+22:08:34.072 21 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:08:36.128 32 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:08:42.745 13 Y T [Node]检查更新
+
+#Software: 进程守护
+#ProcessID: 16324 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe
+#BaseDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32764/1000
+#SystemStarted: 15:01:53.1250000
+#Date: 2026-04-13
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/线程池P/长任务L 消息内容
+#Fields: Time ThreadId Kind Name Message
+22:10:26.919 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:01:52 .NET Framework 4.6.1
+22:10:26.935 01 N - 进程守护 ©2002-2026 TC
+22:10:26.935 01 N - CurrentDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent
+22:10:26.935 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:01:52 .NET Framework 4.6.1
+22:10:26.935 01 N - 进程守护 ©2002-2026 TC
+22:10:27.204 01 N - Host: WindowsService
+22:10:29.975 01 N - 正在初始化星尘……
+22:10:32.410 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:10:32.463 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:10:32.585 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:10:32.605 01 N - 应用服务配置变更
+22:10:32.671 01 N - 启动[Api]
+22:10:32.671 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:10:32.671 01 N - 处理：NewLife.Remoting.ApiHandler
+22:10:32.720 13 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:10:32.750 01 N - Api 准备开始监听4个服务器
+22:10:32.790 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:10:32.797 01 N - Api 开始监听 tcp://[::]:5500
+22:10:32.845 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:10:32.847 01 N - Api 开始监听 udp://[::]:5500
+22:10:32.849 01 N - Api 初始化管道：
+22:10:32.849 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:10:32.849 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:10:32.849 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:10:32.852 01 N - Api 准备就绪！
+22:10:32.860 01 N - Api 可用服务9个：
+22:10:32.870 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:10:32.870 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:10:32.870 01 N - 	SetServer      String SetServer(String server)
+22:10:32.870 01 N - 	GetServices    ServicesInfo GetServices()
+22:10:32.870 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:10:32.870 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:10:32.870 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:10:32.870 01 N - 	Api/All        String[] All()
+22:10:32.870 01 N - 	Api/Info       Object Info(String state)
+22:10:32.877 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:10:32.903 01 N - 启动应用服务管理
+22:10:32.951 01 N - 启动插件[StarAgent]
+22:10:32.999 01 N - 服务启动 模拟运行开始
+22:10:33.997 05 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:10:34.015 05 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:10:34.052 05 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:10:34.072 05 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:10:34.072 05 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:10:34.072 05 Y T [1/fuxaScada]启动参数: -p 1881
+22:10:34.105 05 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:10:34.143 05 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:10:37.512 08 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:10:37.764 10 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:10:38.207 06 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:10:42.227 21 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:10:44.942 30 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:10:53.050 10 Y T [Node]检查更新
+22:11:04.147 10 Y T 上报应用服务 fuxaScada
+22:11:04.324 27 Y - 拉取应用服务：（所有）
+22:11:04.404 27 Y - 重新加载应用服务
+22:11:04.409 27 Y - [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=2
+22:11:04.409 27 Y - [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:11:04.410 27 Y - [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:11:04.410 27 Y - [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:11:04.410 27 Y - [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:11:04.410 27 Y - [1/fuxaScada]启动参数: -p 1881
+22:11:04.412 27 Y - [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:11:04.412 27 Y - [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:11:34.420 08 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=3
+22:11:34.420 08 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:11:34.423 08 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:11:34.423 08 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:11:34.423 08 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:11:34.423 08 Y T [1/fuxaScada]启动参数: -p 1881
+22:11:34.438 08 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:11:34.438 08 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:12:04.442 08 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=4
+22:12:04.442 08 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:12:04.443 08 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:04.443 08 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:12:04.443 08 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:04.443 08 Y T [1/fuxaScada]启动参数: -p 1881
+22:12:04.444 08 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:04.445 08 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:12:34.441 17 Y T [1/fuxaScada]启动应用：node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=5
+22:12:34.441 17 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:12:34.442 17 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:34.442 17 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:12:34.442 17 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:34.442 17 Y T [1/fuxaScada]启动参数: -p 1881
+22:12:34.443 17 Y T [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:34.443 17 Y T [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:12:59.348 08 Y - 配置文件改变，重新加载 D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config
+22:12:59.349 08 Y - 重新加载应用服务
+22:12:59.349 08 Y - 应用服务配置变更
+22:12:59.349 08 Y T 上报应用服务 fuxaScada
+22:12:59.532 30 Y - 拉取应用服务：（所有）
+22:12:59.609 30 Y - 重新加载应用服务
+22:12:59.609 30 Y - [1/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:12:59.609 30 Y - [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:12:59.610 30 Y - [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:59.610 30 Y - [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:12:59.610 30 Y - [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:59.610 30 Y - [1/fuxaScada]启动参数: -p 1881
+22:12:59.612 30 Y - [1/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:12:59.613 30 Y - [1/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:13:02.688 01 N - 服务停止 模拟运行停止
+22:13:02.688 01 N - 停止插件[StarAgent]
+22:13:02.690 01 N - 停止应用服务管理：模拟运行停止
+22:13:02.720 01 N - [Node]注销：0FC88C29 模拟运行停止
+22:13:02.741 01 N - 停止ApiServer ApiServerDispose
+22:13:02.747 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+22:13:02.747 01 N - Api 停止监听 tcp://0.0.0.0:5500
+22:13:02.760 01 N - Api 停止监听 tcp://[::]:5500
+22:13:02.761 01 N - Api 停止监听 udp://0.0.0.0:5500
+22:13:02.784 01 N - Api 停止监听 udp://[::]:5500
+22:13:02.787 01 N - Api 准备释放服务4个！
+22:13:02.789 01 N - Api 已停止！
+22:13:04.737 01 N - 正在初始化星尘……
+22:13:04.739 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:13:04.743 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:13:04.744 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:13:04.744 01 N - 应用服务配置变更
+22:13:04.747 06 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:13:04.756 01 N - 启动[Api]
+22:13:04.756 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:13:04.756 01 N - 处理：NewLife.Remoting.ApiHandler
+22:13:04.756 01 N - Api 准备开始监听4个服务器
+22:13:04.758 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:13:04.760 01 N - Api 开始监听 tcp://[::]:5500
+22:13:04.761 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:13:04.762 01 N - Api 开始监听 udp://[::]:5500
+22:13:04.762 01 N - Api 初始化管道：
+22:13:04.762 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:13:04.762 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:13:04.762 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:13:04.762 01 N - Api 准备就绪！
+22:13:04.762 01 N - Api 可用服务9个：
+22:13:04.762 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:13:04.762 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:13:04.762 01 N - 	SetServer      String SetServer(String server)
+22:13:04.762 01 N - 	GetServices    ServicesInfo GetServices()
+22:13:04.762 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:13:04.762 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:13:04.762 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:13:04.763 01 N - 	Api/All        String[] All()
+22:13:04.763 01 N - 	Api/Info       Object Info(String state)
+22:13:04.763 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:13:04.763 01 N - 启动应用服务管理
+22:13:04.780 01 N - 启动插件[StarAgent]
+22:13:04.782 01 N - 服务启动 模拟运行开始
+22:13:05.778 15 Y T [2/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:13:05.778 15 Y T [2/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:13:05.779 15 Y T [2/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:13:05.779 15 Y T [2/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:13:05.779 15 Y T [2/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:13:05.779 15 Y T [2/fuxaScada]启动参数: -p 1881
+22:13:05.781 15 Y T [2/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:13:05.781 15 Y T [2/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:13:07.238 14 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:13:07.348 10 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:13:09.347 20 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:13:09.407 20 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:13:09.745 15 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:13:17.817 16 Y T [Node]检查更新
+22:13:22.231 17 Y T [Node]登录：0FC88C29，序号：2，来源：Node/Ping
+22:13:23.672 20 Y - [Node]登录成功：WANGYQ，序号：2，来源：Node/Ping
+22:13:27.407 01 N - 服务停止 模拟运行停止
+22:13:27.407 01 N - 停止插件[StarAgent]
+22:13:27.407 01 N - 停止应用服务管理：模拟运行停止
+22:13:27.409 01 N - [Node]注销：0FC88C29 模拟运行停止
+22:13:27.409 01 N - 停止ApiServer ApiServerDispose
+22:13:27.410 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+22:13:27.410 01 N - Api 停止监听 tcp://0.0.0.0:5500
+22:13:27.410 01 N - Api 停止监听 tcp://[::]:5500
+22:13:27.410 01 N - Api 停止监听 udp://0.0.0.0:5500
+22:13:27.410 01 N - Api 停止监听 udp://[::]:5500
+22:13:27.410 01 N - Api 准备释放服务4个！
+22:13:27.411 01 N - Api 已停止！
+22:13:29.930 01 N - 正在初始化星尘……
+22:13:29.932 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:13:29.939 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:13:29.940 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:13:29.940 01 N - 应用服务配置变更
+22:13:29.942 17 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:13:29.952 01 N - 启动[Api]
+22:13:29.952 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:13:29.952 01 N - 处理：NewLife.Remoting.ApiHandler
+22:13:29.952 01 N - Api 准备开始监听4个服务器
+22:13:29.954 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:13:29.955 01 N - Api 开始监听 tcp://[::]:5500
+22:13:29.956 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:13:29.957 01 N - Api 开始监听 udp://[::]:5500
+22:13:29.957 01 N - Api 初始化管道：
+22:13:29.957 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:13:29.957 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:13:29.957 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:13:29.957 01 N - Api 准备就绪！
+22:13:29.957 01 N - Api 可用服务9个：
+22:13:29.958 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:13:29.958 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:13:29.958 01 N - 	SetServer      String SetServer(String server)
+22:13:29.958 01 N - 	GetServices    ServicesInfo GetServices()
+22:13:29.958 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:13:29.958 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:13:29.958 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:13:29.958 01 N - 	Api/All        String[] All()
+22:13:29.958 01 N - 	Api/Info       Object Info(String state)
+22:13:29.958 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:13:29.958 01 N - 启动应用服务管理
+22:13:29.962 01 N - 启动插件[StarAgent]
+22:13:29.967 01 N - 服务启动 模拟运行开始
+22:13:30.963 13 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:13:30.963 13 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:13:30.964 13 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:13:30.964 13 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:13:30.964 13 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:13:30.964 13 Y T [3/fuxaScada]启动参数: -p 1881
+22:13:30.966 13 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:13:30.967 13 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:13:31.115 14 Y T [Node]检查更新
+22:13:33.880 08 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:13:33.952 06 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:13:34.945 14 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:13:36.859 55 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:13:36.940 42 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:13:46.628 17 Y T [Node]检查更新
+22:13:49.160 10 Y T [Node]登录：0FC88C29，序号：2，来源：Node/Ping
+22:13:51.062 42 Y - [Node]登录成功：WANGYQ，序号：2，来源：Node/Ping
+22:13:58.568 23 Y T [Node]检查更新
+22:14:00.954 16 Y T 上报应用服务 fuxaScada
+22:14:01.117 42 Y - 拉取应用服务：（所有）
+22:14:01.193 42 Y - 重新加载应用服务
+22:14:01.193 42 Y - [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=2
+22:14:01.193 42 Y - [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:14:01.194 42 Y - [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:14:01.194 42 Y - [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:14:01.194 42 Y - [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:14:01.194 42 Y - [3/fuxaScada]启动参数: -p 1881
+22:14:01.198 42 Y - [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:14:01.198 42 Y - [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:14:31.197 32 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=3
+22:14:31.197 32 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:14:31.199 32 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:14:31.199 32 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:14:31.199 32 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:14:31.199 32 Y T [3/fuxaScada]启动参数: -p 1881
+22:14:31.201 32 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:14:31.202 32 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:15:01.189 17 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=4
+22:15:01.189 17 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:15:01.190 17 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:15:01.190 17 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:15:01.190 17 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:15:01.190 17 Y T [3/fuxaScada]启动参数: -p 1881
+22:15:01.192 17 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:15:01.192 17 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:15:31.202 09 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=5
+22:15:31.202 09 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:15:31.203 09 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:15:31.203 09 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:15:31.203 09 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:15:31.203 09 Y T [3/fuxaScada]启动参数: -p 1881
+22:15:31.205 09 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:15:31.205 09 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:16:01.217 32 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=6
+22:16:01.217 32 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:16:01.221 32 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:16:01.221 32 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:16:01.221 32 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:16:01.221 32 Y T [3/fuxaScada]启动参数: -p 1881
+22:16:01.224 32 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:16:01.224 32 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:16:31.228 06 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=7
+22:16:31.228 06 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:16:31.229 06 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:16:31.229 06 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:16:31.229 06 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:16:31.229 06 Y T [3/fuxaScada]启动参数: -p 1881
+22:16:31.230 06 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:16:31.231 06 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:17:01.229 08 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=8
+22:17:01.229 08 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:17:01.231 08 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:17:01.231 08 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:17:01.231 08 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:17:01.231 08 Y T [3/fuxaScada]启动参数: -p 1881
+22:17:01.235 08 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:17:01.238 08 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:17:31.245 13 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=9
+22:17:31.245 13 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:17:31.245 13 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:17:31.245 13 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:17:31.245 13 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:17:31.246 13 Y T [3/fuxaScada]启动参数: -p 1881
+22:17:31.247 13 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:17:31.247 13 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:18:01.244 10 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=10
+22:18:01.244 10 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:18:01.244 10 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:18:01.244 10 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:18:01.244 10 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:18:01.244 10 Y T [3/fuxaScada]启动参数: -p 1881
+22:18:01.248 10 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:18:01.249 10 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:18:31.235 17 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=11
+22:18:31.235 17 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:18:31.236 17 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:18:31.236 17 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:18:31.236 17 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:18:31.236 17 Y T [3/fuxaScada]启动参数: -p 1881
+22:18:31.237 17 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:18:31.238 17 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:19:01.241 17 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=12
+22:19:01.241 17 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:19:01.242 17 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:19:01.242 17 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:19:01.242 17 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:19:01.242 17 Y T [3/fuxaScada]启动参数: -p 1881
+22:19:01.244 17 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:19:01.244 17 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:19:31.241 15 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=13
+22:19:31.241 15 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:19:31.241 15 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:19:31.242 15 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:19:31.242 15 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:19:31.242 15 Y T [3/fuxaScada]启动参数: -p 1881
+22:19:31.243 15 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:19:31.243 15 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:20:01.247 14 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=14
+22:20:01.247 14 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:20:01.248 14 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:20:01.248 14 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:20:01.248 14 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:20:01.248 14 Y T [3/fuxaScada]启动参数: -p 1881
+22:20:01.251 14 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:20:01.251 14 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:20:31.256 16 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=15
+22:20:31.256 16 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:20:31.256 16 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:20:31.257 16 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:20:31.257 16 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:20:31.257 16 Y T [3/fuxaScada]启动参数: -p 1881
+22:20:31.258 16 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:20:31.259 16 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:21:01.257 15 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=16
+22:21:01.257 15 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:21:01.258 15 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:21:01.258 15 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:21:01.258 15 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:21:01.258 15 Y T [3/fuxaScada]启动参数: -p 1881
+22:21:01.260 15 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:21:01.260 15 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:21:31.251 16 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=17
+22:21:31.251 16 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:21:31.251 16 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:21:31.251 16 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:21:31.251 16 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:21:31.251 16 Y T [3/fuxaScada]启动参数: -p 1881
+22:21:31.253 16 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:21:31.253 16 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:22:01.255 06 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=18
+22:22:01.255 06 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:22:01.256 06 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:22:01.256 06 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:22:01.256 06 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:22:01.256 06 Y T [3/fuxaScada]启动参数: -p 1881
+22:22:01.258 06 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:22:01.258 06 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:22:31.263 06 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=19
+22:22:31.263 06 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:22:31.263 06 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:22:31.264 06 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:22:31.264 06 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:22:31.264 06 Y T [3/fuxaScada]启动参数: -p 1881
+22:22:31.266 06 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:22:31.266 06 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:23:01.271 08 Y T [3/fuxaScada]启动应用：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe main.js -p 1881 workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=20
+22:23:01.271 08 Y T [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:23:01.272 08 Y T [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:23:01.272 08 Y T [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:23:01.272 08 Y T [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:23:01.272 08 Y T [3/fuxaScada]启动参数: -p 1881
+22:23:01.274 08 Y T [3/fuxaScada]启动失败！Win32Exception=193 File=D:\FUXA\FUXApro1.3.0已部署版\server\main.js
+22:23:01.274 08 Y T [3/fuxaScada]System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 StarAgent.Managers.DeployStrategyBase.StartProcess(DeployContext context, ProcessStartInfo si)
+22:23:31.279 14 Y T [3/fuxaScada]应用[fuxaScada]累计错误次数20达到最大值20
+22:23:34.570 13 Y T [Node]检查更新
+22:23:49.460 15 Y T [Node]检查更新
+22:23:59.963 23 Y T [Node]检查更新
+22:28:03.415 09 Y - 配置文件改变，重新加载 D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config
+22:28:03.416 09 Y - 重新加载应用服务
+22:28:03.416 09 Y - 应用服务配置变更
+22:28:03.416 09 Y T 上报应用服务 fuxaScada
+22:28:03.594 49 Y - 拉取应用服务：（所有）
+22:28:03.675 49 Y - 重新加载应用服务
+22:28:03.675 49 Y - [3/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:28:03.675 49 Y - [3/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:28:03.677 49 Y - [3/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:28:03.677 49 Y - [3/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:28:03.677 49 Y - [3/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:28:03.677 49 Y - [3/fuxaScada]启动参数: start
+22:28:09.676 01 N - 服务停止 模拟运行停止
+22:28:09.676 01 N - 停止插件[StarAgent]
+22:28:09.676 01 N - 停止应用服务管理：模拟运行停止
+22:28:09.678 01 N - [Node]注销：0FC88C29 模拟运行停止
+22:28:09.678 01 N - 停止ApiServer ApiServerDispose
+22:28:09.679 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+22:28:09.679 01 N - Api 停止监听 tcp://0.0.0.0:5500
+22:28:09.679 01 N - Api 停止监听 tcp://[::]:5500
+22:28:09.679 01 N - Api 停止监听 udp://0.0.0.0:5500
+22:28:09.679 01 N - Api 停止监听 udp://[::]:5500
+22:28:09.679 01 N - Api 准备释放服务4个！
+22:28:09.679 01 N - Api 已停止！
+22:28:10.418 49 Y - [3/fuxaScada]启动失败！PID=18128 ExitCode=1
+22:28:11.353 13 Y T [Node]登录：0FC88C29，序号：2，来源：Node/Ping
+22:28:13.248 49 Y - [Node]登录成功：WANGYQ，序号：2，来源：Node/Ping
+22:28:13.501 01 N - 正在初始化星尘……
+22:28:13.503 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:28:13.515 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:28:13.516 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:28:13.516 01 N - 应用服务配置变更
+22:28:13.518 13 Y T [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:28:13.532 01 N - 启动[Api]
+22:28:13.532 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:28:13.532 01 N - 处理：NewLife.Remoting.ApiHandler
+22:28:13.532 01 N - Api 准备开始监听4个服务器
+22:28:13.534 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:28:13.535 01 N - Api 开始监听 tcp://[::]:5500
+22:28:13.536 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:28:13.537 01 N - Api 开始监听 udp://[::]:5500
+22:28:13.537 01 N - Api 初始化管道：
+22:28:13.537 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:28:13.537 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:28:13.537 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:28:13.537 01 N - Api 准备就绪！
+22:28:13.537 01 N - Api 可用服务9个：
+22:28:13.537 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:28:13.537 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:28:13.537 01 N - 	SetServer      String SetServer(String server)
+22:28:13.537 01 N - 	GetServices    ServicesInfo GetServices()
+22:28:13.537 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:28:13.537 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:28:13.537 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:28:13.537 01 N - 	Api/All        String[] All()
+22:28:13.537 01 N - 	Api/Info       Object Info(String state)
+22:28:13.538 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:28:13.540 01 N - 启动应用服务管理
+22:28:13.544 01 N - 启动插件[StarAgent]
+22:28:13.547 01 N - 服务启动 模拟运行开始
+22:28:14.545 17 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:28:14.545 17 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:28:14.546 17 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:28:14.546 17 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:28:14.546 17 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:28:14.546 17 Y T [4/fuxaScada]启动参数: start
+22:28:14.783 17 Y T [4/fuxaScada]启动失败！PID=24088 ExitCode=1
+22:28:18.517 17 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@16324
+22:28:18.522 08 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:28:18.667 15 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:28:23.988 23 Y - [App]登录：StarAgent，序号：2，来源：TryConnectServer
+22:28:23.999 10 Y T [Node]检查更新
+22:28:24.566 34 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:28:24.604 34 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:28:35.692 08 Y T [App]登录失败：[App/Login]已取消一个任务。，序号：2，来源：TryConnectServer
+22:28:35.702 08 Y T [App]TryConnectServer: [App/Login]已取消一个任务。
+22:28:36.644 43 Y T [Node]检查更新
+22:28:44.796 32 Y T 上报应用服务 fuxaScada
+22:28:45.009 53 Y - 拉取应用服务：（所有）
+22:28:45.091 53 Y - 重新加载应用服务
+22:28:45.092 53 Y - [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=2
+22:28:45.092 53 Y - [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:28:45.092 53 Y - [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:28:45.093 53 Y - [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:28:45.093 53 Y - [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:28:45.093 53 Y - [4/fuxaScada]启动参数: start
+22:28:45.429 53 Y - [4/fuxaScada]启动失败！PID=23968 ExitCode=1
+22:28:45.430 53 Y - [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+22:28:50.787 43 Y T [App]登录：StarAgent，序号：3，来源：TryConnectServer
+22:28:55.297 41 Y - [App]登录成功：StarAgent，序号：3，来源：TryConnectServer
+22:29:15.423 10 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=3
+22:29:15.423 10 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:29:15.424 10 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:29:15.424 10 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:29:15.424 10 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:29:15.424 10 Y T [4/fuxaScada]启动参数: start
+22:29:15.722 10 Y T [4/fuxaScada]启动失败！PID=24044 ExitCode=1
+22:29:15.723 10 Y T [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+22:29:45.723 09 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=4
+22:29:45.723 09 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:29:45.724 09 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:29:45.724 09 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:29:45.724 09 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:29:45.724 09 Y T [4/fuxaScada]启动参数: start
+22:29:45.966 09 Y T [4/fuxaScada]启动失败！PID=21464 ExitCode=1
+22:29:45.966 09 Y T [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+22:30:15.988 09 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=5
+22:30:15.989 09 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:30:16.008 09 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:30:16.008 09 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:30:16.008 09 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:30:16.008 09 Y T [4/fuxaScada]启动参数: start
+22:30:16.867 09 Y T [4/fuxaScada]启动失败！PID=9708 ExitCode=1
+22:30:16.867 09 Y T [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+22:30:46.866 36 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=6
+22:30:46.866 36 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:30:46.867 36 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:30:46.867 36 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:30:46.867 36 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:30:46.867 36 Y T [4/fuxaScada]启动参数: start
+22:30:47.052 36 Y T [4/fuxaScada]启动失败！PID=21796 ExitCode=1
+22:30:47.052 36 Y T [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+22:31:17.058 23 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=7
+22:31:17.058 23 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:31:17.059 23 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:31:17.059 23 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:31:17.059 23 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:31:17.059 23 Y T [4/fuxaScada]启动参数: start
+22:31:17.268 23 Y T [4/fuxaScada]启动失败！PID=16992 ExitCode=1
+22:31:17.269 23 Y T [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+22:31:47.272 08 Y T [4/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=8
+22:31:47.272 08 Y T [4/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:31:47.273 08 Y T [4/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:31:47.273 08 Y T [4/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:31:47.273 08 Y T [4/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:31:47.273 08 Y T [4/fuxaScada]启动参数: start
+22:31:47.458 08 Y T [4/fuxaScada]启动失败！PID=14900 ExitCode=1
+22:31:47.458 08 Y T [4/fuxaScada]node:internal/modules/cjs/loader:1143
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\FUXA\FUXApro1.3.0宸查儴缃茬増\server\start'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
+    at Module._load (node:internal/modules/cjs/loader:981:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v18.20.8
+
+
+#Software: 进程守护
+#ProcessID: 21572 x64
+#AppDomain: Agent.exe
+#FileName: D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe
+#BaseDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\FUXApro1.3.0已部署版\agent\Agent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32764/1000
+#SystemStarted: 15:25:38.1560000
+#Date: 2026-04-13
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/长任务LT 消息内容
+#Fields: Time ThreadId Kind Name Message
+22:34:11.919 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+22:34:11.936 01 N - 进程守护 ©2002-2026 TC
+22:34:11.936 01 N - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\Star.config，原："Address>\r\n  <!--允许的主机。多个主机名逗号隔开，支持*模糊匹配，用于验证请求的H"，新："Address>\r\n  <!--跟踪采样周期。定期上报埋点数据到星尘平台，默认60s-->\r\n "
+22:34:11.978 01 N - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："</Mode>\r\n      <AllowMultiple>false</AllowMultip"，新："</Mode>\r\n      <Environments></Environments>\r\n  "
+22:34:11.990 01 N - CurrentDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent
+22:34:11.990 01 N - StarAgent.merged v3.6.2026.0118 Build 2026-01-18 22:27:08 .NET Framework 4.6.1
+22:34:11.990 01 N - 进程守护 ©2002-2026 TC
+22:34:12.069 05 Y - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："模式读取-->\r\n  <Dpi>192*192</Dpi>\r\n  <!--分辨率。例如1024*"，新："模式读取-->\r\n  <Dpi>96*96</Dpi>\r\n  <!--分辨率。例如1024*76"
+22:34:12.259 01 N - Host: WindowsService
+22:34:16.820 01 N - 正在初始化星尘……
+22:34:16.829 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@21572
+22:34:16.872 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:34:16.908 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:34:16.916 01 N - 应用服务配置变更
+22:34:16.938 01 N - 启动[Api]
+22:34:16.938 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:34:16.938 01 N - 处理：NewLife.Remoting.ApiHandler
+22:34:16.983 01 N - Api 准备开始监听4个服务器
+22:34:16.992 08 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:34:16.998 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:34:17.003 01 N - Api 开始监听 tcp://[::]:5500
+22:34:17.033 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:34:17.035 01 N - Api 开始监听 udp://[::]:5500
+22:34:17.036 01 N - Api 初始化管道：
+22:34:17.036 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:34:17.036 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:34:17.036 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:34:17.038 01 N - Api 准备就绪！
+22:34:17.051 01 N - Api 可用服务9个：
+22:34:17.056 01 N - 	Api/All        String[] All()
+22:34:17.057 01 N - 	Api/Info       Object Info(String state)
+22:34:17.057 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:34:17.057 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:34:17.057 01 N - 	SetServer      String SetServer(String server)
+22:34:17.057 01 N - 	GetServices    ServicesInfo GetServices()
+22:34:17.057 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:34:17.057 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:34:17.057 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:34:17.061 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:34:17.080 01 N - 启动应用服务管理
+22:34:17.150 01 N - 启动插件[StarAgent]
+22:34:17.192 01 N - 服务启动 模拟运行开始
+22:34:18.197 09 Y T [1/fuxaScada]启动应用：npm start workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Default Times=1
+22:34:18.214 09 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:34:18.214 09 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\npm
+22:34:18.214 09 Y T [1/fuxaScada]启动参数: start
+22:34:18.263 09 Y T System.ComponentModel.Win32Exception (0x80004005): 指定的可执行文件不是此操作系统平台的有效应用程序。
+   在 System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   在 System.Diagnostics.Process.Start(ProcessStartInfo startInfo)
+   在 Stardust.Managers.ServiceController.RunExe(String file, String args, String workDir, ServiceInfo service)
+   在 Stardust.Managers.ServiceController.Start()
+22:34:20.910 05 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:34:20.980 01 N - 服务停止 模拟运行停止
+22:34:20.980 01 N - 停止插件[StarAgent]
+22:34:20.983 01 N - 停止应用服务管理：模拟运行停止
+22:34:21.020 01 N - 停止ApiServer ApiServerDispose
+22:34:21.030 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+22:34:21.030 01 N - Api 停止监听 tcp://0.0.0.0:5500
+22:34:21.037 01 N - Api 停止监听 tcp://[::]:5500
+22:34:21.037 01 N - Api 停止监听 udp://0.0.0.0:5500
+22:34:21.052 01 N - Api 停止监听 udp://[::]:5500
+22:34:21.052 01 N - Api 准备释放网络会话0个！
+22:34:21.055 01 N - Api 准备释放服务4个！
+22:34:21.066 01 N - Api 已停止！
+22:34:21.216 15 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:34:21.911 09 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@21572
+22:34:26.140 41 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:34:28.614 41 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:34:36.324 19 Y T [Node]检查更新
+22:34:51.958 08 Y T 配置文件改变，重新加载 D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config
+22:34:56.300 01 N - 正在初始化星尘……
+22:34:56.301 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@21572
+22:34:56.305 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:34:56.306 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:34:56.306 01 N - 应用服务配置变更
+22:34:56.306 01 N - 启动[Api]
+22:34:56.307 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:34:56.307 01 N - 处理：NewLife.Remoting.ApiHandler
+22:34:56.307 01 N - Api 准备开始监听4个服务器
+22:34:56.308 17 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:34:56.308 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:34:56.308 01 N - Api 开始监听 tcp://[::]:5500
+22:34:56.309 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:34:56.310 01 N - Api 开始监听 udp://[::]:5500
+22:34:56.310 01 N - Api 初始化管道：
+22:34:56.310 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:34:56.310 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:34:56.310 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:34:56.310 01 N - Api 准备就绪！
+22:34:56.310 01 N - Api 可用服务9个：
+22:34:56.310 01 N - 	Api/All        String[] All()
+22:34:56.310 01 N - 	Api/Info       Object Info(String state)
+22:34:56.310 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:34:56.310 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:34:56.310 01 N - 	SetServer      String SetServer(String server)
+22:34:56.310 01 N - 	GetServices    ServicesInfo GetServices()
+22:34:56.310 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:34:56.310 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:34:56.310 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:34:56.310 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:34:56.310 01 N - 启动应用服务管理
+22:34:56.312 01 N - 启动插件[StarAgent]
+22:34:56.313 01 N - 服务启动 模拟运行开始
+22:34:57.306 18 Y T [2/fuxaScada]启动应用：node.exe main.js workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Default Times=1
+22:34:57.306 18 Y T [2/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:34:57.306 18 Y T [2/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:34:57.306 18 Y T [2/fuxaScada]启动参数: main.js
+22:34:59.247 08 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:34:59.384 05 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:35:00.452 18 Y T [2/fuxaScada]启动成功 PID=22896/node
+22:35:01.300 19 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@21572
+22:35:03.932 37 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:35:03.988 37 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:35:14.241 07 Y T [Node]检查更新
+22:35:36.326 07 Y T 上报应用服务 fuxaScada
+22:35:36.500 32 Y - 拉取应用服务：（所有）
+22:35:36.578 30 Y - 重新加载应用服务
+22:35:42.697 01 N - 服务停止 模拟运行停止
+22:35:42.697 01 N - 停止插件[StarAgent]
+22:35:42.697 01 N - 停止应用服务管理：模拟运行停止
+22:35:42.698 01 N - [Node]注销：0FC88C29 模拟运行停止
+22:35:42.704 01 N - 停止ApiServer ApiServerDispose
+22:35:42.704 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+22:35:42.704 01 N - Api 停止监听 tcp://0.0.0.0:5500
+22:35:42.704 01 N - Api 停止监听 tcp://[::]:5500
+22:35:42.705 01 N - Api 停止监听 udp://0.0.0.0:5500
+22:35:42.705 01 N - Api 停止监听 udp://[::]:5500
+22:35:42.705 01 N - Api 准备释放网络会话0个！
+22:35:42.705 01 N - Api 准备释放服务4个！
+22:35:42.705 01 N - Api 已停止！
+22:35:46.718 05 Y T [Node]登录：0FC88C29，序号：2，来源：Node/Ping
+22:35:46.973 01 N - 正在初始化星尘……
+22:35:46.976 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@21572
+22:35:46.980 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:35:46.981 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:35:46.982 01 N - 应用服务配置变更
+22:35:46.983 01 N - 启动[Api]
+22:35:46.983 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:35:46.983 01 N - 处理：NewLife.Remoting.ApiHandler
+22:35:46.983 01 N - Api 准备开始监听4个服务器
+22:35:46.984 08 Y T [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:35:46.984 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:35:46.985 01 N - Api 开始监听 tcp://[::]:5500
+22:35:46.986 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:35:46.987 01 N - Api 开始监听 udp://[::]:5500
+22:35:46.987 01 N - Api 初始化管道：
+22:35:46.987 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:35:46.987 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:35:46.987 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:35:46.987 01 N - Api 准备就绪！
+22:35:46.987 01 N - Api 可用服务9个：
+22:35:46.987 01 N - 	Api/All        String[] All()
+22:35:46.987 01 N - 	Api/Info       Object Info(String state)
+22:35:46.987 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:35:46.987 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:35:46.987 01 N - 	SetServer      String SetServer(String server)
+22:35:46.987 01 N - 	GetServices    ServicesInfo GetServices()
+22:35:46.987 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:35:46.987 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:35:46.987 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:35:46.987 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:35:46.987 01 N - 启动应用服务管理
+22:35:46.993 01 N - 启动插件[StarAgent]
+22:35:46.997 01 N - 服务启动 模拟运行开始
+22:35:48.001 07 Y T [3/fuxaScada]应用[22896/fuxaScada]已启动（按[Id=22896]查找），直接接管
+22:35:51.915 51 Y - [Node]登录成功：WANGYQ，序号：2，来源：Node/Ping
+22:35:51.979 18 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@21572
+22:35:52.960 17 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:35:53.084 09 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:35:57.286 51 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:35:57.417 50 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:35:59.739 14 Y T [Node]检查更新
+22:36:08.718 18 Y T [Node]检查更新
+22:36:18.003 18 Y T 上报应用服务 fuxaScada
+22:36:18.166 31 Y - 拉取应用服务：（所有）
+22:36:18.250 31 Y - 重新加载应用服务
+
+#Software: 进程守护
+#ProcessID: 24320 x64
+#AppDomain: StarAgent.exe
+#FileName: D:\FUXA\FUXApro1.3.0已部署版\agent\StarAgent.exe
+#BaseDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent\
+#TempPath: C:\Users\13971\AppData\Local\Temp\
+#CommandLine: "D:\FUXA\FUXApro1.3.0已部署版\agent\StarAgent.exe" 
+#ApplicationType: Console
+#CLR: 4.0.30319.42000, .NET Framework 4.6.1
+#OS: Microsoft Windows NT 10.0.26200.0, WANGYQ/13971
+#CPU: 8
+#GC: IsServerGC=False, LatencyMode=Interactive
+#ThreadPool: Min=32/32, Max=32767/1000, Available=32762/1000
+#SystemStarted: 15:39:56.9680000
+#Date: 2026-04-13
+#详解：https://newlifex.com/core/log
+#字段: 时间 线程ID 线程池Y/网页W/普通N 线程名/任务ID/定时T/线程池P/长任务L 消息内容
+#Fields: Time ThreadId Kind Name Message
+22:48:30.798 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:46:48 .NET Framework 4.6.1
+22:48:30.809 01 N - 进程守护 ©2002-2026 TC
+22:48:30.809 01 N - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\Star.config，原："Address>\r\n  <!--跟踪采样周期。定期上报埋点数据到星尘平台，默认60s-->\r\n "，新："Address>\r\n  <!--允许的主机。多个主机名逗号隔开，支持*模糊匹配，用于验证请求的H"
+22:48:30.869 01 N - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："</Mode>\r\n      <Environments></Environments>\r\n  "，新："</Mode>\r\n      <AllowMultiple>false</AllowMultip"
+22:48:30.876 01 N - CurrentDirectory: D:\FUXA\FUXApro1.3.0已部署版\agent
+22:48:30.876 01 N - StarAgent.merged v3.7.2026.0413 Build 2026-04-13 22:46:48 .NET Framework 4.6.1
+22:48:30.876 01 N - 进程守护 ©2002-2026 TC
+22:48:31.039 01 N - Host: WindowsService
+22:48:31.636 15 Y - 更新配置：D:\FUXA\FUXApro1.3.0已部署版\agent\Config\StarAgent.config，原："模式读取-->\r\n  <Dpi>96*96</Dpi>\r\n  <!--分辨率。例如1024*76"，新："模式读取-->\r\n  <Dpi>192*192</Dpi>\r\n  <!--分辨率。例如1024*"
+22:48:38.713 01 N - 正在初始化星尘……
+22:48:38.720 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@24320
+22:48:38.756 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:48:38.792 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:48:38.798 01 N - 应用服务配置变更
+22:48:38.834 01 N - 启动[Api]
+22:48:38.835 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:48:38.835 01 N - 处理：NewLife.Remoting.ApiHandler
+22:48:38.865 09 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:48:38.869 01 N - Api 准备开始监听4个服务器
+22:48:38.887 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:48:38.889 01 N - Api 开始监听 tcp://[::]:5500
+22:48:38.924 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:48:38.926 01 N - Api 开始监听 udp://[::]:5500
+22:48:38.926 01 N - Api 初始化管道：
+22:48:38.926 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:48:38.926 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:48:38.926 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:48:38.927 01 N - Api 准备就绪！
+22:48:38.930 01 N - Api 可用服务9个：
+22:48:38.934 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:48:38.934 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:48:38.934 01 N - 	SetServer      String SetServer(String server)
+22:48:38.934 01 N - 	GetServices    ServicesInfo GetServices()
+22:48:38.934 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:48:38.934 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:48:38.934 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:48:38.934 01 N - 	Api/All        String[] All()
+22:48:38.934 01 N - 	Api/Info       Object Info(String state)
+22:48:38.938 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:48:38.966 01 N - 启动应用服务管理
+22:48:39.024 01 N - 启动插件[StarAgent]
+22:48:39.069 01 N - 服务启动 模拟运行开始
+22:48:40.121 19 Y T [1/fuxaScada]启动应用：node.exe main.js workDir=D:\FUXA\FUXApro1.3.0已部署版\server\ Mode=Shadow Times=1
+22:48:40.134 19 Y T [1/fuxaScada]影子模式降级为标准模式，无需解压，直接使用工作目录：D:\FUXA\FUXApro1.3.0已部署版\server\
+22:48:40.150 19 Y T [1/fuxaScada]运行文件：D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:48:40.174 19 Y T [1/fuxaScada]工作目录: D:\FUXA\FUXApro1.3.0已部署版\server\
+22:48:40.174 19 Y T [1/fuxaScada]启动文件: D:\FUXA\FUXApro1.3.0已部署版\server\node.exe
+22:48:40.174 19 Y T [1/fuxaScada]启动参数: main.js
+22:48:43.482 19 Y T [1/fuxaScada]启动成功！PID=8956/node
+22:48:43.482 19 Y T [1/fuxaScada]启动成功 PID=8956/node
+22:48:43.786 22 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@24320
+22:48:44.931 12 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:48:44.980 05 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:48:46.781 19 Y T [1/fuxaScada]检测到防火墙类型：WindowsFirewall
+22:48:50.347 24 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:48:51.118 19 Y T [1/fuxaScada]未检测到需要开放的端口
+22:48:51.158 20 Y 93 [Node]正在登录，请稍等5000ms！序号：2，来源：Deploy/Ping
+22:48:55.249 33 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:49:03.271 06 Y T [Node]检查更新
+22:49:21.167 08 Y T 上报应用服务 fuxaScada
+22:49:21.336 32 Y - 拉取应用服务：（所有）
+22:49:21.419 32 Y - 重新加载应用服务
+22:51:16.371 01 N - 服务停止 模拟运行停止
+22:51:16.371 01 N - 停止插件[StarAgent]
+22:51:16.373 01 N - 停止应用服务管理：模拟运行停止
+22:51:16.379 01 N - [Node]注销：0FC88C29 模拟运行停止
+22:51:16.396 01 N - 停止ApiServer ApiServerDispose
+22:51:16.401 01 N - Api 准备停止监听4个服务器 ApiServerDispose
+22:51:16.401 01 N - Api 停止监听 tcp://0.0.0.0:5500
+22:51:16.412 01 N - Api 停止监听 tcp://[::]:5500
+22:51:16.412 01 N - Api 停止监听 udp://0.0.0.0:5500
+22:51:16.426 01 N - Api 停止监听 udp://[::]:5500
+22:51:16.426 01 N - Api 准备释放服务4个！
+22:51:16.434 01 N - Api 已停止！
+22:51:18.678 01 N - 正在初始化星尘……
+22:51:18.680 01 N - 接入星尘平台：Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@24320
+22:51:18.685 01 N - 星尘监控中心：ITracer采集并上报应用埋点数据，自动埋点Api接口、Http请求、数据库操作、Redis操作等。可用于监控系统健康状态，分析分布式系统的调用链和性能瓶颈。
+22:51:18.687 01 N - 星尘配置中心：IConfigProvider集中管理配置，自动从配置中心加载配置数据并支持变更实时下发，包括XCode数据库连接字符串等。配置中心同时支持分配应用实例的唯一WorkerId，确保Snowflake算法能够生成绝对唯一的雪花Id
+22:51:18.689 01 N - 应用服务配置变更
+22:51:18.692 05 Y - [App]登录：StarAgent，序号：1，来源：Config/GetAll
+22:51:18.697 01 N - 启动[Api]
+22:51:18.697 01 N - 编码：NewLife.Remoting.JsonEncoder
+22:51:18.697 01 N - 处理：NewLife.Remoting.ApiHandler
+22:51:18.698 01 N - Api 准备开始监听4个服务器
+22:51:18.702 01 N - Api 开始监听 tcp://0.0.0.0:5500
+22:51:18.705 01 N - Api 开始监听 tcp://[::]:5500
+22:51:18.705 01 N - Api 开始监听 udp://0.0.0.0:5500
+22:51:18.706 01 N - Api 开始监听 udp://[::]:5500
+22:51:18.706 01 N - Api 初始化管道：
+22:51:18.706 01 N - Api    NewLife.Remoting.Http.WebSocketServerCodec
+22:51:18.706 01 N - Api    NewLife.Remoting.Http.HttpCodec
+22:51:18.706 01 N - Api    NewLife.Net.Handlers.StandardCodec
+22:51:18.707 01 N - Api 准备就绪！
+22:51:18.707 01 N - Api 可用服务9个：
+22:51:18.707 01 N - 	Info           AgentInfo Info(AgentInfo info)
+22:51:18.707 01 N - 	Ping           IPingResponse Ping(LocalPingInfo info)
+22:51:18.707 01 N - 	SetServer      String SetServer(String server)
+22:51:18.707 01 N - 	GetServices    ServicesInfo GetServices()
+22:51:18.707 01 N - 	StartService   ServiceOperationResult StartService(String serviceName)
+22:51:18.707 01 N - 	StopService    ServiceOperationResult StopService(String serviceName)
+22:51:18.707 01 N - 	RestartService ServiceOperationResult RestartService(String serviceName)
+22:51:18.707 01 N - 	Api/All        String[] All()
+22:51:18.707 01 N - 	Api/Info       Object Info(String state)
+22:51:18.707 01 N - 初始化服务端地址：http://47.113.219.65:6600
+22:51:18.707 01 N - 启动应用服务管理
+22:51:18.709 01 N - 启动插件[StarAgent]
+22:51:18.712 01 N - 服务启动 模拟运行开始
+22:51:19.722 15 Y T [2/fuxaScada]应用[8956/fuxaScada]已启动（按[Id=8956]查找），直接接管
+22:51:21.115 21 Y T [App]正在登录，请稍等5000ms！序号：2，来源：TryConnectServer
+22:51:21.232 12 Y T [Node]登录：0FC88C29，序号：1，来源：TryConnectServer
+22:51:23.098 46 Y - [App]登录成功：StarAgent，序号：1，来源：Config/GetAll
+22:51:23.168 46 Y - [Node]登录成功：WANGYQ，序号：1，来源：TryConnectServer
+22:51:23.693 19 Y T 星尘监控中心 Server=http://47.113.219.65:6600 AppId=StarAgent ClientId=10.194.0.168@24320
+22:51:30.959 08 Y T [Node]登录：0FC88C29，序号：3，来源：Node/Ping
+22:51:32.637 22 Y T [Node]检查更新
+22:51:34.319 46 Y - [Node]登录成功：WANGYQ，序号：3，来源：Node/Ping
+22:51:42.438 19 Y T [Node]检查更新
+22:51:49.730 21 Y T 上报应用服务 fuxaScada
+22:51:49.922 10 Y - 拉取应用服务：（所有）
+22:51:50.004 10 Y - 重新加载应用服务
+23:01:33.658 29 Y T [Node]检查更新
+23:01:43.494 22 Y T [Node]检查更新
+23:11:34.640 45 Y T [Node]检查更新
+23:11:45.257 30 Y T [Node]检查更新
+23:21:35.854 06 Y T [Node]检查更新
+23:21:46.132 41 Y T [Node]检查更新

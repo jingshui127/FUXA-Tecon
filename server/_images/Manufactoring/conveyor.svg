@@ -1,0 +1,50 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+	 <g>
+<g id="shape">
+	<path fill="#808080" d="M91,59H9.5c-4.411,0-8-3.589-8-8s3.589-8,8-8H91c4.411,0,8,3.589,8,8S95.411,59,91,59z M9.5,45
+		c-3.309,0-6,2.691-6,6s2.691,6,6,6H91c3.309,0,6-2.691,6-6s-2.691-6-6-6H9.5z"></path>
+</g>
+<g id="dark">
+	<circle cx="9.5" cy="51" r="5.775"></circle>
+	<circle cx="91" cy="51" r="5.775"></circle>
+</g>
+<g id="light">
+	<circle fill="#CCCCCC" cx="9.5" cy="51" r="3.675"></circle>
+	<circle fill="#CCCCCC" cx="91" cy="51" r="3.675"></circle>
+	<circle fill="#CCCCCC" cx="81.75" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="73.844" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="65.938" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="58.031" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="50.125" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="42.219" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="34.313" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="26.406" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="18.5" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="81.75" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="73.844" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="65.938" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="58.031" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="50.125" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="42.219" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="34.313" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="26.406" cy="48.125" r="2.375"></circle>
+	<circle fill="#CCCCCC" cx="18.5" cy="48.125" r="2.375"></circle>
+	<rect x="1.5" y="50.25" fill="#CCCCCC" width="2" height="1.375"></rect>
+	<rect x="97" y="50.25" fill="#CCCCCC" width="2" height="1.375"></rect>
+
+	<rect x="9.5" y="43" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="25.575" y="43" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="41.65" y="43" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="57.725" y="43" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="73.8" y="43" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="89.875" y="43" fill="#CCCCCC" width="1.375" height="2"></rect>
+
+	<rect x="9.5" y="57" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="25.575" y="57" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="41.65" y="57" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="57.725" y="57" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="73.8" y="57" fill="#CCCCCC" width="1.375" height="2"></rect>
+	<rect x="89.875" y="57" fill="#CCCCCC" width="1.375" height="2"></rect>
+</g>
+</g>
+</svg>

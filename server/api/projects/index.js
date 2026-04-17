@@ -248,10 +248,10 @@ module.exports = {
                         return;
                     }
                     filePath = resolvedFile.resolvedTarget;
-                    const dir = path.dirname(filePath);
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir, { recursive: true });
-                    }
+                }
+                const dir = path.dirname(filePath);
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir, { recursive: true });
                 }
                 fs.writeFileSync(filePath, basedata, encoding);
                 let result = {'location': '/' + runtime.settings.httpUploadFileStatic + '/' + relativePath };

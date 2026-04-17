@@ -312,7 +312,7 @@ module.exports = {
                 if (!relPath || typeof relPath !== 'string') {
                     return res.status(400).json({ error: "invalid_path", message: "Missing or invalid widget path." });
                 }
-                let basePath = path.resolve(runtime.settings.appDir);
+                let basePath = path.resolve(runtime.settings.workDir);
                 if (process.versions.electron) {
                     basePath = process.env.userDir || path.join(os.homedir(), '.fuxa');
                 }

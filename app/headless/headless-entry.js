@@ -62,7 +62,7 @@ async function bootstrap() {
     // 构建服务器参数
     const serverArgs = [];
     if (port) {
-        serverArgs.push('-P', port);
+        serverArgs.push('-p', port);
     }
     
     const serverProcess = fork(serverPath, serverArgs, {

@@ -94,6 +94,6 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FuxaPro-Single-260417-1602}
+        name: FuxaPro-Single-${{ format('{0:MMdd-HHmm}', github.event.created_at) }}
         path: artifacts/*
         retention-days: 30

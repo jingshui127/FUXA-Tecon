@@ -230,7 +230,7 @@ module.exports = {
                 if (destination) {
                     const baseDir = process.versions.electron
                         ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
-                        : runtime.settings.appDir;
+                        : runtime.settings.workDir;
                     const normalizedDestination = normalizeRelativePath(destination);
                     if (!normalizedDestination) {
                         res.status(400).json({error:"invalid_destination", message: "Invalid destination path."});

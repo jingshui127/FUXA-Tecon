@@ -228,9 +228,14 @@ module.exports = {
                 }
                 let filePath = resolvedUpload.resolvedTarget;
                 if (destination) {
-                    const baseDir = process.versions.electron
-                        ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
-                        : runtime.settings.workDir;
+                    let baseDir;
+                    if (destination === 'widgets') {
+                        baseDir = runtime.settings.widgetsFileDir;
+                    } else {
+                        baseDir = process.versions.electron
+                            ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
+                            : runtime.settings.workDir;
+                    }
                     const normalizedDestination = normalizeRelativePath(destination);
                     if (!normalizedDestination) {
                         res.status(400).json({error:"invalid_destination", message: "Invalid destination path."});

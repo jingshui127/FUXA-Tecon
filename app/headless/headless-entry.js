@@ -22,7 +22,7 @@ async function bootstrap() {
     let port = null;
     const args = process.argv.slice(2);
     for (let i = 0; i < args.length; i++) {
-        if (args[i] === '-P' && args[i + 1]) {
+        if ((args[i] === '-P' || args[i] === '-p') && args[i + 1]) {
             port = args[i + 1];
             break;
         }

@@ -226,27 +226,34 @@ function _checkPluginsSupported() {
     });
     // check in _pkg
     var module = settings.packageDir;
-    var dirs = fs.readdirSync(module);
-    var data = {};
-    dirs.forEach(function (dir) {
+    if (fs.existsSync(module)) {
         try {
-            var file = path.resolve(module, dir + '/package.json');
-            if (fs.existsSync(file)) {
-                var json = require(file);
-                if (json) {
-                    var name = json.name;
-                    var version = json.version;
-                    data[name] = version;
-                    if (plugins[name]) {
-                        plugins[name].current = version;
-                        plugins[name].pkg = true;
+            var dirs = fs.readdirSync(module);
+            var data = {};
+            dirs.forEach(function (dir) {
+                try {
+                    var file = path.resolve(module, dir + '/package.json');
+                    if (fs.existsSync(file)) {
+                        var json = require(file);
+                        if (json) {
+                            var name = json.name;
+                            var version = json.version;
+                            data[name] = version;
+                            if (plugins[name]) {
+                                plugins[name].current = version;
+                                plugins[name].pkg = true;
+                            }
+                        }
                     }
+                } catch (err) {
+                    logger.error(err);
                 }
-            }
+            });
         } catch (err) {
-            logger.error(err);
+            // 目录不存在或不可读，忽略错误
+            logger.warn(`Could not read package directory: ${module}`);
         }
-    });
+    }
     return plugins;
 }
 

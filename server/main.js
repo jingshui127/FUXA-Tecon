@@ -279,6 +279,13 @@ settings.httpStatic = settings.httpStatic || www;
 
 if (parsedArgs.port !== undefined) {
     settings.uiPort = parsedArgs.port;
+} else if (process.env.FUXA_PORT) {
+    // 支持从环境变量读取端口（headless模式）
+    settings.uiPort = parseInt(process.env.FUXA_PORT, 10);
+    if (isNaN(settings.uiPort) || settings.uiPort < 1 || settings.uiPort > 65535) {
+        logger.warn(`Invalid FUXA_PORT environment variable: ${process.env.FUXA_PORT}, using default port 1881`);
+        settings.uiPort = 1881;
+    }
 } else {
     if (settings.uiPort === undefined) {
         settings.uiPort = 1881;

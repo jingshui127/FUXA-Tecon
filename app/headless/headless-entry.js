@@ -12,7 +12,33 @@ const { fork } = require('child_process');
  */
 
 async function bootstrap() {
+    // 显示启动信息
+    console.log('');
+    console.log('========================================');
+    console.log('  FUXA 科控物联定制版');
+    console.log('  版本: 1.3.1-tecon');
+    console.log('  技术支持QQ: 2492123056');
+    console.log('========================================');
+    console.log('');
     console.log('FUXA Headless starting...');
+
+    // 解析命令行参数，支持端口切换
+    const args = process.argv.slice(2);
+    let customPort = null;
+    
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] === '-p' || args[i] === '-P') {
+            if (i + 1 < args.length) {
+                customPort = parseInt(args[i + 1], 10);
+                if (isNaN(customPort) || customPort < 1 || customPort > 65535) {
+                    console.error(`Invalid port number: ${args[i + 1]}`);
+                    process.exit(1);
+                }
+                console.log(`Using custom port: ${customPort}`);
+                break;
+            }
+        }
+    }
 
     // 1. Determine the user data directory (similar to Electron app)
     const homeDir = os.homedir();
@@ -42,8 +68,16 @@ async function bootstrap() {
     // 4. Launch the server (fork like Electron does)
     console.log(`Launching FUXA server with userDir: ${fuxaDataDir}`);
     
+    // 准备环境变量
+    const env = { ...process.env, userDir: fuxaDataDir };
+    
+    // 如果有自定义端口，添加到环境变量
+    if (customPort) {
+        env.FUXA_PORT = customPort.toString();
+    }
+    
     const serverProcess = fork(serverPath, [], {
-        env: { ...process.env, userDir: fuxaDataDir },
+        env: env,
         stdio: 'inherit'
     });
 

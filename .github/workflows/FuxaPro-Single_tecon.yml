@@ -59,8 +59,8 @@ jobs:
       run: |
         cat > fuxa-headless/package.json <<EOF
         {
-          "name": "fuxa-headless",
-          "version": "1.0.0",
+          "name": "FuxaPro-Single",
+          "version": "1.3.1-PRO",
           "bin": "main.js",
           "pkg": {
             "assets": [
@@ -88,7 +88,7 @@ jobs:
 
     - name: Prepare artifacts
       run: |
-        mv artifacts/fuxa-headless-win-x64.exe artifacts/FuxaPro-Single-windows-x64.exe || true
+        mv artifacts/FuxaPro-Single-win-x64.exe artifacts/FuxaPro-Single-windows-x64.exe || true
       shell: bash
 
     - name: Upload artifact

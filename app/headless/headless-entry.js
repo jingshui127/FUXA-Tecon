@@ -12,7 +12,12 @@ const { fork } = require('child_process');
  */
 
 async function bootstrap() {
-    console.log('FUXA Headless starting...');
+    console.log('FUXA PRO starting...');
+    console.log('技术支持QQ：2492123056');
+    console.log('FUXA PRO 科控物联定制版');
+    console.log('版本：1.3.1-PRO');
+    console.log('');
+    
 
     // 1. Determine the user data directory (similar to Electron app)
     const homeDir = os.homedir();

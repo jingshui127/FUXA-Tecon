@@ -1,6 +1,6 @@
 {
     "name": "fuxa",
-    "version": "0.0.1",
+    "version": "1.3.1",
     "description": "FUXA is a web-based Process Visualization (SCADA/HMI/Dashboard) software. With FUXA you can create modern process visualizations with individual designs for your machines and real-time data display.",
     "main": "main.js",
     "scripts": {
@@ -21,20 +21,51 @@
     "build": {
         "appId": "com.frangoteam.fuxa",
         "productName": "FUXA",
-        "asar": false,
+        "asar": true,
+        "asarUnpack": [
+            "server/node_modules/sqlite3/**/*",
+            "server/node_modules/better-sqlite3/**/*",
+            "server/node_modules/serialport/**/*",
+            "server/node_modules/@serialport/**/*"
+        ],
         "files": [
             "main.js",
             "*.html",
             "server/**/*",
             "client/dist/**/*",
-            "icons/**/*"
+            "icons/**/*",
+            "!server/**/*.map",
+            "!server/**/*.ts",
+            "!server/**/test/**",
+            "!server/**/tests/**",
+            "!server/**/example/**",
+            "!server/**/examples/**",
+            "!server/**/.*",
+            "!client/dist/**/*.map",
+            "!**/node_modules/.cache/**",
+            "!**/node_modules/.bin/**",
+            "!**/node_modules/*/{test,tests,example,examples,doc,docs,README,readme,readme.md,README.md,CHANGELOG*,changelog*,HISTORY*,history*,LICENSE*,license*,LICENCE*,licence*,.gitignore,.git,.github}/**",
+            "!**/node_modules/*/{.travis.yml,.eslintrc,.eslintrc.js,.eslintrc.json,.eslintrc.yaml,.npmignore,Makefile,Gruntfile,Gulpfile,gulpfile.js,webpack.config.js,karma.conf.js,tsconfig.json,tslint.json}/**",
+            "!**/node_modules/**/src/**",
+            "!**/node_modules/**/build/**",
+            "!**/node_modules/**/dist/**",
+            "!**/*.d.ts",
+            "!**/*.ts",
+            "!**/.DS_Store",
+            "!**/Thumbs.db"
         ],
         "extraResources": [
             {
                 "from": "server/node_modules",
                 "to": "app/server/node_modules",
                 "filter": [
-                    "!**/.bin/**"
+                    "!**/.bin/**",
+                    "!**/.cache/**",
+                    "!**/test/**",
+                    "!**/tests/**",
+                    "!**/*.map",
+                    "!**/*.ts",
+                    "!**/*.d.ts"
                 ]
             }
         ],
@@ -46,9 +77,30 @@
                 {
                     "target": "nsis",
                     "arch": ["x64"]
+                },
+                {
+                    "target": "portable",
+                    "arch": ["x64"]
                 }
             ],
             "icon": "icons/fuxa-logo.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "installerIcon": "icons/fuxa-logo.ico",
+            "uninstallerIcon": "icons/fuxa-logo.ico",
+            "installerHeaderIcon": "icons/fuxa-logo.ico",
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true,
+            "shortcutName": "FUXA",
+            "deleteAppDataOnUninstall": false,
+            "displayLanguageSelector": false,
+            "installerLanguages": ["zh_CN", "en_US"],
+            "language": "2052"
+        },
+        "portable": {
+            "artifactName": "${productName}-${version}-Portable.${ext}"
         },
         "linux": {
             "target": [
@@ -58,7 +110,8 @@
                 }
             ],
             "executableName": "fuxa",
-            "icon": "icons/fuxa-logo.png"
+            "icon": "icons/fuxa-logo.png",
+            "category": "Utility"
         },
         "mac": {
             "target": [
@@ -67,7 +120,24 @@
                     "arch": ["x64", "arm64"]
                 }
             ],
-            "icon": "icons/fuxa-logo.icns"
-        }
+            "icon": "icons/fuxa-logo.icns",
+            "category": "public.app-category.utilities"
+        },
+        "dmg": {
+            "contents": [
+                {
+                    "x": 130,
+                    "y": 220
+                },
+                {
+                    "x": 410,
+                    "y": 220,
+                    "type": "link",
+                    "path": "/Applications"
+                }
+            ]
+        },
+        "compression": "maximum",
+        "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     }
 }

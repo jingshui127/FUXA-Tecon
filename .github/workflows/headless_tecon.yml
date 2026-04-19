@@ -1,0 +1,104 @@
+name: Build FUXA Single (Tecon)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [1.3.1-minimal]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - 'wiki/**'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            arch: x64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+
+
+    - name: Install server dependencies
+      run: |
+        npm config set fetch-retry-maxtimeout 120000
+        npm config set fetch-retries 5
+        npm install --prefer-offline --no-audit
+      working-directory: ./server
+
+    - name: Install client dependencies
+      run: |
+        npm config set fetch-retry-maxtimeout 120000
+        npm config set fetch-retries 5
+        npm install --prefer-offline --no-audit
+      working-directory: ./client
+
+    - name: Build client
+      run: npm run build -- --configuration=production
+      working-directory: ./client
+
+    - name: Setup Headless Package Directory
+      run: |
+        mkdir -p fuxa-single/server
+        mkdir -p fuxa-single/client/dist
+        
+        # Copy everything just like the Electron workflow does
+        cp -r server/. fuxa-single/server/
+        cp -r client/dist/. fuxa-single/client/dist/
+        
+        # Use the entry point as the main file for pkg
+        cp app/headless/headless-entry.js fuxa-single/main.js
+      shell: bash
+
+    - name: Create Package Config
+      run: |
+        cat > fuxa-single/package.json <<EOF
+        {
+          "name": "fuxa-single",
+          "version": "1.3.1",
+          "bin": "main.js",
+          "pkg": {
+            "assets": [
+              "server/**/*",
+              "client/dist/**/*",
+              "_reports/**/*"
+            ],
+            "compression": "Brotli"
+          }
+        }
+        EOF
+      shell: bash
+
+    - name: Install yao-pkg
+      run: npm install -g @yao-pkg/pkg
+
+
+    - name: Build Standalone Binaries (Headless)
+      run: |
+        TARGET="node18-win-x64"
+        pkg fuxa-single/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
+      shell: bash
+      working-directory: .
+
+
+    - name: Prepare artifacts
+      run: |
+        mv artifacts/fuxa-single-win-x64.exe artifacts/FUXA-single-windows-x64.exe || true
+      shell: bash
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FUXA-single-260417-1910
+        path: artifacts/*
+        retention-days: 30

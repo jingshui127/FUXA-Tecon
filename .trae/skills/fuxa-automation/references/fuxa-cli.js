@@ -1014,6 +1014,205 @@ volumes:
   ${base}_images:
 `;
   }
+
+  // ============================================================
+  // 便捷方法：批量操作
+  // ============================================================
+
+  /** 批量创建设备 */
+  async setDevices(devices) {
+    const results = [];
+    for (const device of devices) {
+      try {
+        await this.setDevice(device);
+        results.push({ id: device.id, success: true });
+      } catch (error) {
+        results.push({ id: device.id, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  /** 批量删除设备 */
+  async removeDevices(deviceIds) {
+    const results = [];
+    for (const deviceId of deviceIds) {
+      try {
+        await this.removeDevice(deviceId);
+        results.push({ id: deviceId, success: true });
+      } catch (error) {
+        results.push({ id: deviceId, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  /** 批量读取多个标签值 */
+  async getTagsValue(tagIds) {
+    return this.getTagValue(tagIds);
+  }
+
+  /** 批量写入多个标签值 */
+  async setTagsValue(tags) {
+    return this.setTagValue(tags);
+  }
+
+  /** 批量创建报警 */
+  async setAlarmDefinitions(alarms) {
+    const results = [];
+    for (const alarm of alarms) {
+      try {
+        await this.setAlarmDefinition(alarm);
+        results.push({ id: alarm.id, success: true });
+      } catch (error) {
+        results.push({ id: alarm.id, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  /** 批量创建视图 */
+  async setViews(views) {
+    const results = [];
+    for (const view of views) {
+      try {
+        await this.setView(view);
+        results.push({ id: view.id, success: true });
+      } catch (error) {
+        results.push({ id: view.id, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  // ============================================================
+  // 便捷方法：创建设备模板
+  // ============================================================
+
+  /** 创建 Modbus TCP 设备模板 */
+  static createModbusTCP(config) {
+    const id = config.id || `d_modbus_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Modbus TCP 设备',
+      type: 'ModbusTCP',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100',
+        port: String(config.port || 502),
+        slaveid: String(config.slaveId || 1)
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 Modbus RTU 设备模板 */
+  static createModbusRTU(config) {
+    const id = config.id || `d_modbus_rtu_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Modbus RTU 设备',
+      type: 'ModbusRTU',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        port: config.port || '/dev/ttyUSB0',
+        baudrate: String(config.baudrate || 9600),
+        datatype: config.datatype || 'RTU',
+        slaveid: String(config.slaveId || 1)
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建西门子 S7 设备模板 */
+  static createS7Device(config) {
+    const id = config.id || `d_s7_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'S7 设备',
+      type: 'SiemensS7',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100',
+        rack: config.rack || 0,
+        slot: config.slot || 1
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 OPC UA 设备模板 */
+  static createOPCUA(config) {
+    const id = config.id || `d_opcua_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'OPC UA 设备',
+      type: 'OPCUA',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        endpoint: config.endpoint || 'opc.tcp://192.168.1.100:4840',
+        username: config.username || '',
+        password: config.password || '',
+        securityPolicy: config.securityPolicy || 'None',
+        securityMode: config.securityMode || 'None'
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 MQTT 设备模板 */
+  static createMQTT(config) {
+    const id = config.id || `d_mqtt_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'MQTT 设备',
+      type: 'MQTTclient',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        broker: config.broker || 'mqtt://localhost:1883',
+        clientId: config.clientId || `fuxa_${Date.now()}`,
+        username: config.username || '',
+        password: config.password || '',
+        topics: config.topics || []
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  // ============================================================
+  // 便捷方法：标签模板
+  // ============================================================
+
+  /** 创建 Modbus 标签 */
+  static createModbusTag(config) {
+    return {
+      id: config.id || `t_${Date.now()}`,
+      name: config.name || '标签',
+      type: config.type || 'Int16',
+      address: config.address || '1',
+      memaddress: config.memaddress || '400001',
+      value: config.value || 0,
+      write: config.write !== false
+    };
+  }
+
+  /** 创建 S7 标签 */
+  static createS7Tag(config) {
+    return {
+      id: config.id || `t_${Date.now()}`,
+      name: config.name || '标签',
+      type: config.type || 'Int',
+      address: config.address || '0',
+      memaddress: config.memaddress || 'DB1.DBD0',
+      value: config.value || 0,
+      write: config.write !== false
+    };
+  }
 }
 
 // ============================================================

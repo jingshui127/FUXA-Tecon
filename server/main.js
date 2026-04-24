@@ -227,9 +227,9 @@ logger.init(settings);
 // 初始化 Stardust APM 监控
 try {
     stardustTracker = new StardustTracker({
-        server: 'http://localhost:6600', // 本地 Stardust 服务器
-        appName: 'FUXA-Pro-科控物联',
-        enabled: false // 暂时禁用，待配置正确的服务器地址后启用
+        server: 'http://localhost:6600',
+        appName: 'fuxaScada',
+        enabled: false
     });
     stardustTracker.start();
 } catch (error) {

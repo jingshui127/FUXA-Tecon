@@ -642,6 +642,478 @@ class FUXAClient {
   async uninstallPlugin(pluginId) {
     return this._delete(`/api/plugins?param=${encodeURIComponent(pluginId)}`);
   }
+
+  // ============================================================
+  // 18. 事件历史 (Events History)
+  // ============================================================
+
+  /** 获取事件历史 */
+  async getEventsHistory(query) {
+    const params = new URLSearchParams();
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        params.set(key, typeof value === 'object' ? JSON.stringify(value) : value);
+      }
+    }
+    return this._get(`/api/events?${params.toString()}`);
+  }
+
+  /** 清除事件历史 */
+  async clearEventsHistory() {
+    return this._post('/api/eventsClear', { params: {} });
+  }
+
+  // ============================================================
+  // 19. 设备属性 (Device Property)
+  // ============================================================
+
+  /** 获取设备属性（如安全配置） */
+  async getDeviceProperty(query) {
+    const params = new URLSearchParams();
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        params.set(key, value);
+      }
+    }
+    return this._get(`/api/device?${params.toString()}`);
+  }
+
+  /** 设置设备属性 */
+  async setDeviceProperty(params) {
+    return this._post('/api/device', { params });
+  }
+
+  // ============================================================
+  // 20. 心跳 (Heartbeat)
+  // ============================================================
+
+  /** 心跳检测（刷新 Token） */
+  async heartbeat() {
+    return this._post('/api/heartbeat', { params: {} });
+  }
+
+  // ============================================================
+  // 21. 报表目录 (Reports Directory)
+  // ============================================================
+
+  /** 获取报表文件列表 */
+  async getReportFiles(name) {
+    const query = name ? `?name=${encodeURIComponent(name)}` : '';
+    return this._get(`/api/reportsdir${query}`);
+  }
+
+  // ============================================================
+  // 22. 文本管理 (Texts)
+  // ============================================================
+
+  /** 获取多语言文本 */
+  async getTexts() {
+    const project = await this.getProject();
+    return project.texts || [];
+  }
+
+  /** 添加/更新文本 */
+  async setText(text) {
+    return this.updateProjectData('set-text', text);
+  }
+
+  /** 删除文本 */
+  async removeText(textName) {
+    return this.updateProjectData('del-text', { name: textName });
+  }
+
+  // ============================================================
+  // 23. 图表管理 (Charts/Graphs)
+  // ============================================================
+
+  /** 设置图表 */
+  async setCharts(charts) {
+    return this.updateProjectData('charts', charts);
+  }
+
+  /** 设置图形 */
+  async setGraphs(graphs) {
+    return this.updateProjectData('graphs', graphs);
+  }
+
+  // ============================================================
+  // 24. 语言管理 (Languages)
+  // ============================================================
+
+  /** 设置语言配置 */
+  async setLanguages(languages) {
+    return this.updateProjectData('languages', languages);
+  }
+
+  // ============================================================
+  // 25. 地图位置 (Maps Location)
+  // ============================================================
+
+  /** 设置地图位置 */
+  async setMapsLocation(location) {
+    return this.updateProjectData('set-maps-location', location);
+  }
+
+  /** 删除地图位置 */
+  async removeMapsLocation(locationId) {
+    return this.updateProjectData('del-maps-location', { id: locationId });
+  }
+
+  // ============================================================
+  // 26. 视图树 (View Tree)
+  // ============================================================
+
+  /** 设置视图树 */
+  async setViewTree(viewtree) {
+    return this.updateProjectData('viewtree', viewtree);
+  }
+
+  // ============================================================
+  // 27. 客户端访问 (Client Access)
+  // ============================================================
+
+  /** 设置客户端访问 */
+  async setClientAccess(clientAccess) {
+    return this.updateProjectData('client-access', clientAccess);
+  }
+
+  // ============================================================
+  // 28. 批量操作 (Batch Operations)
+  // ============================================================
+
+  /** 批量创建设备 */
+  async setDevices(devices) {
+    const results = [];
+    for (const device of devices) {
+      try {
+        await this.setDevice(device);
+        results.push({ id: device.id, success: true });
+      } catch (error) {
+        results.push({ id: device.id, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  /** 批量删除设备 */
+  async removeDevices(deviceIds) {
+    const results = [];
+    for (const deviceId of deviceIds) {
+      try {
+        await this.removeDevice(deviceId);
+        results.push({ id: deviceId, success: true });
+      } catch (error) {
+        results.push({ id: deviceId, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  /** 批量读取多个标签值 */
+  async getTagsValue(tagIds) {
+    return this.getTagValue(tagIds);
+  }
+
+  /** 批量写入多个标签值 */
+  async setTagsValue(tags) {
+    return this.setTagValue(tags);
+  }
+
+  /** 批量创建报警 */
+  async setAlarmDefinitions(alarms) {
+    const results = [];
+    for (const alarm of alarms) {
+      try {
+        await this.setAlarmDefinition(alarm);
+        results.push({ id: alarm.id, success: true });
+      } catch (error) {
+        results.push({ id: alarm.id, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  /** 批量创建视图 */
+  async setViews(views) {
+    const results = [];
+    for (const view of views) {
+      try {
+        await this.setView(view);
+        results.push({ id: view.id, success: true });
+      } catch (error) {
+        results.push({ id: view.id, success: false, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  // ============================================================
+  // 29. 设备模板 (Device Templates)
+  // ============================================================
+
+  /** 创建 Modbus TCP 设备模板 */
+  static createModbusTCP(config) {
+    const id = config.id || `d_modbus_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Modbus TCP 设备',
+      type: 'ModbusTCP',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100',
+        port: String(config.port || 502),
+        slaveid: String(config.slaveId || 1)
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 Modbus RTU 设备模板 */
+  static createModbusRTU(config) {
+    const id = config.id || `d_modbus_rtu_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Modbus RTU 设备',
+      type: 'ModbusRTU',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        port: config.port || '/dev/ttyUSB0',
+        baudrate: String(config.baudrate || 9600),
+        datatype: config.datatype || 'RTU',
+        slaveid: String(config.slaveId || 1)
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建西门子 S7 设备模板 */
+  static createS7Device(config) {
+    const id = config.id || `d_s7_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'S7 设备',
+      type: 'SiemensS7',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100',
+        rack: config.rack || 0,
+        slot: config.slot || 1
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 OPC UA 设备模板 */
+  static createOPCUA(config) {
+    const id = config.id || `d_opcua_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'OPC UA 设备',
+      type: 'OPCUA',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        endpoint: config.endpoint || 'opc.tcp://192.168.1.100:4840',
+        username: config.username || '',
+        password: config.password || '',
+        securityPolicy: config.securityPolicy || 'None',
+        securityMode: config.securityMode || 'None'
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 MQTT 设备模板 */
+  static createMQTT(config) {
+    const id = config.id || `d_mqtt_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'MQTT 设备',
+      type: 'MQTTclient',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        broker: config.broker || 'mqtt://localhost:1883',
+        clientId: config.clientId || `fuxa_${Date.now()}`,
+        username: config.username || '',
+        password: config.password || '',
+        topics: config.topics || []
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 BACnet 设备模板 */
+  static createBACnet(config) {
+    const id = config.id || `d_bacnet_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'BACnet 设备',
+      type: 'BACnet',
+      enabled: config.enabled !== false,
+      polling: config.polling || 5000,
+      property: {
+        address: config.address || '192.168.1.100',
+        port: String(config.port || 47808)
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 Ethernet/IP 设备模板（罗克韦尔/AB PLC） */
+  static createEthernetIP(config) {
+    const id = config.id || `d_eip_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Ethernet/IP 设备',
+      type: 'EthernetIP',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100'
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建三菱 MELSEC 设备模板 */
+  static createMELSEC(config) {
+    const id = config.id || `d_melsec_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'MELSEC 设备',
+      type: 'MELSEC',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100',
+        port: String(config.port || 5007),
+        protocol: config.protocol || 'TCP'
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 ADS 设备模板（倍福 TwinCAT） */
+  static createADS(config) {
+    const id = config.id || `d_ads_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'ADS 设备',
+      type: 'ADSclient',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '192.168.1.100',
+        netId: config.netId || '192.168.1.100.1.1',
+        port: String(config.port || 851)
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 Web API 设备模板 */
+  static createWebAPI(config) {
+    const id = config.id || `d_webapi_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Web API 设备',
+      type: 'WebAPI',
+      enabled: config.enabled !== false,
+      polling: config.polling || 5000,
+      property: {
+        address: config.address || 'http://localhost/api',
+        method: config.method || 'GET',
+        headers: config.headers || {},
+        body: config.body || ''
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 FUXA Server 设备模板（内部通信） */
+  static createFuxaServer(config) {
+    const id = config.id || `d_fuxaserver_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'FUXA Server',
+      type: 'FuxaServer',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {},
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 ODBC 设备模板 */
+  static createODBC(config) {
+    const id = config.id || `d_odbc_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'ODBC 设备',
+      type: 'ODBC',
+      enabled: config.enabled !== false,
+      polling: config.polling || 5000,
+      property: {
+        connectionString: config.connectionString || 'DSN=MyDSN;',
+        query: config.query || 'SELECT * FROM table'
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  /** 创建 Redis 设备模板 */
+  static createRedis(config) {
+    const id = config.id || `d_redis_${Date.now()}`;
+    return {
+      id,
+      name: config.name || 'Redis 设备',
+      type: 'REDIS',
+      enabled: config.enabled !== false,
+      polling: config.polling || 1000,
+      property: {
+        address: config.address || '127.0.0.1',
+        port: String(config.port || 6379),
+        db: String(config.db || 0),
+        username: config.username || '',
+        password: config.password || ''
+      },
+      tags: config.tags || {}
+    };
+  }
+
+  // ============================================================
+  // 30. 标签模板 (Tag Templates)
+  // ============================================================
+
+  /** 创建 Modbus 标签 */
+  static createModbusTag(config) {
+    return {
+      id: config.id || `t_${Date.now()}`,
+      name: config.name || '标签',
+      type: config.type || 'Int16',
+      address: config.address || '1',
+      memaddress: config.memaddress || '400001',
+      value: config.value || 0,
+      write: config.write !== false
+    };
+  }
+
+  /** 创建 S7 标签 */
+  static createS7Tag(config) {
+    return {
+      id: config.id || `t_${Date.now()}`,
+      name: config.name || '标签',
+      type: config.type || 'Int',
+      address: config.address || '0',
+      memaddress: config.memaddress || 'DB1.DBD0',
+      value: config.value || 0,
+      write: config.write !== false
+    };
+  }
 }
 
 // ============================================================
@@ -691,7 +1163,7 @@ class FUXADeployer {
    * 返回部署命令列表（按顺序执行）
    * @returns {{ desc: string, cmd: string }[]}
    */
-  deployCommands() {
+  getDeployCommands() {
     switch (this.method) {
       case 'docker':    return this._deployDocker();
       case 'source':    return this._deploySource();
@@ -704,7 +1176,7 @@ class FUXADeployer {
    * 返回卸载命令列表（按顺序执行）
    * @returns {{ desc: string, cmd: string }[]}
    */
-  uninstallCommands() {
+  getUninstallCommands() {
     switch (this.method) {
       case 'docker':    return this._uninstallDocker();
       case 'source':    return this._uninstallSource();
@@ -720,7 +1192,7 @@ class FUXADeployer {
    * NPM: npm update -g + 重启进程
    * @returns {{ desc: string, cmd: string }[]}
    */
-  updateCommands() {
+  getUpdateCommands() {
     switch (this.method) {
       case 'docker':    return this._updateDocker();
       case 'source':    return this._updateSource();
@@ -733,7 +1205,7 @@ class FUXADeployer {
    * 返回状态检查命令
    * @returns {{ desc: string, cmd: string }[]}
    */
-  statusCommands() {
+  getStatusCommands() {
     switch (this.method) {
       case 'docker': return this._statusDocker();
       case 'source': return this._statusSource();
@@ -741,6 +1213,12 @@ class FUXADeployer {
       default:       return [];
     }
   }
+  
+  // 兼容旧方法名
+  deployCommands() { return this.getDeployCommands(); }
+  uninstallCommands() { return this.getUninstallCommands(); }
+  updateCommands() { return this.getUpdateCommands(); }
+  statusCommands() { return this.getStatusCommands(); }
 
   // ---- Docker 部署 ----
 
@@ -1014,205 +1492,6 @@ volumes:
   ${base}_images:
 `;
   }
-
-  // ============================================================
-  // 便捷方法：批量操作
-  // ============================================================
-
-  /** 批量创建设备 */
-  async setDevices(devices) {
-    const results = [];
-    for (const device of devices) {
-      try {
-        await this.setDevice(device);
-        results.push({ id: device.id, success: true });
-      } catch (error) {
-        results.push({ id: device.id, success: false, error: error.message });
-      }
-    }
-    return results;
-  }
-
-  /** 批量删除设备 */
-  async removeDevices(deviceIds) {
-    const results = [];
-    for (const deviceId of deviceIds) {
-      try {
-        await this.removeDevice(deviceId);
-        results.push({ id: deviceId, success: true });
-      } catch (error) {
-        results.push({ id: deviceId, success: false, error: error.message });
-      }
-    }
-    return results;
-  }
-
-  /** 批量读取多个标签值 */
-  async getTagsValue(tagIds) {
-    return this.getTagValue(tagIds);
-  }
-
-  /** 批量写入多个标签值 */
-  async setTagsValue(tags) {
-    return this.setTagValue(tags);
-  }
-
-  /** 批量创建报警 */
-  async setAlarmDefinitions(alarms) {
-    const results = [];
-    for (const alarm of alarms) {
-      try {
-        await this.setAlarmDefinition(alarm);
-        results.push({ id: alarm.id, success: true });
-      } catch (error) {
-        results.push({ id: alarm.id, success: false, error: error.message });
-      }
-    }
-    return results;
-  }
-
-  /** 批量创建视图 */
-  async setViews(views) {
-    const results = [];
-    for (const view of views) {
-      try {
-        await this.setView(view);
-        results.push({ id: view.id, success: true });
-      } catch (error) {
-        results.push({ id: view.id, success: false, error: error.message });
-      }
-    }
-    return results;
-  }
-
-  // ============================================================
-  // 便捷方法：创建设备模板
-  // ============================================================
-
-  /** 创建 Modbus TCP 设备模板 */
-  static createModbusTCP(config) {
-    const id = config.id || `d_modbus_${Date.now()}`;
-    return {
-      id,
-      name: config.name || 'Modbus TCP 设备',
-      type: 'ModbusTCP',
-      enabled: config.enabled !== false,
-      polling: config.polling || 1000,
-      property: {
-        address: config.address || '192.168.1.100',
-        port: String(config.port || 502),
-        slaveid: String(config.slaveId || 1)
-      },
-      tags: config.tags || {}
-    };
-  }
-
-  /** 创建 Modbus RTU 设备模板 */
-  static createModbusRTU(config) {
-    const id = config.id || `d_modbus_rtu_${Date.now()}`;
-    return {
-      id,
-      name: config.name || 'Modbus RTU 设备',
-      type: 'ModbusRTU',
-      enabled: config.enabled !== false,
-      polling: config.polling || 1000,
-      property: {
-        port: config.port || '/dev/ttyUSB0',
-        baudrate: String(config.baudrate || 9600),
-        datatype: config.datatype || 'RTU',
-        slaveid: String(config.slaveId || 1)
-      },
-      tags: config.tags || {}
-    };
-  }
-
-  /** 创建西门子 S7 设备模板 */
-  static createS7Device(config) {
-    const id = config.id || `d_s7_${Date.now()}`;
-    return {
-      id,
-      name: config.name || 'S7 设备',
-      type: 'SiemensS7',
-      enabled: config.enabled !== false,
-      polling: config.polling || 1000,
-      property: {
-        address: config.address || '192.168.1.100',
-        rack: config.rack || 0,
-        slot: config.slot || 1
-      },
-      tags: config.tags || {}
-    };
-  }
-
-  /** 创建 OPC UA 设备模板 */
-  static createOPCUA(config) {
-    const id = config.id || `d_opcua_${Date.now()}`;
-    return {
-      id,
-      name: config.name || 'OPC UA 设备',
-      type: 'OPCUA',
-      enabled: config.enabled !== false,
-      polling: config.polling || 1000,
-      property: {
-        endpoint: config.endpoint || 'opc.tcp://192.168.1.100:4840',
-        username: config.username || '',
-        password: config.password || '',
-        securityPolicy: config.securityPolicy || 'None',
-        securityMode: config.securityMode || 'None'
-      },
-      tags: config.tags || {}
-    };
-  }
-
-  /** 创建 MQTT 设备模板 */
-  static createMQTT(config) {
-    const id = config.id || `d_mqtt_${Date.now()}`;
-    return {
-      id,
-      name: config.name || 'MQTT 设备',
-      type: 'MQTTclient',
-      enabled: config.enabled !== false,
-      polling: config.polling || 1000,
-      property: {
-        broker: config.broker || 'mqtt://localhost:1883',
-        clientId: config.clientId || `fuxa_${Date.now()}`,
-        username: config.username || '',
-        password: config.password || '',
-        topics: config.topics || []
-      },
-      tags: config.tags || {}
-    };
-  }
-
-  // ============================================================
-  // 便捷方法：标签模板
-  // ============================================================
-
-  /** 创建 Modbus 标签 */
-  static createModbusTag(config) {
-    return {
-      id: config.id || `t_${Date.now()}`,
-      name: config.name || '标签',
-      type: config.type || 'Int16',
-      address: config.address || '1',
-      memaddress: config.memaddress || '400001',
-      value: config.value || 0,
-      write: config.write !== false
-    };
-  }
-
-  /** 创建 S7 标签 */
-  static createS7Tag(config) {
-    return {
-      id: config.id || `t_${Date.now()}`,
-      name: config.name || '标签',
-      type: config.type || 'Int',
-      address: config.address || '0',
-      memaddress: config.memaddress || 'DB1.DBD0',
-      value: config.value || 0,
-      write: config.write !== false
-    };
-  }
 }
 
 // ============================================================
@@ -1220,3 +1499,117 @@ volumes:
 // ============================================================
 
 module.exports = { FUXAClient, FUXAHttpError, FUXADeployer };
+
+// ============================================================
+// 数据类型参考（来自 FUXA 源码）
+// ============================================================
+
+/**
+ * Modbus 数据类型（来自 server/runtime/devices/modbus/datatypes.js）
+ *
+ * | 类型        | 字节数 | 说明            |
+ * |------------|-------|-----------------|
+ * | Bool       | 1     | 布尔值           |
+ * | Int16      | 2     | 有符号 16 位整数  |
+ * | UInt16     | 2     | 无符号 16 位整数  |
+ * | Int32      | 4     | 有符号 32 位整数  |
+ * | UInt32     | 4     | 无符号 32 位整数  |
+ * | Float32    | 4     | 32 位浮点数      |
+ * | Float64    | 8     | 64 位双精度浮点   |
+ * | Int64      | 8     | 有符号 64 位整数  |
+ * | Int16LE    | 2     | 小端有符号 16 位  |
+ * | UInt16LE   | 2     | 小端无符号 16 位  |
+ * | Int32LE    | 4     | 小端有符号 32 位  |
+ * | UInt32LE   | 4     | 小端无符号 32 位  |
+ * | Float32LE  | 4     | 小端 32 位浮点    |
+ * | Float64LE  | 8     | 小端 64 位双精度  |
+ * | Int32MLE   | 4     | 中小端有符号 32位 |
+ * | UInt32MLE  | 4     | 中小端无符号 32位 |
+ * | Float32MLE | 4     | 中小端 32 位浮点  |
+ * | String     | 1     | ASCII 字符串     |
+ *
+ * Modbus 寄存器地址映射：
+ * | 功能码 | 地址范围      | 说明           |
+ * |-------|--------------|----------------|
+ * | 01    | 000001-099999 | 线圈 (Coil)     |
+ * | 02    | 100001-199999 | 离散输入 (DI)   |
+ * | 03    | 300001-399999 | 输入寄存器 (IR) |
+ * | 04    | 400001-499999 | 保持寄存器 (HR) |
+ */
+
+/**
+ * S7 数据类型（来自 server/runtime/devices/s7/datatypes.js）
+ *
+ * | 类型   | 字节数 | S7WordLen     | 说明            |
+ * |-------|-------|---------------|-----------------|
+ * | BOOL  | 1     | S7WLBit       | 布尔值           |
+ * | BYTE  | 1     | S7WLByte      | 无符号 8 位      |
+ * | WORD  | 2     | S7WLWord      | 无符号 16 位     |
+ * | DWORD | 4     | S7WLDWord     | 无符号 32 位     |
+ * | CHAR  | 1     | S7WLByte      | ASCII 字符      |
+ * | INT   | 2     | S7WLWord      | 有符号 16 位整数 |
+ * | DINT  | 4     | S7WLDWord     | 有符号 32 位整数 |
+ * | REAL  | 4     | S7WLReal      | 32 位浮点数      |
+ *
+ * S7 地址格式示例：
+ * | 地址           | 说明                    |
+ * |---------------|------------------------|
+ * | DB1.DBD0      | DB1 的 DBD0 (DINT/REAL) |
+ * | DB1.DBW0      | DB1 的 DBW0 (INT/WORD)  |
+ * | DB1.DBX0.0    | DB1 的 DBX0.0 (BOOL)    |
+ * | DB1.DBB0      | DB1 的 DBB0 (BYTE/CHAR) |
+ * | I0.0          | 输入位                  |
+ * | Q0.0          | 输出位                  |
+ * | M0.0          | 标志位                  |
+ */
+
+/**
+ * FUXA 支持的设备驱动（来自 server/runtime/devices/device.js DeviceEnum）
+ *
+ * | 驱动类型     | 标识          | 典型用途              |
+ * |-------------|--------------|----------------------|
+ * | Siemens S7  | SiemensS7    | 西门子 S7-300/400/1200/1500 |
+ * | OPC UA      | OPCUA        | 标准化工业互联         |
+ * | Modbus TCP  | ModbusTCP    | PLC、传感器           |
+ * | Modbus RTU  | ModbusRTU    | 串口设备              |
+ * | BACnet      | BACnet       | 楼宇自动化            |
+ * | Web API     | WebAPI       | HTTP REST 接口        |
+ * | MQTT Client | MQTTclient   | IoT 消息              |
+ * | Ethernet/IP | EthernetIP   | AB/罗克韦尔 PLC       |
+ * | FUXA Server | FuxaServer   | FUXA 内部通信          |
+ * | ODBC        | ODBC         | 数据库连接            |
+ * | ADS         | ADSclient    | 倍福 TwinCAT          |
+ * | GPIO        | GPIO         | 树莓派 GPIO           |
+ * | WebCam      | WebCam       | 网络摄像头            |
+ * | MELSEC      | MELSEC       | 三菱 PLC (MC 协议)    |
+ * | Redis       | REDIS        | 缓存/消息             |
+ */
+
+/**
+ * FUXA ProjectData 命令类型（来自 server/runtime/project/index.js ProjectDataCmdType）
+ *
+ * | 命令                  | 说明            |
+ * |---------------------|-----------------|
+ * | set-device          | 创建/更新设备     |
+ * | del-device          | 删除设备         |
+ * | set-view            | 创建/更新视图     |
+ * | del-view            | 删除视图         |
+ * | layout              | 设置布局         |
+ * | viewtree            | 设置视图树       |
+ * | charts              | 设置图表         |
+ * | graphs              | 设置图形         |
+ * | languages           | 设置语言         |
+ * | client-access       | 设置客户端访问   |
+ * | set-text            | 添加/更新文本    |
+ * | del-text            | 删除文本         |
+ * | set-alarm           | 添加/更新报警    |
+ * | del-alarm           | 删除报警         |
+ * | set-notification    | 添加/更新通知    |
+ * | del-notification    | 删除通知         |
+ * | set-script          | 添加/更新脚本    |
+ * | del-script          | 删除脚本         |
+ * | set-report          | 添加/更新报表    |
+ * | del-report          | 删除报表         |
+ * | set-maps-location   | 添加/更新地图位置 |
+ * | del-maps-location   | 删除地图位置     |
+ */

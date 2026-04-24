@@ -22,6 +22,10 @@ description: "FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管�
 | 连接 Modbus 设备 | connect Modbus | 添加 Modbus TCP/RTU 设备 |
 | 连接 S7 设备 | connect S7 | 添加西门子 S7 设备 |
 | 连接 OPC UA | connect OPC UA | 添加 OPC UA 设备 |
+| 连接 BACnet | connect BACnet | 添加 BACnet 楼宇设备 |
+| 连接三菱 PLC | connect MELSEC | 添加三菱 MELSEC 设备 |
+| 连接 AB PLC | connect EthernetIP | 添加罗克韦尔 PLC |
+| 连接倍福 | connect ADS | 添加倍福 TwinCAT |
 | 添加设备 | add device | 创建设备 |
 | 删除设备 | delete device | 删除设备 |
 | 读取标签 | read tag | 读取标签值 |
@@ -31,6 +35,10 @@ description: "FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管�
 | 创建视图 | create view | 创建组态视图 |
 | 查询历史 | query history | 查询历史数据 |
 | 部署 FUXA | deploy FUXA | 部署 FUXA 服务 |
+| 查看日志 | view logs | 查看系统日志 |
+| 查看设备状态 | device status | 查看设备连接状态 |
+| 配置调度 | config scheduler | 配置定时调度 |
+| 管理用户 | manage users | 用户/角色管理 |
 
 ## 使用方法
 
@@ -58,6 +66,200 @@ description: "FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管�
 - 用户名和密码（如果启用了认证）
 - 或 API Key
 
+## 完整 API 端点列表
+
+### 认证
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/signin` | 登录 |
+| POST | `/api/signout` | 登出 |
+| POST | `/api/refresh` | 刷新 Token |
+| POST | `/api/heartbeat` | 心跳检测 |
+
+### 项目数据
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/project` | 获取项目配置 |
+| POST | `/api/project` | 更新项目 |
+| POST | `/api/projectData` | 更新项目部分数据 |
+| GET | `/api/projectdemo` | 获取演示项目 |
+
+### 设备与标签
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/device` | 获取设备属性 |
+| POST | `/api/device` | 设置设备属性 |
+| GET | `/api/getTagValue` | 读取标签值 |
+| POST | `/api/setTagValue` | 写入标签值 |
+
+### 报警与事件
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/alarms` | 获取当前报警 |
+| GET | `/api/alarmsHistory` | 获取报警历史 |
+| POST | `/api/alarmack` | 确认报警 |
+| POST | `/api/alarmsClear` | 清除报警 |
+| GET | `/api/events` | 获取事件历史 |
+| POST | `/api/eventsClear` | 清除事件历史 |
+
+### DAQ 历史数据
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/daq` | 查询历史数据 |
+
+### 脚本
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/runscript` | 执行脚本 |
+| POST | `/api/runSysFunction` | 执行系统函数 |
+
+### 调度器
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/scheduler` | 获取调度器 |
+| POST | `/api/scheduler` | 设置调度器 |
+| DELETE | `/api/scheduler` | 删除调度器 |
+
+### 用户与权限
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/users` | 获取用户列表 |
+| POST | `/api/users` | 创建/更新用户 |
+| DELETE | `/api/users` | 删除用户 |
+| GET | `/api/roles` | 获取角色列表 |
+| POST | `/api/roles` | 创建/更新角色 |
+| DELETE | `/api/roles` | 删除角色 |
+| GET | `/api/apikeys` | 获取 API Key 列表 |
+| POST | `/api/apikeys` | 创建/更新 API Key |
+| DELETE | `/api/apikeys` | 删除 API Key |
+
+### 诊断
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/settings` | 获取系统设置 |
+| POST | `/api/settings` | 更新系统设置 |
+| GET | `/api/version` | 获取版本号 |
+| GET | `/api/logsdir` | 获取日志文件列表 |
+| GET | `/api/logs` | 获取日志内容 |
+| POST | `/api/sendmail` | 发送测试邮件 |
+| GET | `/api/reportsdir` | 获取报表文件列表 |
+
+### 资源
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/upload` | 上传文件 |
+| GET | `/api/resources/images` | 获取图片列表 |
+| GET | `/api/resources/resources` | 获取资源列表 |
+| GET | `/api/resources/templates` | 获取模板列表 |
+| GET | `/api/resources/widgets` | 获取 Widget 列表 |
+
+### 插件
+
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/plugins` | 获取插件列表 |
+| POST | `/api/plugins` | 安装插件 |
+| DELETE | `/api/plugins` | 卸载插件 |
+
+## 支持的设备驱动（16 种）
+
+| 驱动类型 | 标识 | 典型用途 | 模板方法 |
+|----------|------|----------|----------|
+| Modbus TCP | `ModbusTCP` | PLC、传感器 | `createModbusTCP()` |
+| Modbus RTU | `ModbusRTU` | 串口设备 | `createModbusRTU()` |
+| Siemens S7 | `SiemensS7` | 西门子 PLC | `createS7Device()` |
+| OPC UA | `OPCUA` | 标准化工业互联 | `createOPCUA()` |
+| BACnet | `BACnet` | 楼宇自动化 | `createBACnet()` |
+| MQTT Client | `MQTTclient` | IoT 消息 | `createMQTT()` |
+| Web API | `WebAPI` | HTTP REST 接口 | `createWebAPI()` |
+| Ethernet/IP | `EthernetIP` | AB/罗克韦尔 PLC | `createEthernetIP()` |
+| MELSEC | `MELSEC` | 三菱 PLC (MC 协议) | `createMELSEC()` |
+| ADS | `ADSclient` | 倍福 TwinCAT | `createADS()` |
+| FUXA Server | `FuxaServer` | FUXA 内部通信 | `createFuxaServer()` |
+| ODBC | `ODBC` | 数据库连接 | `createODBC()` |
+| Redis | `REDIS` | 缓存/消息 | `createRedis()` |
+| GPIO | `GPIO` | 树莓派 GPIO | - |
+| WebCam | `WebCam` | 网络摄像头 | - |
+
+## 数据类型参考
+
+### Modbus 数据类型
+
+| 类型 | 字节数 | 说明 |
+|------|--------|------|
+| Bool | 1 | 布尔值 |
+| Int16 | 2 | 有符号 16 位整数 |
+| UInt16 | 2 | 无符号 16 位整数 |
+| Int32 | 4 | 有符号 32 位整数 |
+| UInt32 | 4 | 无符号 32 位整数 |
+| Float32 | 4 | 32 位浮点数 |
+| Float64 | 8 | 64 位双精度浮点 |
+| String | 1 | ASCII 字符串 |
+
+### Modbus 寄存器地址映射
+
+| 功能码 | 地址范围 | 说明 |
+|--------|----------|------|
+| 01 | 000001-099999 | 线圈 (Coil) |
+| 02 | 100001-199999 | 离散输入 (DI) |
+| 03 | 300001-399999 | 输入寄存器 (IR) |
+| 04 | 400001-499999 | 保持寄存器 (HR) |
+
+### S7 数据类型
+
+| 类型 | 字节数 | 说明 |
+|------|--------|------|
+| BOOL | 1 | 布尔值 |
+| BYTE | 1 | 无符号 8 位 |
+| WORD | 2 | 无符号 16 位 |
+| DWORD | 4 | 无符号 32 位 |
+| INT | 2 | 有符号 16 位整数 |
+| DINT | 4 | 有符号 32 位整数 |
+| REAL | 4 | 32 位浮点数 |
+| CHAR | 1 | ASCII 字符 |
+
+### S7 地址格式
+
+| 地址 | 说明 |
+|------|------|
+| DB1.DBD0 | DB1 的 DBD0 (DINT/REAL) |
+| DB1.DBW0 | DB1 的 DBW0 (INT/WORD) |
+| DB1.DBX0.0 | DB1 的 DBX0.0 (BOOL) |
+| I0.0 | 输入位 |
+| Q0.0 | 输出位 |
+| M0.0 | 标志位 |
+
+## ProjectData 命令类型
+
+| 命令 | 说明 |
+|------|------|
+| set-device | 创建/更新设备 |
+| del-device | 删除设备 |
+| set-view | 创建/更新视图 |
+| del-view | 删除视图 |
+| layout | 设置布局 |
+| viewtree | 设置视图树 |
+| charts | 设置图表 |
+| graphs | 设置图形 |
+| languages | 设置语言 |
+| client-access | 设置客户端访问 |
+| set-text / del-text | 添加/删除文本 |
+| set-alarm / del-alarm | 添加/删除报警 |
+| set-notification / del-notification | 添加/删除通知 |
+| set-script / del-script | 添加/删除脚本 |
+| set-report / del-report | 添加/删除报表 |
+| set-maps-location / del-maps-location | 添加/删除地图位置 |
+
 ## 快速使用
 
 ### 1. 基础连接
@@ -65,180 +267,79 @@ description: "FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管�
 ```javascript
 const { FUXAClient } = require('./references/fuxa-cli');
 
-// 创建客户端
 const client = new FUXAClient({
   url: 'http://192.168.1.100:1881',
   username: 'admin',
   password: 'password'
 });
 
-// 登录
 await client.login();
 ```
 
-### 2. 批量添加设备
+### 2. 使用模板快速创建设备
+
+```javascript
+// Modbus TCP
+const device = FUXAClient.createModbusTCP({
+  id: 'd_modbus_01',
+  name: '温湿度传感器',
+  address: '192.168.1.100',
+  port: 502,
+  slaveId: 1,
+  tags: {
+    't_temp': FUXAClient.createModbusTag({ id: 't_temp', name: '温度', type: 'Float32', memaddress: '400001' }),
+    't_humi': FUXAClient.createModbusTag({ id: 't_humi', name: '湿度', type: 'Float32', memaddress: '400003' })
+  }
+});
+await client.setDevice(device);
+
+// S7
+const s7 = FUXAClient.createS7Device({
+  id: 'd_s7_01', name: 'S7-1500', address: '192.168.1.200', rack: 0, slot: 1,
+  tags: {
+    't_speed': FUXAClient.createS7Tag({ id: 't_speed', name: '速度', type: 'REAL', memaddress: 'DB1.DBD0' })
+  }
+});
+await client.setDevice(s7);
+
+// OPC UA
+const opcua = FUXAClient.createOPCUA({
+  id: 'd_opcua_01', name: 'OPC UA Server', endpoint: 'opc.tcp://192.168.1.100:4840'
+});
+await client.setDevice(opcua);
+```
+
+### 3. 批量操作
 
 ```javascript
 // 批量创建设备
-const devices = [
-  {
-    id: 'd_modbus_01',
-    name: 'Modbus PLC 1',
-    type: 'ModbusTCP',
-    property: { address: '192.168.1.100', port: '502', slaveid: '1' },
-    tags: { 't_temp': { id: 't_temp', name: '温度', type: 'Float32', memaddress: '400001' } }
-  },
-  {
-    id: 'd_modbus_02',
-    name: 'Modbus PLC 2',
-    type: 'ModbusTCP',
-    property: { address: '192.168.1.101', port: '502', slaveid: '1' },
-    tags: { 't_humi': { id: 't_humi', name: '湿度', type: 'Float32', memaddress: '400001' } }
-  }
-];
+const results = await client.setDevices([
+  FUXAClient.createModbusTCP({ name: '设备1', address: '192.168.1.100' }),
+  FUXAClient.createModbusTCP({ name: '设备2', address: '192.168.1.101' })
+]);
 
-// 批量创建
-for (const device of devices) {
-  await client.setDevice(device);
-}
-```
-
-### 3. 批量读写标签
-
-```javascript
 // 批量读取标签
 const values = await client.getTagValue(['t_temp', 't_humi', 't_pressure']);
 
 // 批量写入标签
 await client.setTagValue([
   { id: 't_temp', value: 25.5 },
-  { id: 't_humi', value: 60 },
-  { id: 't_pressure', value: 1.2 }
+  { id: 't_humi', value: 60 }
 ]);
 ```
 
-## 设备模板
-
-### Modbus TCP 模板
+### 4. 设备状态监控
 
 ```javascript
-const modbusTemplate = {
-  id: 'd_modbus_xxx',
-  name: 'Modbus 设备名称',
-  type: 'ModbusTCP',
-  enabled: true,
-  polling: 1000,
-  property: {
-    address: '192.168.1.100',  // IP 地址
-    port: '502',               // 端口
-    slaveid: '1'              // 从站 ID
-  },
-  tags: {}
-};
-```
-
-### 西门子 S7 模板
-
-```javascript
-const s7Template = {
-  id: 'd_s7_xxx',
-  name: 'S7 设备名称',
-  type: 'SiemensS7',
-  enabled: true,
-  polling: 1000,
-  property: {
-    address: '192.168.1.100',  // IP 地址
-    rack: 0,                    // 机架号
-    slot: 1                     // 槽号
-  },
-  tags: {}
-};
-```
-
-### OPC UA 模板
-
-```javascript
-const opcuaTemplate = {
-  id: 'd_opcua_xxx',
-  name: 'OPC UA 设备名称',
-  type: 'OPCUA',
-  enabled: true,
-  polling: 1000,
-  property: {
-    endpoint: 'opc.tcp://192.168.1.100:4840',
-    username: 'admin',
-    password: 'password',
-    securityPolicy: 'None',
-    securityMode: 'None'
-  },
-  tags: {}
-};
-```
-
-## 支持的设备驱动
-
-| 驱动类型 | 标识 | 典型用途 |
-|----------|------|----------|
-| Modbus TCP | `ModbusTCP` | PLC、传感器 |
-| Modbus RTU | `ModbusRTU` | 串口设备 |
-| OPC UA | `OPCUA` | 标准化工业互联 |
-| Siemens S7 | `SiemensS7` | 西门子 PLC |
-| BACnet | `BACnet` | 楼宇自动化 |
-| MQTT Client | `MQTTclient` | IoT 消息 |
-| Web API | `WebAPI` | HTTP REST 接口 |
-| EtherNet/IP | `EthernetIP` | AB/罗克韦尔 PLC |
-| MELSEC | `MELSEC` | 三菱 PLC |
-| Redis | `REDIS` | 缓存/消息 |
-
-## 常见 API 端点
-
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| POST | `/api/signin` | 登录 |
-| GET | `/api/project` | 获取项目配置 |
-| POST | `/api/projectData` | 更新项目数据 |
-| GET | `/api/getTagValue` | 读取标签值 |
-| POST | `/api/setTagValue` | 写入标签值 |
-| GET | `/api/alarms` | 获取报警 |
-| GET | `/api/settings` | 获取系统设置 |
-
-## 关键提醒
-
-- Modbus 从站 ID 字段名是 `property.slaveid`（全小写字符串）
-- 设备地址字段名是 `property.address`
-- 语言代码是 `zh-cn`（不是 `zh`）
-- projectData cmd 值是 `'set-device'`、`'set-alarm'`
-- 端口号必须是字符串类型，如 `'502'` 不是 `502`
-
-## 常见问题
-
-### Q: 如何查看设备连接状态？
-
-```javascript
+// 单个设备状态
 const status = await client.getDeviceConnectionStatus('d_modbus_01');
-console.log(status.status, status.statusText);
+// { deviceId, deviceName, status, statusText: '在线'|'离线'|'警告' }
+
+// 所有设备状态
+const allStatus = await client.getAllDeviceConnectionStatus();
 ```
 
-### Q: 如何批量添加标签？
-
-```javascript
-// 先获取设备
-const devices = await client.getDevices();
-const device = devices['d_modbus_01'];
-
-// 添加新标签
-device.tags['t_new'] = {
-  id: 't_new',
-  name: '新标签',
-  type: 'Float32',
-  memaddress: '400010'
-};
-
-// 更新设备
-await client.setDevice(device);
-```
-
-### Q: 如何配置报警？
+### 5. 报警配置
 
 ```javascript
 await client.setAlarmDefinition({
@@ -254,10 +355,68 @@ await client.setAlarmDefinition({
 });
 ```
 
-### Q: 如何查询历史数据？
+### 6. 历史数据查询
 
 ```javascript
 const from = new Date(Date.now() - 24*60*60*1000).toISOString();
 const to = new Date().toISOString();
 const data = await client.getDaqData(from, to, ['t_temp', 't_humi']);
+```
+
+## 关键提醒
+
+- Modbus 从站 ID 字段名是 `property.slaveid`（全小写字符串）
+- 设备地址字段名是 `property.address`
+- 语言代码是 `zh-cn`（不是 `zh`）
+- projectData cmd 值是 `'set-device'`、`'set-alarm'` 等
+- 端口号必须是字符串类型，如 `'502'` 不是 `502`
+- 设备连接状态：0=离线，3=警告，5=在线
+- FUXA Server（id='0'）是内置设备，包含系统标签
+- 标签支持 scale（缩放）、deadband（死区）、format（格式化）属性
+- 标签支持 scaleReadFunction/scaleWriteFunction（脚本缩放）
+
+## 常见问题
+
+### Q: 如何查看设备连接状态？
+
+```javascript
+const status = await client.getDeviceConnectionStatus('d_modbus_01');
+console.log(status.statusText); // '在线' | '离线' | '警告'
+```
+
+### Q: 如何批量添加标签？
+
+```javascript
+const devices = await client.getDevices();
+const device = devices['d_modbus_01'];
+device.tags['t_new'] = { id: 't_new', name: '新标签', type: 'Float32', memaddress: '400010' };
+await client.setDevice(device);
+```
+
+### Q: 如何查看系统日志？
+
+```javascript
+const logFiles = await client.getLogFiles();
+const logContent = await client.getLogContent('fuxa.log');
+```
+
+### Q: 如何管理调度器？
+
+```javascript
+// 获取调度器
+const scheduler = await client.getScheduler('scheduler_01');
+
+// 设置调度器
+await client.setScheduler('scheduler_01', {
+  schedules: {},
+  settings: {
+    devices: [{ name: '设备1', variableId: 't_temp' }]
+  }
+});
+```
+
+### Q: 如何查询事件历史？
+
+```javascript
+const events = await client.getEventsHistory({ start: '2026-01-01', end: '2026-04-23' });
 ```

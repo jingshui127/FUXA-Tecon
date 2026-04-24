@@ -16,6 +16,11 @@ const FUXA = require('./fuxa.js');
 const runtime = require('./runtime');
 const authJwt = require('./api/jwt-helper');
 
+// Stardust APM 监控
+const StardustTracker = require('./lib/stardust');
+const stardustMiddleware = require('./lib/stardust-middleware');
+let stardustTracker;
+
 const express = require('express');
 const app = express();
 
@@ -218,6 +223,19 @@ if (!fs.existsSync(settings.logDir)) {
 }
 
 logger.init(settings);
+
+// 初始化 Stardust APM 监控
+try {
+    stardustTracker = new StardustTracker({
+        server: 'http://localhost:6600', // 本地 Stardust 服务器
+        appName: 'FUXA-Pro-科控物联',
+        enabled: false // 暂时禁用，待配置正确的服务器地址后启用
+    });
+    stardustTracker.start();
+} catch (error) {
+    logger.error('Stardust initialization failed:', error.message);
+}
+
 const version = FUXA.version();
 if (version.indexOf('beta') > 0) {
     logger.warn(`${settings.appName} V.` + version);
@@ -324,6 +342,11 @@ try {
 }
 
 // Http Server for client UI
+// Stardust APM 中间件
+if (stardustTracker) {
+    app.use(stardustMiddleware(stardustTracker));
+}
+
 const allowCrossDomain = function (req, res, next) {
     const origin = req.headers.origin;
     const allowedOrigins = settings.allowedOrigins || ["*"];
@@ -523,6 +546,23 @@ const initWebcamSnapshotCleanup = () => {
     schedule.scheduleJob('0 1 * * *', cleanupSnapShotsFiles);
     logger.info('Scheduled webcam snapshot cleanup at 01:00 daily.');
 };
+
+// 应用关闭时停止 Stardust 监控
+process.on('SIGINT', () => {
+    if (stardustTracker) {
+        stardustTracker.stop();
+        console.log('[Stardust] APM tracer stopped');
+    }
+    process.exit();
+});
+
+process.on('SIGTERM', () => {
+    if (stardustTracker) {
+        stardustTracker.stop();
+        console.log('[Stardust] APM tracer stopped');
+    }
+    process.exit();
+});
 
 /**
  * Cleanup Snapshots Files

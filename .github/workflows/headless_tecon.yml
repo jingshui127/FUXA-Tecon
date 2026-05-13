@@ -101,4 +101,4 @@ jobs:
       with:
         name: FUXA-single-1.3.2-tecon
         path: artifacts/*
-        retention-days: 30
+        retention-days: 1

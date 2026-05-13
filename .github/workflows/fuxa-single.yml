@@ -118,7 +118,7 @@ jobs:
       with:
         name: FUXA-single-${{ steps.date.outputs.date }}
         path: artifacts/*
-        retention-days: 30
+        retention-days: 1
 
     - name: Create Release
       if: github.event_name == 'workflow_dispatch'

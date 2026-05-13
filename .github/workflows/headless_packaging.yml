@@ -128,3 +128,4 @@ jobs:
       with:
         name: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}
         path: artifacts/*
+        retention-days: 1

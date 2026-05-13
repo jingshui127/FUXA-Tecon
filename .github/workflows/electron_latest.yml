@@ -110,3 +110,4 @@ jobs:
       with:
         name: FUXA-${{ matrix.os }}-${{ matrix.arch }}
         path: app/electron/artifacts/*
+        retention-days: 1

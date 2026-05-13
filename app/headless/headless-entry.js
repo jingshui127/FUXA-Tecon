@@ -7,44 +7,20 @@ const { fork } = require('child_process');
  * FUXA Headless Entry Point
  * 
  * This script is the entry point for standalone binaries.
- * It ensures the project data directory exists in the user's home folder
+ * It ensures the project data directory exists in the EXE's directory
  * and then launches the FUXA server.
  */
 
 async function bootstrap() {
-    // 显示启动信息
-    console.log('');
-    console.log('========================================');
-    console.log('  FUXA 科控物联定制版');
-    console.log('  版本: 1.3.1-tecon');
-    console.log('  技术支持QQ: 2492123056');
-    console.log('========================================');
-    console.log('');
     console.log('FUXA Headless starting...');
 
-    // 解析命令行参数，支持端口切换
-    const args = process.argv.slice(2);
-    let customPort = null;
+    // 1. Determine the data directory - now in EXE's directory
+    // Get the path to the running executable
+    const exePath = process.execPath;
+    const exeDir = path.dirname(exePath);
+    const fuxaDataDir = path.join(exeDir, '_appdata');
     
-    for (let i = 0; i < args.length; i++) {
-        if (args[i] === '-p' || args[i] === '-P') {
-            if (i + 1 < args.length) {
-                customPort = parseInt(args[i + 1], 10);
-                if (isNaN(customPort) || customPort < 1 || customPort > 65535) {
-                    console.error(`Invalid port number: ${args[i + 1]}`);
-                    process.exit(1);
-                }
-                console.log(`Using custom port: ${customPort}`);
-                break;
-            }
-        }
-    }
-
-    // 1. Determine the user data directory (similar to Electron app)
-    const homeDir = os.homedir();
-    const fuxaDataDir = path.join(homeDir, 'fuxa-headless-data');
-    
-    // 2. Ensure the directory exists (Electron-style)
+    // 2. Ensure the directory exists
     if (!fs.existsSync(fuxaDataDir)) {
         console.log(`Creating initial data directory: ${fuxaDataDir}`);
         try {
@@ -68,16 +44,8 @@ async function bootstrap() {
     // 4. Launch the server (fork like Electron does)
     console.log(`Launching FUXA server with userDir: ${fuxaDataDir}`);
     
-    // 准备环境变量
-    const env = { ...process.env, userDir: fuxaDataDir };
-    
-    // 如果有自定义端口，添加到环境变量
-    if (customPort) {
-        env.FUXA_PORT = customPort.toString();
-    }
-    
     const serverProcess = fork(serverPath, [], {
-        env: env,
+        env: { ...process.env, userDir: fuxaDataDir },
         stdio: 'inherit'
     });
 

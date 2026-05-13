@@ -394,8 +394,9 @@ if (runtime.settings.logApiLevel !== 'none') {
 
 	// Stardust APM 集成 - 性能监控
 	try {
-		const stardustTracer = require('./runtime/stardust');
+		const stardust = require('./runtime/stardust');
 		const stardustMiddleware = require('./runtime/stardust-middleware');
+		const stardustTracer = stardust.createTracer(settings.stardustServer || '', settings.stardustAppId || '', settings.stardustSecret || '');
 		app.use(stardustMiddleware.createExpressMiddleware(stardustTracer));
 		console.log('[Stardust] APM middleware loaded');
 	} catch (e) {

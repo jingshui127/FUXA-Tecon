@@ -440,12 +440,16 @@ function DaqNode(_settings, _log, _id, _currentStorate) {
                             var filearchived = _archiveDBfile(dbfile, lastrow.dt);
                             logger.info(`daqstorage.check-to-archive-db-file '${filearchived}'`, true);
                         } else {
-                            // delete void db
+                            // delete void db - file will be cleaned up later if locked
                             try {
                                 fs.unlinkSync(dbfile);
                                 logger.info(`daqstorage.check-to-archive-db-file '${dbfile}' database deleted!`, true);
-                            } catch (e) { 
-                                console.error(e);
+                            } catch (e) {
+                                if (e.code === 'EBUSY') {
+                                    logger.warn(`daqstorage.check-to-archive-db-file '${dbfile}' database is locked, will retry later`, true);
+                                } else {
+                                    logger.error(`daqstorage.check-to-archive-db-file '${dbfile}' delete error: ${e.message}`, true);
+                                }
                             }
                         }
                     });

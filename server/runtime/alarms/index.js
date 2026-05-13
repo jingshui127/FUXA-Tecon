@@ -5,7 +5,6 @@
 'use strict';
 
 const alarmstorage = require('./alarmstorage');
-const speech = require('./speech');
 var utils = require('./../utils');
 
 var ALARMS_CHECK_STATUS_INTERVAL = 1000;
@@ -34,13 +33,6 @@ function AlarmsManager(_runtime) {
     this.start = function () {
         return new Promise(function (resolve, reject) {
             logger.info('alarms check start', true);
-            speech.init(logger).then(result => {
-                if (result) {
-                    logger.info('speech synthesizer initialized successfully', true);
-                } else {
-                    logger.warn('speech synthesizer initialization failed, speech notifications disabled', true);
-                }
-            });
             alarmsCheckStatus = setInterval(function () {
                 _checkStatus();
             }, ALARMS_CHECK_STATUS_INTERVAL);
@@ -319,7 +311,6 @@ function AlarmsManager(_runtime) {
             });
             if (changed.length) {
                 _checkActions(changed);
-                _speakAlarms(changed);
                 alarmstorage.setAlarms(changed).then(function (result) {
                     changed.forEach(alr => {
                         if (alr.toremove) {
@@ -341,51 +332,6 @@ function AlarmsManager(_runtime) {
             return (value & alarm.tagproperty.bitmask) ? 1 : 0;
         }
         return Number(value);
-    }
-
-    var _speakAlarms = function(changedAlarms) {
-        if (!changedAlarms || changedAlarms.length === 0) {
-            return;
-        }
-
-        changedAlarms.forEach(alr => {
-            var message = '';
-            var priority = 'normal';
-            
-            if (alr.type === AlarmsTypes.ACTION) {
-                return;
-            }
-
-            var alarmTypeText = _getAlarmTypeText(alr.type);
-            
-            if (alr.status === AlarmStatusEnum.ON) {
-                message = `注意，${alr.name}${alarmTypeText}报警`;
-                if (alr.type === AlarmsTypes.HIGH_HIGH) {
-                    priority = 'high';
-                }
-            } else if (alr.status === AlarmStatusEnum.OFF) {
-                message = `${alr.name}${alarmTypeText}报警已恢复`;
-            }
-
-            if (message) {
-                speech.speak(message, { priority: priority });
-            }
-        });
-    }
-
-    var _getAlarmTypeText = function(alarmType) {
-        switch(alarmType) {
-            case AlarmsTypes.HIGH_HIGH:
-                return '高高限';
-            case AlarmsTypes.HIGH:
-                return '高限';
-            case AlarmsTypes.LOW:
-                return '低限';
-            case AlarmsTypes.INFO:
-                return '信息';
-            default:
-                return '';
-        }
     }
 
     /**

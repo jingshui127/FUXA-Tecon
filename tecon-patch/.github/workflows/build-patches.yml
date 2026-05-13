@@ -1,0 +1,90 @@
+name: Build and Release Customer Patches
+
+on:
+  workflow_dispatch:
+    inputs:
+      customer_name:
+        description: 'Customer name'
+        required: true
+        type: string
+      config_file:
+        description: 'Config file name (e.g., customer-abc.json)'
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - 'customer-*.json'
+      - 'tecon-patch/**'
+      - '.github/workflows/build-patches.yml'
+
+jobs:
+  build-patch:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
+    - name: Generate customer patch
+      env:
+        CUSTOMER_NAME: ${{ github.event.inputs.customer_name || 'default' }}
+        CONFIG_FILE: ${{ github.event.inputs.config_file || 'customer-demo.json' }}
+      run: |
+        chmod +x tecon-patch/generate-customer-patch.sh
+        cd tecon-patch
+        ./generate-customer-patch.sh "$CONFIG_FILE"
+
+    - name: Create patch archive
+      run: |
+        cd tecon-patch
+        PATCH_DIR=$(find . -maxdepth 1 -type d -name "tecon-patch-*" | head -1)
+        PATCH_NAME=$(basename "$PATCH_DIR")
+        tar -czf "${PATCH_NAME}.tar.gz" "$PATCH_NAME"
+
+    - name: Upload patch artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: customer-patch
+        path: tecon-patch/tecon-patch-*.tar.gz
+        retention-days: 30
+
+    - name: Create Release
+      if: github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v1.3.1-${{ github.event.inputs.customer_name }}
+        name: FUXA Patch - ${{ github.event.inputs.customer_name }}
+        body: |
+          ## FUXA 客户定制化补丁包
+          
+          客户：${{ github.event.inputs.customer_name }}
+          版本：1.3.1-${{ github.event.inputs.customer_name }}
+          生成时间：${{ github.event.head_commit.timestamp }}
+          
+          ## 使用方法
+          
+          1. 下载补丁包
+          2. 解压到 FUXA 根目录
+          3. 运行应用脚本：
+             - Windows: `apply-patch.bat`
+             - Linux/Mac: `./apply-patch.sh`
+          4. 重新构建项目
+          
+          ## 技术支持
+          
+          - QQ：2492123056
+          - 邮箱：support@example.com
+        files: tecon-patch/tecon-patch-*.tar.gz
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

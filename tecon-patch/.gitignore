@@ -1,0 +1,25 @@
+# FUXA 客户定制化补丁包
+
+# 忽略生成的补丁包
+tecon-patch-*/
+
+# 忽略临时文件
+*.tmp
+*.log
+
+# 忽略系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 忽略 node_modules
+node_modules/
+
+# 忽略构建产物
+dist/
+build/

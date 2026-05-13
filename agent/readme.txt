@@ -1,0 +1,1 @@
+需要.NET Framework 4.6.1，一般Windows7以上系统都已经自带了。

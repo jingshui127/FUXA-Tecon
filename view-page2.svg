@@ -1,0 +1,384 @@
+<svg width="1024" height="768" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <filter height="200" width="200" y="-3" x="-3" id="blur-filter"><feGaussianBlur stdDeviation="3"/></filter>
+ <defs>
+  <style>.title{font-family:sans-serif;font-weight:bold;font-size:18px;fill:#ffffff}.label{font-family:sans-serif;font-size:11px;fill:#333333}.group-title{font-family:sans-serif;font-weight:bold;font-size:12px;fill:#ffffff}.section-bg{fill:#f0f4f8;stroke:#c0c8d0;stroke-width:1}.header-bg{fill:#1a3a5c}.group-header{fill:#2a6b9e}</style>
+ </defs>
+  <rect id="svg_d7429544-6fe1-46a4-bb63-c690464bcf1f" x="0" y="0" width="1024" height="768" class="section-bg" rx="2"/>
+  <rect id="svg_edcb4a71-d5b8-4546-bc16-61063ae1996c" x="0" y="0" width="1024" height="36" class="header-bg" rx="2"/>
+  <text x="14" y="24" class="title" xml:space="preserve">开合模斜率/PID</text>
+  <rect id="svg_ac199e1d-4837-42c0-8d47-326f39d20055" x="16" y="48" width="320" height="20" class="group-header" rx="2"/>
+  <text x="22" y="62" class="group-title" xml:space="preserve">合模1段 斜率</text>
+  <text x="20" y="84" class="label" xml:space="preserve">合模1段压力斜率</text>
+  <g data-name="input" id="HXI_eb60a560-7738-47ef-89ab-58a9fea3a962" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_f711988c-7376-4c43-a695-f7876578ffae" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="71" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_eb60a560-7738-47ef-89ab-58a9fea3a962" width="80" height="18" y="71" x="126">
+    <INPUT id="I-HXI_eb60a560-7738-47ef-89ab-58a9fea3a962" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="20" y="106" class="label" xml:space="preserve">合模1段速度斜率</text>
+  <g data-name="input" id="HXI_d1f2ec48-d5e0-4d5e-8e4a-d56567146db2" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_29d75fcb-1844-47d2-870e-a1109952f001" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="93" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_d1f2ec48-d5e0-4d5e-8e4a-d56567146db2" width="80" height="18" y="93" x="126">
+    <INPUT id="I-HXI_d1f2ec48-d5e0-4d5e-8e4a-d56567146db2" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_c1c55c0e-6ad8-48b6-b961-dbb69219db38" x="16" y="114" width="320" height="20" class="group-header" rx="2"/>
+  <text x="22" y="128" class="group-title" xml:space="preserve">合模2段 斜率</text>
+  <text x="20" y="150" class="label" xml:space="preserve">合模2段压力斜率</text>
+  <g data-name="input" id="HXI_2a0ee267-600d-4a14-a148-e720ffbe0754" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_7dccc318-9bab-4cd9-a36b-61e8629de085" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="137" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_2a0ee267-600d-4a14-a148-e720ffbe0754" width="80" height="18" y="137" x="126">
+    <INPUT id="I-HXI_2a0ee267-600d-4a14-a148-e720ffbe0754" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="20" y="172" class="label" xml:space="preserve">合模2段速度斜率</text>
+  <g data-name="input" id="HXI_eeb1bc51-bc37-4678-aa2d-d06f81aca907" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_465a7085-871f-49ce-b153-80c82b402e5d" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="159" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_eeb1bc51-bc37-4678-aa2d-d06f81aca907" width="80" height="18" y="159" x="126">
+    <INPUT id="I-HXI_eeb1bc51-bc37-4678-aa2d-d06f81aca907" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_36775833-3abd-4411-b987-633565691a34" x="16" y="180" width="320" height="20" class="group-header" rx="2"/>
+  <text x="22" y="194" class="group-title" xml:space="preserve">合模3段 斜率</text>
+  <text x="20" y="216" class="label" xml:space="preserve">合模3段压力斜率</text>
+  <g data-name="input" id="HXI_cd4534d6-2eb6-40fa-aa8e-ab2faf9059c1" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_d8241fa5-0c9e-4668-994e-9de2f61bf21e" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="203" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_cd4534d6-2eb6-40fa-aa8e-ab2faf9059c1" width="80" height="18" y="203" x="126">
+    <INPUT id="I-HXI_cd4534d6-2eb6-40fa-aa8e-ab2faf9059c1" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="20" y="238" class="label" xml:space="preserve">合模3段速度斜率</text>
+  <g data-name="input" id="HXI_67b26b67-9c31-41ee-a7e1-451cb3bf3c29" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_5809c1fa-3eb3-414f-a835-99d9a41fc1cf" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="225" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_67b26b67-9c31-41ee-a7e1-451cb3bf3c29" width="80" height="18" y="225" x="126">
+    <INPUT id="I-HXI_67b26b67-9c31-41ee-a7e1-451cb3bf3c29" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_1555f630-a9e2-4638-ac77-be273ec1c88e" x="16" y="246" width="320" height="20" class="group-header" rx="2"/>
+  <text x="22" y="260" class="group-title" xml:space="preserve">合模4段 斜率</text>
+  <text x="20" y="282" class="label" xml:space="preserve">合模4段压力斜率</text>
+  <g data-name="input" id="HXI_6773c546-49d2-42d1-8997-66f14fdb4212" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_2e7581f7-ba61-445e-9ebb-9fdd8e7d3345" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="269" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_6773c546-49d2-42d1-8997-66f14fdb4212" width="80" height="18" y="269" x="126">
+    <INPUT id="I-HXI_6773c546-49d2-42d1-8997-66f14fdb4212" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="20" y="304" class="label" xml:space="preserve">合模4段速度斜率</text>
+  <g data-name="input" id="HXI_14e4020d-89ea-4d11-aa55-f4ab4a411cc2" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_68d4db36-58b1-4674-b6c9-ea042508b2f4" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="291" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_14e4020d-89ea-4d11-aa55-f4ab4a411cc2" width="80" height="18" y="291" x="126">
+    <INPUT id="I-HXI_14e4020d-89ea-4d11-aa55-f4ab4a411cc2" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_3a359dc5-7844-445b-ba2a-e68fa705a535" x="16" y="312" width="320" height="20" class="group-header" rx="2"/>
+  <text x="22" y="326" class="group-title" xml:space="preserve">合模低压 斜率</text>
+  <text x="20" y="348" class="label" xml:space="preserve">合模低压段压力斜率</text>
+  <g data-name="input" id="HXI_ae6d5510-3706-4d1e-9e7b-fa5355450030" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_2b052cab-8617-4f42-b462-b93b583947cc" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="335" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_ae6d5510-3706-4d1e-9e7b-fa5355450030" width="80" height="18" y="335" x="126">
+    <INPUT id="I-HXI_ae6d5510-3706-4d1e-9e7b-fa5355450030" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="20" y="370" class="label" xml:space="preserve">合模低压段速度斜率</text>
+  <g data-name="input" id="HXI_c405f8f8-6ed6-48dc-a921-8eb97cb65584" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_dc1a9200-d4b2-4129-a651-6f0556f87dff" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="357" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_c405f8f8-6ed6-48dc-a921-8eb97cb65584" width="80" height="18" y="357" x="126">
+    <INPUT id="I-HXI_c405f8f8-6ed6-48dc-a921-8eb97cb65584" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_819c1a78-8f6a-4f24-9bbd-d635993f5f3b" x="16" y="378" width="320" height="20" class="group-header" rx="2"/>
+  <text x="22" y="392" class="group-title" xml:space="preserve">合模高压 斜率</text>
+  <text x="20" y="414" class="label" xml:space="preserve">合模高压段压力斜率</text>
+  <g data-name="input" id="HXI_a4bc6eac-c623-4efd-a84e-4dc4b46636b0" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_21aad386-13a7-4b60-bc12-1228b29640fa" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="401" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_a4bc6eac-c623-4efd-a84e-4dc4b46636b0" width="80" height="18" y="401" x="126">
+    <INPUT id="I-HXI_a4bc6eac-c623-4efd-a84e-4dc4b46636b0" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="20" y="436" class="label" xml:space="preserve">合模高压段速度斜率</text>
+  <g data-name="input" id="HXI_dc61e40e-49d5-47ae-9d66-0525eea10267" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_4f9ee786-a1c1-4c95-a884-628bfd70d40d" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="423" x="126" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_dc61e40e-49d5-47ae-9d66-0525eea10267" width="80" height="18" y="423" x="126">
+    <INPUT id="I-HXI_dc61e40e-49d5-47ae-9d66-0525eea10267" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_c1b52246-8f9d-47a8-84fd-f5f702d1bc73" x="352" y="48" width="320" height="20" class="group-header" rx="2"/>
+  <text x="358" y="62" class="group-title" xml:space="preserve">开模1段 斜率</text>
+  <text x="356" y="84" class="label" xml:space="preserve">开模1段压力斜率</text>
+  <g data-name="input" id="HXI_94a0afd4-af40-4db4-80a5-737df84ddb8c" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_e2993aef-1794-412b-8b44-28db3a81b995" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="71" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_94a0afd4-af40-4db4-80a5-737df84ddb8c" width="80" height="18" y="71" x="462">
+    <INPUT id="I-HXI_94a0afd4-af40-4db4-80a5-737df84ddb8c" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="356" y="106" class="label" xml:space="preserve">开模1段速度斜率</text>
+  <g data-name="input" id="HXI_a1a6fec4-e6fd-42c9-b167-1d680e40ed7a" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_94ee021d-15e5-4135-8dbc-83e8f550d5cf" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="93" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_a1a6fec4-e6fd-42c9-b167-1d680e40ed7a" width="80" height="18" y="93" x="462">
+    <INPUT id="I-HXI_a1a6fec4-e6fd-42c9-b167-1d680e40ed7a" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_f43fcdbb-41f2-4d70-9045-5fc612a4add5" x="352" y="114" width="320" height="20" class="group-header" rx="2"/>
+  <text x="358" y="128" class="group-title" xml:space="preserve">开模2段 斜率</text>
+  <text x="356" y="150" class="label" xml:space="preserve">开模2段压力斜率</text>
+  <g data-name="input" id="HXI_19c798ad-2340-4318-b977-c56712c3eb91" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_98e73bd3-a8a4-4a86-a647-7f5a3e0be05d" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="137" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_19c798ad-2340-4318-b977-c56712c3eb91" width="80" height="18" y="137" x="462">
+    <INPUT id="I-HXI_19c798ad-2340-4318-b977-c56712c3eb91" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="356" y="172" class="label" xml:space="preserve">开模2段速度斜率</text>
+  <g data-name="input" id="HXI_9b8938d9-3dfd-4a6a-ad84-2d72d83bb50f" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_2abdb076-3649-4f63-bd03-f07b76c7eabf" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="159" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_9b8938d9-3dfd-4a6a-ad84-2d72d83bb50f" width="80" height="18" y="159" x="462">
+    <INPUT id="I-HXI_9b8938d9-3dfd-4a6a-ad84-2d72d83bb50f" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_1aa89ddc-24a9-41ca-8082-6054aa8dcf87" x="352" y="180" width="320" height="20" class="group-header" rx="2"/>
+  <text x="358" y="194" class="group-title" xml:space="preserve">开模3段 斜率</text>
+  <text x="356" y="216" class="label" xml:space="preserve">开模3段压力斜率</text>
+  <g data-name="input" id="HXI_cef199eb-2e9a-4f65-b36f-813d8b556054" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_2155de53-57cb-4fde-af1e-6edd12f64c99" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="203" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_cef199eb-2e9a-4f65-b36f-813d8b556054" width="80" height="18" y="203" x="462">
+    <INPUT id="I-HXI_cef199eb-2e9a-4f65-b36f-813d8b556054" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="356" y="238" class="label" xml:space="preserve">开模3段速度斜率</text>
+  <g data-name="input" id="HXI_db6add1d-cfad-4a2e-8091-07d3cbbb26a3" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_0f28352a-2a50-462d-944f-08f247d6cf0c" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="225" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_db6add1d-cfad-4a2e-8091-07d3cbbb26a3" width="80" height="18" y="225" x="462">
+    <INPUT id="I-HXI_db6add1d-cfad-4a2e-8091-07d3cbbb26a3" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_344ae4d6-6294-48ef-8af6-09b6685c9af1" x="352" y="246" width="320" height="20" class="group-header" rx="2"/>
+  <text x="358" y="260" class="group-title" xml:space="preserve">开模4段 斜率</text>
+  <text x="356" y="282" class="label" xml:space="preserve">开模4段压力斜率</text>
+  <g data-name="input" id="HXI_dc961aff-c2eb-47e9-b459-327feb6c8340" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_22ff6de4-4ed2-41aa-8d2d-00b457d6738d" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="269" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_dc961aff-c2eb-47e9-b459-327feb6c8340" width="80" height="18" y="269" x="462">
+    <INPUT id="I-HXI_dc961aff-c2eb-47e9-b459-327feb6c8340" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="356" y="304" class="label" xml:space="preserve">开模4段速度斜率</text>
+  <g data-name="input" id="HXI_3ccd3f60-fab2-414f-bc50-aa97bcd15563" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_5b84363a-d4fa-49e0-a6b9-7f30aaa5ea96" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="291" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_3ccd3f60-fab2-414f-bc50-aa97bcd15563" width="80" height="18" y="291" x="462">
+    <INPUT id="I-HXI_3ccd3f60-fab2-414f-bc50-aa97bcd15563" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_f10d4d05-deae-4db7-acd9-5cbcf58e7774" x="352" y="312" width="320" height="20" class="group-header" rx="2"/>
+  <text x="358" y="326" class="group-title" xml:space="preserve">开模5段 斜率</text>
+  <text x="356" y="348" class="label" xml:space="preserve">开模5段压力斜率</text>
+  <g data-name="input" id="HXI_18661c65-273d-47e0-9248-def2b3390c7f" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_80f59fb2-f5f1-42d8-89c9-3d5f827f4bc5" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="335" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_18661c65-273d-47e0-9248-def2b3390c7f" width="80" height="18" y="335" x="462">
+    <INPUT id="I-HXI_18661c65-273d-47e0-9248-def2b3390c7f" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="356" y="370" class="label" xml:space="preserve">开模5段速度斜率</text>
+  <g data-name="input" id="HXI_a8c13d9a-3da3-4e7d-afcf-4ca2633eeec9" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_4f597907-799b-4f9e-b54b-03a60c9b2312" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="357" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_a8c13d9a-3da3-4e7d-afcf-4ca2633eeec9" width="80" height="18" y="357" x="462">
+    <INPUT id="I-HXI_a8c13d9a-3da3-4e7d-afcf-4ca2633eeec9" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_3a20ac82-2198-4d9b-a25b-b7d6a95eecf0" x="352" y="378" width="320" height="20" class="group-header" rx="2"/>
+  <text x="358" y="392" class="group-title" xml:space="preserve">开模卸荷 斜率</text>
+  <text x="356" y="414" class="label" xml:space="preserve">开模卸荷段压力斜率</text>
+  <g data-name="input" id="HXI_f0e69e08-d9bc-4b49-a6f1-0157cde7a93b" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_99e79a1d-3139-4c8a-8e75-67cf778a52ef" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="401" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_f0e69e08-d9bc-4b49-a6f1-0157cde7a93b" width="80" height="18" y="401" x="462">
+    <INPUT id="I-HXI_f0e69e08-d9bc-4b49-a6f1-0157cde7a93b" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="356" y="436" class="label" xml:space="preserve">开模卸荷段速度斜率</text>
+  <g data-name="input" id="HXI_3e00552d-81a2-4cee-b518-52ae6222e51f" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_81b11192-2fa2-446f-941c-94a91ba4108c" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="423" x="462" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_3e00552d-81a2-4cee-b518-52ae6222e51f" width="80" height="18" y="423" x="462">
+    <INPUT id="I-HXI_3e00552d-81a2-4cee-b518-52ae6222e51f" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_2f18ac32-23e3-4280-9d4f-cb79a56cdfa4" x="688" y="48" width="320" height="20" class="group-header" rx="2"/>
+  <text x="694" y="62" class="group-title" xml:space="preserve">合模 PID</text>
+  <text x="692" y="84" class="label" xml:space="preserve">合模P启动</text>
+  <g data-name="input" id="HXI_ce895092-c2b8-40ba-bfd3-e28d9ab4b022" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_33915350-2285-4392-bbb0-ed5d9ccca0ac" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="71" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_ce895092-c2b8-40ba-bfd3-e28d9ab4b022" width="80" height="18" y="71" x="798">
+    <INPUT id="I-HXI_ce895092-c2b8-40ba-bfd3-e28d9ab4b022" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="106" class="label" xml:space="preserve">合模P中间</text>
+  <g data-name="input" id="HXI_d686b51b-055d-4418-a567-2aa35c25e4bf" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_b049e0b2-7a4f-4af8-bd08-b57a1e9a26a5" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="93" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_d686b51b-055d-4418-a567-2aa35c25e4bf" width="80" height="18" y="93" x="798">
+    <INPUT id="I-HXI_d686b51b-055d-4418-a567-2aa35c25e4bf" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="128" class="label" xml:space="preserve">合模P停止</text>
+  <g data-name="input" id="HXI_9f69b400-e568-4e5e-a9c4-d11c38c96b06" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_df117fdb-3d9e-4721-ad30-b16af2b6a2d3" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="115" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_9f69b400-e568-4e5e-a9c4-d11c38c96b06" width="80" height="18" y="115" x="798">
+    <INPUT id="I-HXI_9f69b400-e568-4e5e-a9c4-d11c38c96b06" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="150" class="label" xml:space="preserve">合模P中途停止</text>
+  <g data-name="input" id="HXI_fccab775-10d8-40d3-a7d2-e291dd6728b5" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_2f0b70f2-32a5-41e8-808d-f8d31cd31f2f" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="137" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_fccab775-10d8-40d3-a7d2-e291dd6728b5" width="80" height="18" y="137" x="798">
+    <INPUT id="I-HXI_fccab775-10d8-40d3-a7d2-e291dd6728b5" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="172" class="label" xml:space="preserve">合模F中间</text>
+  <g data-name="input" id="HXI_92176b75-d0c1-4a4c-a462-562665805e0a" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_23d17f1f-1939-4ded-8f9e-cf95405cf36f" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="159" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_92176b75-d0c1-4a4c-a462-562665805e0a" width="80" height="18" y="159" x="798">
+    <INPUT id="I-HXI_92176b75-d0c1-4a4c-a462-562665805e0a" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="194" class="label" xml:space="preserve">合模F停止</text>
+  <g data-name="input" id="HXI_f04c91dc-2740-447e-b2e4-7fc0df47b762" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_f97c5b6b-6ad3-447c-b9e7-3bcbf8a78899" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="181" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_f04c91dc-2740-447e-b2e4-7fc0df47b762" width="80" height="18" y="181" x="798">
+    <INPUT id="I-HXI_f04c91dc-2740-447e-b2e4-7fc0df47b762" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="216" class="label" xml:space="preserve">合模F中途停止</text>
+  <g data-name="input" id="HXI_8d1e57c4-bde2-4a59-a75a-f281fae377ec" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_7b281b4f-ee00-4127-85d1-f9da64fe9815" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="203" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_8d1e57c4-bde2-4a59-a75a-f281fae377ec" width="80" height="18" y="203" x="798">
+    <INPUT id="I-HXI_8d1e57c4-bde2-4a59-a75a-f281fae377ec" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_80d45030-07b0-428c-81a9-b7fcfd7c0a31" x="688" y="224" width="320" height="20" class="group-header" rx="2"/>
+  <text x="694" y="238" class="group-title" xml:space="preserve">开模 PID</text>
+  <text x="692" y="260" class="label" xml:space="preserve">开模P启动</text>
+  <g data-name="input" id="HXI_6158dc89-55e5-4779-b698-b4a21fb9f4dd" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_212a4b22-5626-4193-8d1b-5bee5c722aca" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="247" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_6158dc89-55e5-4779-b698-b4a21fb9f4dd" width="80" height="18" y="247" x="798">
+    <INPUT id="I-HXI_6158dc89-55e5-4779-b698-b4a21fb9f4dd" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="282" class="label" xml:space="preserve">开模P中间</text>
+  <g data-name="input" id="HXI_2aa351d1-7194-47c1-851e-6d1d8b872486" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_d60b762d-5d28-4138-ac44-a125a2a26db8" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="269" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_2aa351d1-7194-47c1-851e-6d1d8b872486" width="80" height="18" y="269" x="798">
+    <INPUT id="I-HXI_2aa351d1-7194-47c1-851e-6d1d8b872486" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="304" class="label" xml:space="preserve">开模P停止</text>
+  <g data-name="input" id="HXI_f4a8d78a-a3df-4eed-80f5-138702a87b49" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_7b552031-e929-4d06-9ede-0b60de48c259" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="291" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_f4a8d78a-a3df-4eed-80f5-138702a87b49" width="80" height="18" y="291" x="798">
+    <INPUT id="I-HXI_f4a8d78a-a3df-4eed-80f5-138702a87b49" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="326" class="label" xml:space="preserve">开模P中途停止</text>
+  <g data-name="input" id="HXI_01e3b776-3bd6-4c2c-87e5-48f00ffe7767" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_7929afd8-18d3-4925-aec5-5820613a40e9" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="313" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_01e3b776-3bd6-4c2c-87e5-48f00ffe7767" width="80" height="18" y="313" x="798">
+    <INPUT id="I-HXI_01e3b776-3bd6-4c2c-87e5-48f00ffe7767" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="348" class="label" xml:space="preserve">开模F启动</text>
+  <g data-name="input" id="HXI_49144faa-1d0c-48ab-9ffd-b5c0e79d12c9" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_99d335c6-e35b-4ab2-b0a7-cf1d63038fbf" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="335" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_49144faa-1d0c-48ab-9ffd-b5c0e79d12c9" width="80" height="18" y="335" x="798">
+    <INPUT id="I-HXI_49144faa-1d0c-48ab-9ffd-b5c0e79d12c9" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="370" class="label" xml:space="preserve">开模F中间</text>
+  <g data-name="input" id="HXI_62c5042b-87a6-4f70-95ee-a38bb8a918f3" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_2ef4e1a6-c6fd-407a-9875-f723f4e89ee7" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="357" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_62c5042b-87a6-4f70-95ee-a38bb8a918f3" width="80" height="18" y="357" x="798">
+    <INPUT id="I-HXI_62c5042b-87a6-4f70-95ee-a38bb8a918f3" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="392" class="label" xml:space="preserve">开模F停止</text>
+  <g data-name="input" id="HXI_f8eb2d52-5f4a-429b-8d99-2e9b39f14ca6" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_b6684bc0-74f3-4e71-991c-3543ba878478" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="379" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_f8eb2d52-5f4a-429b-8d99-2e9b39f14ca6" width="80" height="18" y="379" x="798">
+    <INPUT id="I-HXI_f8eb2d52-5f4a-429b-8d99-2e9b39f14ca6" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="414" class="label" xml:space="preserve">开模F中途停止</text>
+  <g data-name="input" id="HXI_8e66e985-ca29-45ea-8074-971b0eb4f1d8" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_19785968-5310-4459-b22b-85e4ea41036b" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="401" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_8e66e985-ca29-45ea-8074-971b0eb4f1d8" width="80" height="18" y="401" x="798">
+    <INPUT id="I-HXI_8e66e985-ca29-45ea-8074-971b0eb4f1d8" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_e314b8e1-ccfc-458c-9fd9-a48c9538ed32" x="688" y="422" width="320" height="20" class="group-header" rx="2"/>
+  <text x="694" y="436" class="group-title" xml:space="preserve">合模 状态</text>
+  <text x="692" y="458" class="label" xml:space="preserve">合模起始</text>
+  <g data-name="input" id="HXI_a3ab8dca-e303-4cdc-bb6a-f97969e9bd46" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_34136bb5-4cb2-492b-afd8-02ad5e78202e" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="445" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_a3ab8dca-e303-4cdc-bb6a-f97969e9bd46" width="80" height="18" y="445" x="798">
+    <INPUT id="I-HXI_a3ab8dca-e303-4cdc-bb6a-f97969e9bd46" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="480" class="label" xml:space="preserve">合模结束</text>
+  <g data-name="input" id="HXI_bcb012ea-f24a-4349-9ec5-bb2397a5114b" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_b9820d08-2420-44e0-aeeb-3814a938d38b" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="467" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_bcb012ea-f24a-4349-9ec5-bb2397a5114b" width="80" height="18" y="467" x="798">
+    <INPUT id="I-HXI_bcb012ea-f24a-4349-9ec5-bb2397a5114b" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="502" class="label" xml:space="preserve">合模压力</text>
+  <g data-name="input" id="HXI_5ea1ecd3-0efa-49c3-be31-4f54b3c95135" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_af274cd5-f88f-4bee-9d91-b96cb466c2ec" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="489" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_5ea1ecd3-0efa-49c3-be31-4f54b3c95135" width="80" height="18" y="489" x="798">
+    <INPUT id="I-HXI_5ea1ecd3-0efa-49c3-be31-4f54b3c95135" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="524" class="label" xml:space="preserve">合模流量</text>
+  <g data-name="input" id="HXI_c0331118-f32d-4401-8646-80c7ac5cceaa" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_bb14c70c-e73e-4861-a18e-6b45d3b34b3b" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="511" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_c0331118-f32d-4401-8646-80c7ac5cceaa" width="80" height="18" y="511" x="798">
+    <INPUT id="I-HXI_c0331118-f32d-4401-8646-80c7ac5cceaa" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="546" class="label" xml:space="preserve">合模自保</text>
+  <g data-name="input" id="HXI_761e53aa-a1e1-4466-a184-f6888612d273" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_09b76d20-1cfb-4bec-b6ed-6418f898a224" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="533" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_761e53aa-a1e1-4466-a184-f6888612d273" width="80" height="18" y="533" x="798">
+    <INPUT id="I-HXI_761e53aa-a1e1-4466-a184-f6888612d273" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <rect id="svg_2cad1a53-5c5a-4837-bd69-82bf10e1b3bc" x="688" y="554" width="320" height="20" class="group-header" rx="2"/>
+  <text x="694" y="568" class="group-title" xml:space="preserve">开模 状态</text>
+  <text x="692" y="590" class="label" xml:space="preserve">开模起始</text>
+  <g data-name="input" id="HXI_2022224e-68bc-4607-b62f-a2702c64d614" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_877511ad-3160-463a-ae52-3308ed75f23d" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="577" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_2022224e-68bc-4607-b62f-a2702c64d614" width="80" height="18" y="577" x="798">
+    <INPUT id="I-HXI_2022224e-68bc-4607-b62f-a2702c64d614" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="612" class="label" xml:space="preserve">开模结束</text>
+  <g data-name="input" id="HXI_65ff233d-10bd-40df-b81e-6ebe50e6e673" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_51bc3464-7070-426d-bff3-8bfe658371db" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="599" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_65ff233d-10bd-40df-b81e-6ebe50e6e673" width="80" height="18" y="599" x="798">
+    <INPUT id="I-HXI_65ff233d-10bd-40df-b81e-6ebe50e6e673" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="634" class="label" xml:space="preserve">开模压力</text>
+  <g data-name="input" id="HXI_69e1645f-f852-4384-9b73-e1e39bb9cf3c" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_31734365-f26e-4d81-8067-cf08a7eb0c40" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="621" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_69e1645f-f852-4384-9b73-e1e39bb9cf3c" width="80" height="18" y="621" x="798">
+    <INPUT id="I-HXI_69e1645f-f852-4384-9b73-e1e39bb9cf3c" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="656" class="label" xml:space="preserve">开模流量</text>
+  <g data-name="input" id="HXI_d41dab26-246f-4093-9b92-b0fcead18384" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_50c70939-6bc4-4f97-a9f6-1feeb3d15ac4" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="643" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_d41dab26-246f-4093-9b92-b0fcead18384" width="80" height="18" y="643" x="798">
+    <INPUT id="I-HXI_d41dab26-246f-4093-9b92-b0fcead18384" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+  <text x="692" y="678" class="label" xml:space="preserve">开模卸压压力</text>
+  <g data-name="input" id="HXI_0b74c573-d743-4dbd-ab10-5c700721059b" font-size="14" text-anchor="middle" stroke="#000000" fill="#FFFFFF" type="svg-ext-html_input">
+   <rect data-name="shape" id="svg_e174d026-e7f1-4368-9973-b083d5749107" stroke="#aaaaaa" fill="#ffffff" height="18" width="80" y="665" x="798" stroke-width="0.5" rx="2"/>
+   <foreignObject id="H-HXI_0b74c573-d743-4dbd-ab10-5c700721059b" width="80" height="18" y="665" x="798">
+    <INPUT id="I-HXI_0b74c573-d743-4dbd-ab10-5c700721059b" style="width:calc(100% - 6px);height:calc(100% - 4px);text-align:center;border:unset;font-size:11px;font-family:sans-serif;background-color:#ffffff;color:#000000;" value="#.##" type="text"/>
+   </foreignObject>
+  </g>
+</svg>

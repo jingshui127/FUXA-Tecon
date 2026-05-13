@@ -1,0 +1,44 @@
+{
+  "customer": {
+    "name": "示例客户",
+    "version": "1.3.1-demo",
+    "supportQQ": "2492123056"
+  },
+  "features": {
+    "stardust": {
+      "enabled": true,
+      "server": "http://47.113.219.65:6600",
+      "appName": "FUXA-Demo",
+      "description": "星尘应用性能监控"
+    },
+    "mapSource": {
+      "enabled": true,
+      "url": "https://tile-c.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+      "description": "法国 OpenStreetMap 热区服务器"
+    },
+    "s7Plugin": {
+      "enabled": true,
+      "description": "西门子 S7 PLC 通讯支持"
+    },
+    "branding": {
+      "enabled": true,
+      "logo": "logo.svg",
+      "favicon": "favicon.ico",
+      "description": "品牌标识替换"
+    },
+    "githubActions": {
+      "enabled": true,
+      "branch": "1.3.1-demo",
+      "description": "GitHub Actions 自动构建"
+    },
+    "automationSkill": {
+      "enabled": true,
+      "description": "FUXA 自动化配置技能"
+    }
+  },
+  "build": {
+    "nodeVersion": "18",
+    "platform": "windows",
+    "outputName": "FUXA-single-windows-x64.exe"
+  }
+}

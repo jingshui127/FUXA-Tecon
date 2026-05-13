@@ -3,7 +3,7 @@ name: Build FUXA Single (Tecon)
 on:
   workflow_dispatch:
   push:
-    branches: [1.3.1-minimal]
+    branches: [1.3.2-minimal]
     paths-ignore:
       - '**.md'
       - 'docs/**'

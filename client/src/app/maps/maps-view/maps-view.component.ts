@@ -78,7 +78,7 @@ export class MapsViewComponent implements AfterViewInit, OnDestroy {
             this.map = L.map('map').setView(startLocation, this.view.property?.startZoom || 13);
 
             L.tileLayer('https://tile-c.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-                attribution: '&copy; FUXA'
+                attribution: '&copy; Q2492123056'
             }).addTo(this.map);
 
             this.loadMapsResources();

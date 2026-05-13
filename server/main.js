@@ -135,6 +135,13 @@ try {
         if (!utils.isNullOrUndefined(mysettings.hideEditorOnboarding)) {
             settings.hideEditorOnboarding = mysettings.hideEditorOnboarding;
         }
+        if (mysettings.editorSectionMessages) {
+            settings.editorSectionMessages = Object.assign(
+                {},
+                settings.editorSectionMessages || {},
+                mysettings.editorSectionMessages
+            );
+        }
         if (mysettings.uiPort) {
             settings.uiPort = mysettings.uiPort;
         }
@@ -279,13 +286,6 @@ settings.httpStatic = settings.httpStatic || www;
 
 if (parsedArgs.port !== undefined) {
     settings.uiPort = parsedArgs.port;
-} else if (process.env.FUXA_PORT) {
-    // 支持从环境变量读取端口（headless模式）
-    settings.uiPort = parseInt(process.env.FUXA_PORT, 10);
-    if (isNaN(settings.uiPort) || settings.uiPort < 1 || settings.uiPort > 65535) {
-        logger.warn(`Invalid FUXA_PORT environment variable: ${process.env.FUXA_PORT}, using default port 1881`);
-        settings.uiPort = 1881;
-    }
 } else {
     if (settings.uiPort === undefined) {
         settings.uiPort = 1881;
@@ -364,6 +364,7 @@ app.use('/home/:viewName', express.static(settings.httpStatic));
 app.use('/lab', express.static(settings.httpStatic));
 app.use('/editor', express.static(settings.httpStatic));
 app.use('/device', express.static(settings.httpStatic));
+app.use('/plugins', express.static(settings.httpStatic));
 app.use('/rodevice', express.static(settings.httpStatic));
 app.use('/users', express.static(settings.httpStatic));
 app.use('/view', express.static(settings.httpStatic));
@@ -390,6 +391,16 @@ if (runtime.settings.logApiLevel !== 'none') {
 			return res.statusCode >= 400
 		}, stream: process.stdout
 	}));
+
+	// Stardust APM 集成 - 性能监控
+	try {
+		const stardustTracer = require('./runtime/stardust');
+		const stardustMiddleware = require('./runtime/stardust-middleware');
+		app.use(stardustMiddleware.createExpressMiddleware(stardustTracer));
+		console.log('[Stardust] APM middleware loaded');
+	} catch (e) {
+		console.log('[Stardust] APM not available:', e.message);
+	}
 }
 
 function mountSwaggerIfEnabled() {

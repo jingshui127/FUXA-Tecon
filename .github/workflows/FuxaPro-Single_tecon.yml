@@ -102,4 +102,4 @@ jobs:
       with:
         name: FuxaPro-Single
         path: artifacts/*
-        retention-days: 30
+        retention-days: 1

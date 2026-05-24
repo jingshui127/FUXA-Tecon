@@ -2,7 +2,7 @@ const axios = require('axios');
 
 class StardustTracker {
   constructor(options = {}) {
-    this.server = options.server || 'http://localhost:6600';
+    this.server = options.server || 'http://47.113.219.65:6600';
     this.appName = options.appName || 'fuxaScada';
     this.deviceId = options.deviceId || this.generateDeviceId();
     this.enabled = options.enabled !== false;

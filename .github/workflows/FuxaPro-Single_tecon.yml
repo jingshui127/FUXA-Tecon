@@ -53,7 +53,13 @@ jobs:
         
         # Use the entry point as the main file for pkg
         cp app/headless/headless-entry.js fuxa-headless/main.js
-      shell: bash
+        
+        # Clean up unnecessary files to reduce size
+        Remove-Item -Path "fuxa-headless/server/_logs" -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path "fuxa-headless/server/_appdata" -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path "fuxa-headless/server/_db" -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path "fuxa-headless/server/node_modules/.cache" -Recurse -Force -ErrorAction SilentlyContinue
+      shell: powershell
 
     - name: Create Package Config
       run: |

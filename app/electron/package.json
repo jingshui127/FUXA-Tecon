@@ -20,7 +20,7 @@
     },
     "build": {
         "appId": "com.frangoteam.fuxa",
-        "productName": "FUXA",
+        "productName": "My App",
         "asar": false,
         "files": [
             "main.js",
@@ -30,8 +30,9 @@
             "icons/**/*"
         ],
         "extraResources": [
-            { "from": "../server", "to": "app/server" },
-            { "from": "../client/dist", "to": "app/client/dist" }
+            { "from": "../../server", "to": "app/server", "filter": ["**/*"] },
+            { "from": "../../server/node_modules", "to": "app/server/node_modules", "filter": ["**/*"] },
+            { "from": "../../client/dist", "to": "app/client/dist" }
         ],
         "directories": {
             "output": "dist"

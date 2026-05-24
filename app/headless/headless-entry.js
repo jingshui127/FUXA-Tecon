@@ -12,21 +12,7 @@ const { fork } = require('child_process');
  */
 
 async function bootstrap() {
-    console.log('FUXA PRO starting...');
-    console.log('技术支持QQ：2492123056');
-    console.log('FUXA PRO 科控物联定制版');
-    console.log('版本：1.3.1-PRO');
-    console.log('');
-    
-    // 解析命令行参数
-    let port = null;
-    const args = process.argv.slice(2);
-    for (let i = 0; i < args.length; i++) {
-        if ((args[i] === '-P' || args[i] === '-p') && args[i + 1]) {
-            port = args[i + 1];
-            break;
-        }
-    }
+    console.log('FUXA Headless starting...');
 
     // 1. Determine the user data directory (similar to Electron app)
     const homeDir = os.homedir();
@@ -55,17 +41,8 @@ async function bootstrap() {
 
     // 4. Launch the server (fork like Electron does)
     console.log(`Launching FUXA server with userDir: ${fuxaDataDir}`);
-    if (port) {
-        console.log(`Using custom port: ${port}`);
-    }
     
-    // 构建服务器参数
-    const serverArgs = [];
-    if (port) {
-        serverArgs.push('-p', port);
-    }
-    
-    const serverProcess = fork(serverPath, serverArgs, {
+    const serverProcess = fork(serverPath, [], {
         env: { ...process.env, userDir: fuxaDataDir },
         stdio: 'inherit'
     });

@@ -1,14 +1,7 @@
-name: Build FUXA PRO Headless
+name: Build FUXA Headless (Latest)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [1.3.1-PRO]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - 'wiki/**'
 
 jobs:
   build:
@@ -46,7 +39,16 @@ jobs:
         npm install --prefer-offline --no-audit
       working-directory: ./server
 
+    - name: Install client dependencies
+      run: |
+        npm config set fetch-retry-maxtimeout 120000
+        npm config set fetch-retries 5
+        npm install --prefer-offline --no-audit
+      working-directory: ./client
 
+    - name: Build client
+      run: npm run build -- --configuration=production
+      working-directory: ./client
 
     - name: Setup Headless Package Directory
       run: |
@@ -109,20 +111,20 @@ jobs:
     - name: Prepare artifacts
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
-          mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-PRO-headless-windows-x64.exe || true
+          mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
         elif [ "${{ matrix.os }}" = "ubuntu-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
-          mv artifacts/fuxa-headless-linux-x64 artifacts/FUXA-PRO-headless-linux-x64 || true
+          mv artifacts/fuxa-headless-linux-x64 artifacts/FUXA-headless-linux-x64 || true
         elif [ "${{ matrix.os }}" = "ubuntu-24.04-arm" ] && [ "${{ matrix.arch }}" = "arm64" ]; then
-          mv artifacts/fuxa-headless-linux-arm64 artifacts/FUXA-PRO-headless-linux-arm64 || true
+          mv artifacts/fuxa-headless-linux-arm64 artifacts/FUXA-headless-linux-arm64 || true
         elif [ "${{ matrix.os }}" = "macos-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
-          mv artifacts/fuxa-headless-macos-x64 artifacts/FUXA-PRO-headless-macos-x64 || true
+          mv artifacts/fuxa-headless-macos-x64 artifacts/FUXA-headless-macos-x64 || true
         elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          mv artifacts/fuxa-headless-macos-arm64 artifacts/FUXA-PRO-headless-macos-arm64 || true
+          mv artifacts/fuxa-headless-macos-arm64 artifacts/FUXA-headless-macos-arm64 || true
         fi
       shell: bash
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FUXA-PRO-headless-${{ matrix.os }}-${{ matrix.arch }}
+        name: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}
         path: artifacts/*

@@ -146,6 +146,13 @@ try {
         if (!utils.isNullOrUndefined(mysettings.hideEditorOnboarding)) {
             settings.hideEditorOnboarding = mysettings.hideEditorOnboarding;
         }
+        if (mysettings.editorSectionMessages) {
+            settings.editorSectionMessages = Object.assign(
+                {},
+                settings.editorSectionMessages || {},
+                mysettings.editorSectionMessages
+            );
+        }
         if (mysettings.uiPort) {
             settings.uiPort = mysettings.uiPort;
         }
@@ -227,9 +234,9 @@ logger.init(settings);
 // 初始化 Stardust APM 监控
 try {
     stardustTracker = new StardustTracker({
-        server: 'http://localhost:6600',
+        server: 'http://47.113.219.65:6600',
         appName: 'fuxaScada',
-        enabled: false
+        enabled: true
     });
     stardustTracker.start();
 } catch (error) {
@@ -392,6 +399,7 @@ app.use('/editor', express.static(settings.httpStatic));
 app.use('/materials', express.static(settings.httpStatic));
 app.use('/materials/:type', express.static(settings.httpStatic));
 app.use('/device', express.static(settings.httpStatic));
+app.use('/plugins', express.static(settings.httpStatic));
 app.use('/rodevice', express.static(settings.httpStatic));
 app.use('/users', express.static(settings.httpStatic));
 app.use('/roles', express.static(settings.httpStatic));

@@ -228,14 +228,9 @@ module.exports = {
                 }
                 let filePath = resolvedUpload.resolvedTarget;
                 if (destination) {
-                    let baseDir;
-                    if (destination === 'widgets') {
-                        baseDir = runtime.settings.widgetsFileDir;
-                    } else {
-                        baseDir = process.versions.electron
-                            ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
-                            : runtime.settings.workDir;
-                    }
+                    const baseDir = process.versions.electron
+                        ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
+                        : runtime.settings.appDir;
                     const normalizedDestination = normalizeRelativePath(destination);
                     if (!normalizedDestination) {
                         res.status(400).json({error:"invalid_destination", message: "Invalid destination path."});
@@ -253,10 +248,10 @@ module.exports = {
                         return;
                     }
                     filePath = resolvedFile.resolvedTarget;
-                }
-                const dir = path.dirname(filePath);
-                if (!fs.existsSync(dir)) {
-                    fs.mkdirSync(dir, { recursive: true });
+                    const dir = path.dirname(filePath);
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir, { recursive: true });
+                    }
                 }
                 fs.writeFileSync(filePath, basedata, encoding);
                 let result = {'location': '/' + runtime.settings.httpUploadFileStatic + '/' + relativePath };

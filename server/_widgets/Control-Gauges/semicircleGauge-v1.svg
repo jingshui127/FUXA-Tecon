@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg id="semicircleGauge" width="200" height="120" viewBox="0 0 200 120"
+     xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <path id="gaugeArc" fill="none" stroke="#cccccc" d="" stroke-linecap="round"/>
+  <path id="gaugeValue" fill="none" stroke="#74b1e6" d="" stroke-linecap="round"/>
+  <circle id="knob" fill="#3781d8" cx="0" cy="0" cursor="pointer"/>
+  <text id="gaugeText" x="100" y="100" text-anchor="middle" font-size="28"
+        fill="#000000" font-family="Arial">30%</text>
+
+  
+  <!-- Static preview (used in <img>) -->
+  <path id="previewArc" fill="none" stroke="#cccccc" stroke-width="12" d="M 20.00,100.00 A 80,80 0 1,1 180.00,100.00" stroke-linecap="round"/>
+  <path id="previewValue" fill="none" stroke="#74b1e6" stroke-width="12" d="M 20.00,100.00 A 80,80 0 0,1 52.98,35.28" stroke-linecap="round"/>
+  <circle id="previewKnob" fill="#3781d8" r="12" cx="52.98" cy="35.28" />
+<script type="text/javascript">
+    <![CDATA[
+    let initValue = 30;
+    //!export-start
+    let _pc_arcColor = "#ccccccff";
+    let _pc_valueColor = "#74b1e6ff";
+    let _pc_knobColor = "#3781d8ff";
+    let _pc_textColor = "#000000ff";
+    let _pn_textSize = 28;
+    let _pn_value = initValue;
+    let _pn_min = 0;
+    let _pn_max = 100;
+    let _pn_knobRadius = 12;
+    let _pn_arcWidth = 12;
+    let _ps_unit = "%";
+    let _pb_showValue = true;
+    //!export-end
+
+    let svg = null;
+    let isDragging = false;
+
+    function init() {
+      const pv = document.getElementById('previewValue');
+      if (pv) pv.style.display = "none";
+      const pa = document.getElementById('previewArc');
+      if (pa) pa.style.display = "none";
+      const pk = document.getElementById('previewKnob');
+      if (pk) pk.style.display = "none";
+
+      svg = document.getElementById('semicircleGauge');
+
+      const knob = document.getElementById('knob');
+      knob.style.fill = _pc_knobColor;
+      knob.setAttribute('r', _pn_knobRadius);
+
+      document.getElementById('gaugeArc').style.stroke = _pc_arcColor;
+      document.getElementById('gaugeArc').setAttribute('stroke-width', _pn_arcWidth);
+
+      document.getElementById('gaugeValue').style.stroke = _pc_valueColor;
+      document.getElementById('gaugeValue').setAttribute('stroke-width', _pn_arcWidth);
+
+      const gaugeText = document.getElementById('gaugeText');
+      gaugeText.style.fill = _pc_textColor;
+      gaugeText.style.fontSize = _pn_textSize + 'px';
+      gaugeText.style.display = _pb_showValue ? "inline" : "none";
+
+      updateGauge(_pn_value);
+
+      knob.addEventListener('mousedown', startDrag);
+      knob.addEventListener('touchstart', startTouch);
+      svg.addEventListener('mousemove', onMove);
+      svg.addEventListener('mouseup', endDrag);
+      svg.addEventListener('touchmove', onTouchMove);
+      svg.addEventListener('touchend', endDrag);
+    }
+
+    function polarToCartesian(cx, cy, r, angle) {
+      const rad = angle * Math.PI / 180;
+      return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    }
+
+    function describeArc(cx, cy, r, startAngle, endAngle) {
+      const start = polarToCartesian(cx, cy, r, endAngle);
+      const end = polarToCartesian(cx, cy, r, startAngle);
+      const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
+      return ["M", start.x, start.y, "A", r, r, 0, largeArc, 0, end.x, end.y].join(" ");
+    }
+
+    function updateGauge(value) {
+      value = Math.max(_pn_min, Math.min(_pn_max, value));
+      const percent = (value - _pn_min) / (_pn_max - _pn_min);
+
+      const gaugeText = document.getElementById('gaugeText');
+      gaugeText.textContent = _pb_showValue ? (Math.round(_pn_value) + _ps_unit) : "";
+
+      const cx = 100, cy = 100, r = 80;
+      const startAngle = 180;
+      const endAngle = 180 + 180 * percent;
+
+      document.getElementById('gaugeArc').setAttribute('d',
+        describeArc(cx, cy, r, 180, 360));
+      document.getElementById('gaugeValue').setAttribute('d',
+        describeArc(cx, cy, r, startAngle, endAngle));
+
+      const knobPos = polarToCartesian(cx, cy, r, endAngle);
+      document.getElementById('knob').setAttribute('cx', knobPos.x);
+      document.getElementById('knob').setAttribute('cy', knobPos.y);
+    }
+
+    function putValue(id, value) {
+      switch(id) {
+        case '_pc_arcColor': _pc_arcColor = value; init(); break;
+        case '_pc_valueColor': _pc_valueColor = value; init(); break;
+        case '_pc_knobColor': _pc_knobColor = value; init(); break;
+        case '_pc_textColor': _pc_textColor = value; init(); break;
+        case '_pn_textSize': _pn_textSize = parseInt(value); init(); break;
+        case '_pn_arcWidth': _pn_arcWidth = parseFloat(value); init(); break;
+        case '_pn_knobRadius': _pn_knobRadius = parseFloat(value); init(); break;
+        case '_ps_unit': _ps_unit = value; init(); break;
+        case '_pb_showValue': _pb_showValue = value === "true" || value === true; init(); break;
+        case '_pn_value': _pn_value = parseFloat(value); updateGauge(_pn_value); break;
+      }
+    }
+
+    function getSvgPoint(evt) {
+      const pt = svg.createSVGPoint();
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function handleInputFromEvent(evt) {
+      const pt = getSvgPoint(evt);
+      handleInput(pt.x, pt.y);
+    }
+
+    function handleInput(x, y) {
+      const angle = angleFromPoint(x, y, 100, 100);
+      if (angle >= 180 && angle <= 360) {
+        const percent = (angle - 180) / 180;
+        _pn_value = _pn_min + percent * (_pn_max - _pn_min);
+        updateGauge(_pn_value);
+		postValue('_pn_value', _pn_value);
+      }
+    }
+
+    function angleFromPoint(x, y, cx, cy) {
+      const dx = x - cx, dy = y - cy;
+      let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      if (angle < 0) angle += 360;
+      return angle;
+    }
+
+    function startDrag(e) {
+      e.preventDefault();
+      isDragging = true;
+    }
+
+    function startTouch(e) {
+      e.preventDefault();
+      isDragging = true;
+    }
+
+    function onMove(e) {
+      if (isDragging) handleInputFromEvent(e);
+    }
+
+    function onTouchMove(e) {
+      if (isDragging && e.touches.length > 0) {
+        handleInputFromEvent(e.touches[0]);
+      }
+    }
+
+    function endDrag() {
+      isDragging = false;
+    }
+
+    function postValue(id, value) {
+	  console.error('Not defined!');
+    }
+	  
+    setTimeout(() => { init(); }, 100);
+    ]]>
+  </script>
+</svg>

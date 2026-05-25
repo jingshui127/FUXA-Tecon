@@ -105,8 +105,8 @@ jobs:
       working-directory: ./app/electron
       shell: bash
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: FUXA-${{ matrix.os }}-${{ matrix.arch }}
-        path: app/electron/artifacts/*
+    - name: List built files
+      run: |
+        ls -la app/electron/artifacts/
+        echo "Build completed! Artifact: FUXA-${{ matrix.os }}-${{ matrix.arch }}"
+      shell: bash

@@ -87,9 +87,8 @@ jobs:
         mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-single-windows-x64.exe || true
       shell: bash
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: FUXA-single
-        path: artifacts/*
-        retention-days: 1
+    - name: List built files
+      run: |
+        ls -la artifacts/
+        echo "Build completed! Artifact: FUXA-single-windows-x64.exe"
+      shell: bash

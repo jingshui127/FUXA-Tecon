@@ -123,8 +123,8 @@ jobs:
         fi
       shell: bash
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}
-        path: artifacts/*
+    - name: List built files
+      run: |
+        ls -la artifacts/
+        echo "Build completed! Artifact: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}"
+      shell: bash

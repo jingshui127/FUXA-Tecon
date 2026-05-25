@@ -27,6 +27,13 @@ jobs:
       with:
         node-version: '18'
 
+    - name: Clear cache
+      uses: actions/delete-package-versions@v4
+      continue-on-error: true
+      with:
+        package-name: 'cache'
+        min-versions-to-keep: 1
+
     - name: Display contact information
       run: |
         echo "Build FUXA PRO-Single (TC)"
@@ -97,9 +104,8 @@ jobs:
         mv artifacts/FuxaPro-Single-win-x64.exe artifacts/FuxaPro-Single-windows-x64.exe || true
       shell: bash
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: FuxaPro-Single
-        path: artifacts/*
-        retention-days: 1
+    - name: List built files
+      run: |
+        ls -la artifacts/
+        echo "Build completed! Artifact: FuxaPro-Single-windows-x64.exe"
+      shell: bash

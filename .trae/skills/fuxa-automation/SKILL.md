@@ -651,6 +651,48 @@ await client.setScheduler('scheduler_01', {
 const events = await client.getEventsHistory({ start: '2026-01-01', end: '2026-04-23' });
 ```
 
+---
+
+## 打包与部署注意事项
+
+### 原生模块打包
+
+FUXA 使用 `pkg` 工具打包为独立 EXE，但原生模块（如 `node-snap7`）需要特殊处理：
+
+```bash
+# 正确的打包命令（包含原生模块参数）
+pkg fuxa-single/package.json \
+  --targets node18-win-x64 \
+  --out-path artifacts \
+  --public-packages "node-snap7,bindings,nan"
+```
+
+### Node.js 版本要求
+
+| 目标平台 | 推荐 Node.js 版本 | 说明 |
+|----------|------------------|------|
+| node18-win-x64 | 18.x | S7 插件已预编译支持 |
+| node20-win-x64 | 20.x | 需要重新编译 node-snap7 |
+
+**警告**：打包时 Node.js 版本必须与目标平台版本一致，否则会出现 `"try to create S7-1500 but plugin is missing!"` 错误。
+
+### fontkit 编码问题
+
+`fontkit` 模块在 pkg 打包环境下使用 `windows-1252` 编码，会导致 Node.js 18 启动失败。解决方案：
+
+1. 从 `server/package.json` 中移除 `fontkit` 依赖
+2. 从 `server/api/resources/index.js` 中移除 fontkit 引用
+
+### 常见打包错误
+
+| 错误信息 | 原因 | 解决方案 |
+|----------|------|----------|
+| `try to create S7-1500 but plugin is missing!` | Node.js 版本不匹配或原生模块未打包 | 检查 Node.js 版本，添加 `--public-packages` 参数 |
+| `ERR_ENCODING_NOT_SUPPORTED: The "windows-1252" encoding is not supported` | fontkit 编码问题 | 移除 fontkit 依赖 |
+| `Cannot find module 'node-snap7'` | 原生模块未被打包 | 添加 `--public-packages "node-snap7,bindings,nan"` |
+
+---
+
 ## 视图组态开发
 
 ### 视图创建 API

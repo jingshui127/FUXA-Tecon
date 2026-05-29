@@ -667,5 +667,196 @@ function addComponentToView(view, itemId, itemConfig, svgElement) {
 
 ---
 
-*最后更新: 2026-05-12*
+---
+
+## 案例 9: S7 插件加载失败（打包问题）
+
+### 现象
+- 启动打包后的 EXE 文件时，日志显示：
+  ```
+  "try to create S7-1500 but plugin is missing!"
+  ```
+- S7-1200/S7-1500 设备无法创建
+- S7 协议相关功能完全不可用
+
+### 根因
+
+**原生模块未被正确打包** 或 **Node.js 版本不匹配**
+
+FUXA 使用 `pkg` 工具打包为独立 EXE，但原生模块（如 `node-snap7`）需要特殊处理：
+
+1. **缺少 `--public-packages` 参数**：pkg 默认不打包原生模块
+2. **Node.js 版本不一致**：打包时使用的 Node.js 版本与目标平台版本不匹配
+
+### 错误示例
+```bash
+# ❌ 错误：缺少原生模块打包参数
+pkg fuxa-single/package.json --targets node18-win-x64 --out-path artifacts
+
+# ❌ 错误：版本不匹配
+# 使用 Node.js 20 打包，但目标平台是 node18-win-x64
+```
+
+### 正确示例
+```bash
+# ✅ 正确：包含原生模块参数
+pkg fuxa-single/package.json \
+  --targets node18-win-x64 \
+  --out-path artifacts \
+  --public-packages "node-snap7,bindings,nan"
+```
+
+### 版本兼容性矩阵
+
+| Node.js 版本 | 目标平台 | 兼容性 | 说明 |
+|--------------|----------|--------|------|
+| 18.x | node18-win-x64 | ✅ | 推荐使用 |
+| 20.x | node18-win-x64 | ❌ | 原生模块 NODE_MODULE_VERSION 不匹配 |
+| 18.x | node20-win-x64 | ❌ | 原生模块 NODE_MODULE_VERSION 不匹配 |
+| 20.x | node20-win-x64 | ✅ | 需要确保 node-snap7 针对 Node.js 20 编译 |
+
+### 解决方案
+
+**步骤1: 确认打包环境**
+```bash
+# 检查 Node.js 版本
+node --version  # 应显示 v18.x.x
+
+# 检查 pkg 版本
+pkg --version
+```
+
+**步骤2: 使用正确的打包命令**
+```bash
+# 删除旧的打包目录（避免缓存问题）
+rm -rf fuxa-single artifacts/fuxa-single.exe
+
+# 创建正确的目录结构
+mkdir -p fuxa-single/server fuxa-single/client/dist
+cp -r server/. fuxa-single/server/
+cp -r client/dist/. fuxa-single/client/dist/
+cp app/headless/headless-entry.js fuxa-single/main.js
+
+# 创建 package.json
+cat > fuxa-single/package.json <<EOF
+{
+  "name": "fuxa-single",
+  "version": "1.3.2",
+  "bin": "main.js",
+  "pkg": {
+    "assets": ["server/**/*", "client/dist/**/*", "_reports/**/*"],
+    "compression": "Brotli"
+  }
+}
+EOF
+
+# 执行打包（关键：包含 --public-packages 参数）
+pkg fuxa-single/package.json \
+  --targets node18-win-x64 \
+  --out-path artifacts \
+  --public-packages "node-snap7,bindings,nan"
+```
+
+**步骤3: 验证打包结果**
+```bash
+# 运行打包后的 EXE
+./artifacts/fuxa-single.exe
+
+# 检查日志是否显示：
+# 'S7-1500' created
+# 'S7-1200' created
+```
+
+### 预防措施
+1. **使用 GitHub Actions 自动构建**，避免本地环境差异
+2. **确保 workflow 中 Node.js 版本与目标平台一致**
+3. **始终包含 `--public-packages "node-snap7,bindings,nan"` 参数**
+4. **定期清理旧的打包目录**，避免缓存问题
+
+---
+
+## 案例 10: fontkit 编码错误导致启动失败
+
+### 现象
+- 打包后的 EXE 文件启动时崩溃，日志显示：
+  ```
+  RangeError [ERR_ENCODING_NOT_SUPPORTED]: The "windows-1252" encoding is not supported
+  ```
+- 服务器无法启动
+
+### 根因
+`fontkit` 模块在 `pkg` 打包环境下使用 `windows-1252` 编码创建 `TextDecoder`，但 Node.js 18 在某些环境下不支持此编码。
+
+`fontkit` 仅用于读取 TTF 字体文件的名称，属于非核心功能。
+
+### 解决方案
+
+**方案1: 移除 fontkit 依赖（推荐）**
+
+1. 从 `server/package.json` 中移除 fontkit：
+```json
+{
+  "dependencies": {
+    // 移除 "fontkit": "^2.0.4",
+  }
+}
+```
+
+2. 从 `server/api/resources/index.js` 中移除 fontkit 引用：
+```javascript
+// 移除以下代码：
+const fontkit = require('fontkit');
+
+// 以及相关使用代码：
+if (resourcesFilter.fonts.some(suffix => fileName.endsWith(suffix))) {
+    const font = fontkit.openSync(filePath);
+    fileLabel = font.fullName;
+}
+```
+
+3. 重新安装依赖并打包：
+```bash
+cd server
+npm install
+cd ..
+# 重新打包
+```
+
+**方案2: 降级 fontkit 版本**
+
+如果需要保留字体名称读取功能，可以尝试降级 fontkit 版本。
+
+### 预防措施
+- 将 fontkit 标记为可选依赖或开发依赖
+- 在打包脚本中自动移除 fontkit
+
+---
+
+## 快速诊断流程图
+
+```
+遇到打包问题时，按此顺序检查：
+
+┌─────────────────────────────────────────┐
+│ 0. Node.js 版本是否匹配目标平台？          │
+│    → node --version                       │
+│    → 目标平台: node18-win-x64 → Node 18  │
+├─────────────────────────────────────────┤
+│ 1. S7 插件加载失败？                      │
+│    → 添加 --public-packages 参数          │
+│    → 确认 node-snap7 已安装              │
+├─────────────────────────────────────────┤
+│ 2. fontkit 编码错误？                     │
+│    → 从 package.json 移除 fontkit        │
+│    → 移除相关代码引用                     │
+├─────────────────────────────────────────┤
+│ 3. 清理打包缓存                          │
+│    → 删除 fuxa-single 目录               │
+│    → 删除旧的 artifacts 文件             │
+└─────────────────────────────────────────┘
+```
+
+---
+
+*最后更新: 2026-05-15*
 *基于实战经验整理，持续更新中...*

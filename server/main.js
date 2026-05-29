@@ -101,7 +101,7 @@ try {
     }
 
     settings.workDir = workDir;
-    settings.appDir = __dirname;
+    settings.appDir = rootDir;
     settings.packageDir = path.resolve(rootDir, '_pkg');
     settings.settingsFile = settingsFile;
     settings.environment = process.env.NODE_ENV || 'prod';

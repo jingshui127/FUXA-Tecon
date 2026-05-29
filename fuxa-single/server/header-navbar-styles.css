@@ -1,0 +1,139 @@
+/**
+ * header-navbar-styles.css - 方案A页眉导航栏自定义样式
+ *
+ * 配合 setup-header-layout.js 使用
+ *
+ * 使用方式:
+ * 1. 将此文件内容复制到 FUXA Editor -> Layout Settings -> Custom Styles
+ * 2. 或通过 setup-header-layout.js 自动注入
+ */
+
+/* ===== 方案A: 页眉导航栏样式增强 ===== */
+
+/* 基础样式 */
+.header {
+    height: 48px !important;
+    min-height: 48px !important;
+    background-color: #1a1a2e !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    z-index: 100 !important;
+}
+
+/* 参数数值样式 */
+.header-items-button button[type="label"],
+.header-items-button button.mat-button {
+    padding: 4px 12px !important;
+    margin: 0 !important;
+    border-radius: 4px !important;
+    font-family: 'Microsoft YaHei', system-ui, sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    background: transparent !important;
+    color: #ffffff !important;
+    transition: background-color 150ms ease-out,
+                color 300ms ease-out !important;
+}
+
+/* 参数标签名(小字) */
+.header-items-button button[ng-reflect-text="合模"],
+.header-items-button button[ng-reflect-text="开模"],
+.header-items-button button[ng-reflect-text="压力"],
+.header-items-button button[ng-reflect-text="射速"],
+.header-items-button button[ng-reflect-text="周期"] {
+    font-size: 10px !important;
+    font-weight: 400 !important;
+    color: #94a3b8 !important;
+    padding-bottom: 0 !important;
+}
+
+/* 单位标签 */
+.header-items-button button[ng-reflect-text="mm"],
+.header-items-button button[ng-reflect-text="bar"],
+.header-items-button button[ng-reflect-text="rpm"],
+.header-items-button button[ng-reflect-text="s"] {
+    font-size: 11px !important;
+    font-weight: 400 !important;
+    color: #94a3b8 !important;
+    padding-top: 0 !important;
+}
+
+/* 报警Badge脉冲动画 */
+.button-counter.alarm-color {
+    background-color: #dc2626 !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    line-height: 18px !important;
+    border-radius: 9px !important;
+    padding: 0 5px !important;
+    animation: hdr-badge-pulse 1s ease-in-out infinite !important;
+}
+
+@keyframes hdr-badge-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 0.75;
+    }
+}
+
+/* 参数值接近警告(黄) */
+.param-warning {
+    color: #fbbf24 !important;
+}
+
+/* 参数值超限危险(红) */
+.param-danger {
+    color: #ef4444 !important;
+    animation: hdr-value-blink 500ms ease-in-out infinite !important;
+}
+
+@keyframes hdr-value-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* 参数值离线 */
+.param-offline {
+    color: #64748b !important;
+}
+
+/* 分隔符样式 */
+.header-divider {
+    width: 1px;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.08);
+    margin: 0 8px;
+}
+
+/* 日期时间样式 */
+.header-datetime {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+/* 用户信息样式 */
+.header-userinfo {
+    font-family: 'Microsoft YaHei', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+/* 按钮悬停效果 */
+.header-items-button button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 按钮点击效果 */
+.header-items-button button:active {
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    transform: scale(0.97);
+}

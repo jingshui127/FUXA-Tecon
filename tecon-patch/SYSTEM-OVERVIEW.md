@@ -262,6 +262,30 @@ done
    - 检查配置文件中的 `enabled` 字段
    - 验证相关依赖是否安装
 
+5. **S7 插件加载失败**
+   - **现象**: `"try to create S7-1500 but plugin is missing!"`
+   - **原因**: Node.js 版本不匹配或原生模块未正确打包
+   - **解决方案**:
+     - 使用 Node.js 18 进行打包
+     - 确保打包命令包含 `--public-packages "node-snap7,bindings,nan"` 参数
+     - 打包时 Node.js 版本必须与目标平台版本一致
+
+6. **fontkit 编码错误**
+   - **现象**: `RangeError [ERR_ENCODING_NOT_SUPPORTED]: The "windows-1252" encoding is not supported`
+   - **原因**: fontkit 模块在 pkg 打包环境下不兼容
+   - **解决方案**:
+     - 从 `server/package.json` 中移除 `fontkit` 依赖
+     - 从 `server/api/resources/index.js` 中移除 fontkit 引用
+
+### 版本兼容性注意事项
+
+| 目标平台 | 推荐 Node.js 版本 | 说明 |
+|----------|------------------|------|
+| node18-win-x64 | 18.x | S7 插件已预编译支持 |
+| node20-win-x64 | 20.x | 需要重新编译 node-snap7 |
+
+**关键原则**: 打包时 Node.js 版本必须与 `--targets` 参数指定的版本一致。
+
 ## 技术支持
 
 - 技术支持QQ：2492123056

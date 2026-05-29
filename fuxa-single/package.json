@@ -1,0 +1,13 @@
+{
+  "name": "fuxa-single",
+  "version": "1.3.2-tecon",
+  "bin": "main.js",
+  "pkg": {
+    "assets": [
+      "server/**/*",
+      "client/dist/**/*",
+      "_reports/**/*"
+    ],
+    "compression": "Brotli"
+  }
+}

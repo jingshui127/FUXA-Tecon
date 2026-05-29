@@ -1,6 +1,6 @@
 ---
 name: fuxa-automation
-description: FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管理 FUXA 服务器。Invoke when user wants to deploy, configure, or manage FUXA SCADA system, import CSV point tables, filter placeholder tags, or batch manage device tags.
+description: FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管理 FUXA 服务器，支持设备驱动配置、报警配置、标签读写、组态配置等。Invoke when user wants to deploy, configure, or manage FUXA SCADA system.
 ---
 
 # FUXA 自动化配置技能
@@ -9,9 +9,134 @@ description: FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管理
 
 本技能通过 **FUXA REST API** 远程管理 FUXA SCADA/HMI 服务器。所有操作都通过 HTTP 请求完成，不需要在本机安装 FUXA。
 
-## 红线规则
+## 配置方式选择
 
-> **禁止直接修改 FUXA 配置文件。** 所有配置变更必须通过 REST API 完成。
+> **优先使用 REST API**，但在以下场景可考虑直接操作：
+
+| 方式 | 适用场景 | 示例 |
+|------|---------|------|
+| **REST API（首选）** | 日常配置、标签增删改查、设备管理 | `POST /api/project` 更新标签 |
+| **直接修改数据库/文件** | 批量修复、紧急恢复、API 无法覆盖的操作 | SQLite 修复设备配置、JSON 直接编辑 |
+
+### 直接操作的注意事项
+
+1. **备份优先**：修改前备份 `server/_appdata/project.fuxap.db`
+2. **停止服务**：建议先停止 FUXA 服务再修改
+3. **数据格式**：确保 JSON 格式正确，字段类型匹配
+4. **重启生效**：修改后需重启 FUXA 服务
+
+### 常用直接操作路径
+
+| 操作对象 | 路径 | 说明 |
+|---------|------|------|
+| 项目数据库 | `server/_appdata/project.fuxap.db` | SQLite，包含所有项目配置 |
+| DAQ 数据 | `server/_db/daq-data_*.db` | 历史数据存储 |
+| 配置文件 | `server/settings.json` | 系统设置 |
+
+## FUXA 数据库架构（重要！）
+
+> **理解数据库结构是高效操作 FUXA 的基础。** 变量/标签存储在 SQLite 的 `devices` 表中。
+
+### 核心数据库：`project.fuxap.db`
+
+**路径**: `server/_db/project.fuxap.db`  
+**类型**: SQLite3
+
+#### 表结构总览
+
+| 表名 | 存储内容 | value 字段格式 |
+|------|---------|---------------|
+| **`devices`** ⭐ | 设备 + 所有**变量/标签** | JSON（包含 tags 对象） |
+| `general` | 项目名称、语言等通用设置 | JSON |
+| `views` | 视图/组态画面 | JSON |
+| `alarms` | 报警配置 | JSON |
+| `scripts` | 脚本 | JSON |
+| `texts` | 文本资源 | JSON |
+| `notifications` | 通知配置 | JSON |
+| `reports` | 报表配置 | JSON |
+
+#### devices 表详解（变量存储位置）
+
+```sql
+CREATE TABLE devices (
+    name TEXT PRIMARY KEY,     -- 设备ID，如 "d_f9faa9df-f80c40de"
+    value TEXT,                -- ⭐ 设备配置JSON（包含所有标签）
+    connection TEXT,           -- 连接状态
+    cntid TEXT,                -- 连接ID
+    cntpwd TEXT                -- 连接密码
+);
+```
+
+**value 字段内容示例**：
+```json
+{
+    "id": "d_f9faa9df-f80c40de",
+    "name": "modbus",
+    "type": "ModbusTCP",
+    "enabled": true,
+    "driver": "modbus",
+    "hasCustomTags": true,
+    "settings": {
+        "ipaddress": "127.0.0.1",
+        "port": 502,
+        "slaveid": 1
+    },
+    "tags": {                              // ← 所有变量在这里！
+        "t_d0_0100": {
+            "id": "t_d0_0100",
+            "name": "合模1压力1",
+            "type": "UInt16",
+            "memaddress": "400000",         // 字符串类型
+            "address": 101,                 // 数字类型 (1-based)
+            "divisor": 10
+        },
+        "t_d0_0101": { ... }
+    }
+}
+```
+
+### 辅助数据库文件
+
+| 数据库文件 | 用途 | 说明 |
+|-----------|------|------|
+| `currentTagReadings.db` | 当前标签实时值缓存 | 运行时生成 |
+| `daq-data_*.db` | DAQ 历史数据记录 | 按日期/设备轮转 |
+| `daq-map_*.db` | DAQ 映射索引 | 标签→数据映射 |
+| `users.fuxap.db` | 用户账户 | 认证系统 |
+| `apikeys.fuxap.db` | API 密钥 | REST API 认证 |
+| `alarms.fuxap.db` | 报警历史记录 | 已触发的报警 |
+
+### 快速查询命令
+
+```bash
+# 列出所有设备
+sqlite3 server/_appdata/project.fuxap.db "SELECT name FROM devices;"
+
+# 查看设备完整配置（JSON格式）
+sqlite3 server/_appdata/project.fuxap.db "SELECT value FROM devices WHERE name='d_xxx';"
+
+# 查看某设备的标签数量
+sqlite3 server/_appdata/project.fuxap.db "SELECT length(value) FROM devices WHERE name='d_xxx';"
+```
+
+### 直接修改数据库的工具函数
+
+使用 `modbus-tag-utils.js` 中的数据库操作函数：
+
+```javascript
+const dbUtils = require('./references/modbus-tag-utils.js');
+
+// 从数据库读取设备配置
+const device = await dbUtils.getDeviceFromDb('d_xxx');
+
+// 更新设备到数据库
+await dbUtils.updateDeviceInDb('d_xxx', device);
+
+// 批量修复所有标签的字段类型
+await dbUtils.fixAllTagFieldTypes('d_xxx');
+```
+
+---
 
 ## 中文命令支持
 
@@ -39,9 +164,6 @@ description: FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管理
 | 查看设备状态 | device status | 查看设备连接状态 |
 | 配置调度 | config scheduler | 配置定时调度 |
 | 管理用户 | manage users | 用户/角色管理 |
-| 导入点表 | import point table | 从 CSV/Excel 批量导入变量 |
-| 清理变量 | clean tags | 过滤占位/模板变量 |
-| 替换变量 | replace tags | 以新点表替换旧设备标签 |
 
 ## 使用方法
 
@@ -54,9 +176,6 @@ description: FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管理
 - 报警配置
 - 组态配置
 - 工业自动化配置
-- **从 CSV/Excel 点表批量导入标签**
-- **清理/过滤 HMI 模板占位变量**
-- **替换设备全部标签**
 
 ### 认证方式
 
@@ -371,7 +490,111 @@ const data = await client.getDaqData(from, to, ['t_temp', 't_humi']);
 
 ## 关键提醒
 
-- **ProjectData API 有效负载格式**: `{ cmd: 'set-device', data: device }` — 键名是 **`data`**，不是 `device`、`devices` 或其他。**这是最容易犯的错误！**
+> ⚠️ **Modbus 标签配置红线规则** - 违反会导致界面显示异常或数据读取错误！
+
+### Modbus 标签必须遵守的数据结构
+
+```javascript
+{
+    "id": "t_d0_0100",           // 必须，标签ID
+    "name": "合模1压力1",        // 必须，标签名称
+    "type": "UInt16",            // 必须，数据类型
+    "memaddress": "400000",      // ⚠️ 必须是字符串！寄存器类型基址
+    "address": 101,              // ⚠️ 必须是数字！1-based偏移量
+    "divisor": 10,               // 可选，除数（压力/时间=10, 流量=100）
+    "daq": {                     // 可选，DAQ设置
+        "enabled": false,
+        "interval": 60,
+        "changed": false,
+        "restored": false
+    }
+}
+```
+
+### memaddress 字段详解（⚠️ 最容易出错！）
+
+**类型**: 必须是 **字符串 (string)**，不是数字！
+
+| 下拉框显示文本 | memaddress 值 | 类型 |
+|---------------|--------------|------|
+| Coil Status (Read/Write 000001-065536) | `"000000"` | string ✅ |
+| Digital Inputs (Read 100001-165536) | `"100000"` | string ✅ |
+| Input Registers (Read 300001-365536) | `"300000"` | string ✅ |
+| Holding Registers (Read/Write 400001-465535) | `"400000"` | string ✅ |
+
+**❌ 错误示例**:
+```javascript
+{ "memaddress": 400000 }     // 数字类型 → 界面显示为空
+{ "memaddress": "4X101" }   // 格式错误 → 无法匹配下拉框
+```
+
+**✅ 正确示例**:
+```javascript
+{ "memaddress": "400000" }   // 字符串类型 → 正确显示 Holding Registers
+```
+
+### address 字段详解
+
+**类型**: 必须是 **数字 (number)**，**1-based 偏移**
+
+| PLC地址 | address 值 | 说明 |
+|---------|-----------|------|
+| D100 | `101` | D100 对应 address=101（+1） |
+| D200 | `201` | D200 对应 address=201 |
+| D0 | `1` | D0 对应 address=1 |
+
+**❌ 错误示例**:
+```javascript
+{ "address": "101" }       // 字符串类型 → 可能导致解析错误
+{ "address": 100 }         // 0-based偏移 → 地址偏移错误
+```
+
+### divisor 字段详解（除数）
+
+用于将原始整数值转换为实际工程值：
+
+| 参数类型 | divisor 值 | 示例：原始值100 | 实际值 |
+|---------|-----------|----------------|-------|
+| 压力参数 | `10` | 100 | 10.0 bar |
+| 时间参数 | `10` | 500 | 50.0 ms |
+| 流量参数 | `100` | 2500 | 25.0 L/min |
+| 其他参数 | `null` 或不设置 | 100 | 100 |
+
+### 完整的地址转换函数
+
+```javascript
+// 从PLC地址格式(如"4X101")转换为FUXA标签配置
+function parseFuxaAddress(fuxaAddr) {
+    const match = fuxaAddr.match(/^([0-9]X)(\d+)$/);
+    if (!match) return null;
+    
+    const typeCode = match[1];
+    const addrNum = parseInt(match[2]);
+    
+    let memaddrStr;
+    switch (typeCode) {
+        case '4X': memaddrStr = '400000'; break;  // Holding Registers
+        case '3X': memaddrStr = '300000'; break;  // Input Registers
+        case '1X': memaddrStr = '000000'; break;  // Coil Status
+        case '0X': memaddrStr = '100000'; break;  // Digital Inputs
+        default: memaddrStr = '400000';
+    }
+    
+    return {
+        memaddress: memaddrStr,  // ⚠️ 字符串
+        address: addrNum          // ⚠️ 数字 (1-based)
+    };
+}
+
+// 使用示例
+const config = parseFuxaAddress("4X101");
+// 结果: { memaddress: "400000", address: 101 }
+```
+
+---
+
+## 其他关键提醒
+
 - Modbus 从站 ID 字段名是 `property.slaveid`（全小写字符串）
 - 设备地址字段名是 `property.address`
 - 语言代码是 `zh-cn`（不是 `zh`）
@@ -381,158 +604,6 @@ const data = await client.getDaqData(from, to, ['t_temp', 't_humi']);
 - FUXA Server（id='0'）是内置设备，包含系统标签
 - 标签支持 scale（缩放）、deadband（死区）、format（格式化）属性
 - 标签支持 scaleReadFunction/scaleWriteFunction（脚本缩放）
-- **批量替换标签时**：直接修改 `device.tags`，然后通过 `/api/projectData` 的 `set-device` 命令提交整个设备对象即可完全替换标签
-
-## CSV/Excel 点表批量导入
-
-这是 SCADA 工程中最常见的需求：从 HMI 组态软件导出的点表 CSV 文件，批量导入到 FUXA。
-
-### 完整工作流（两阶段）
-
-**阶段一：清理 CSV 点表**
-- 读取 CSV，识别并删除 HMI 模板预留的"占位变量"（见下方占位变量过滤规则）
-- 将清理后的 CSV 写回文件
-
-**阶段二：通过 REST API 导入 FUXA**
-- 从 FUXA 获取现有项目: `GET /api/project`
-- 取到目标设备对象，替换其 `tags` 字段
-- 通过 `POST /api/projectData` 提交: `{ cmd: 'set-device', data: device }`
-
-### CSV 格式规范
-
-典型的 HMI 点表 CSV 格式（由注塑机/PLC 组态软件导出）：
-
-```csv
-工作表,行,列,原始地址(HMI),Modbus地址(0-based),FUXA地址(1-based),标签名,类型,字数
-D0,3,1,D0001,4x0001,4X2,"按键1",UInt,1字
-D0,4,1,D0002,4x0002,4X3,"按键2",UInt,1字
-```
-
-关键列：第5列 **Modbus地址(0-based)** → 解析得到整数偏移，第7列标签名，第8列类型。
-
-### HMI 地址 → FUXA Modbus 标签映射
-
-```
-CSV 中的 Modbus地址: "4x0001" (0-based holding register)
-                     ↓ 去掉"4x"前缀，parseInt
-                     得到 address=1
-FUXA 标签: { memaddress: "400000", address: 1, type: "UInt16" }
-```
-
-### 类型映射表
-
-| CSV 类型 | FUXA Modbus 类型 |
-|----------|-----------------|
-| UInt | UInt16 |
-| Int32 | Int32MLE |
-| Float32 | Float32MLE |
-| 其他 | UInt16（默认） |
-
-### 使用 Node.js 实现的核心代码
-
-```javascript
-const http = require('http');
-
-function parseModbusAddress(addr) {
-    const m = addr.match(/^4x(\d+)$/i);
-    return m ? parseInt(m[1], 10) : null;
-}
-
-function typeMap(csvType) {
-    switch (csvType) {
-        case 'UInt': return 'UInt16';
-        case 'Int32': return 'Int32MLE';
-        case 'Float32': return 'Float32MLE';
-        default: return 'UInt16';
-    }
-}
-
-// FUXA 标签对象模板
-const tag = {
-    id: 't_d0_0001',
-    name: '按键1',
-    type: 'UInt16',
-    memaddress: '400000',  // Modbus 保持寄存器基址
-    address: 1,             // 0-based offset
-    divisor: null,
-    daq: { enabled: false, interval: 60, changed: false, restored: false },
-    description: 'UInt, 1字'
-};
-
-// POST 到 FUXA
-async function importToFuxa(device) {
-    const payload = { cmd: 'set-device', data: device };
-    // HTTP POST to http://host:port/api/projectData
-    // Content-Type: application/json
-}
-```
-
-## 占位变量过滤规则
-
-HMI 组态软件为每个画面预留了大量固定数量的变量槽位，导出时会生成大量
-无意义的编号占位变量（如"验证程序_1" ~ "验证程序_40"）。**必须过滤掉这些变量**，
-否则会污染变量列表。
-
-### 识别策略
-
-1. 对每张工作表（`D0`, `D1`...）的标签名按"基底名"（去掉 `_N` 后缀）分组
-2. 如果一个基底名有 >= 3 个编号项，且基底名是通用描述词 → 很可能是占位变量
-3. 用正则表达式精确匹配
-
-### 常见的占位变量模式
-
-| 工作表 | 占位模式 | 示例 | 原因 |
-|--------|---------|------|------|
-| D0（参数设定） | `验证程序(_N)?` | 验证程序_1~_40 | 预留的验证程序编号槽位 |
-| D0（参数设定） | `取样间隔(_N)?` | 取样间隔_1~_29 | 预留的采样间隔编号槽位 |
-| D0（参数设定） | `功能(_N)?` | 功能, 功能_1~_14 | 预留的功能编号槽位 |
-| D2（监控画面） | `报警提示(_N)?` | 报警提示_1~_19 | 预留的报警文本槽位 |
-| D2（监控画面） | `开模位置(_N)?` | 开模位置_1~_8 | 预留的位置显示槽位 |
-| D2（监控画面） | `包箱模数(_N)?` | 包箱模数_1~_7 | 预留的计数槽位 |
-| D3（IO诊断） | `功能选择(_N)?` | 功能选择_1~_51 | 预留的功能选择槽位 |
-| D3（IO诊断） | `托模退结束(_N)?` | 托模退结束_1~_30 | 预留的状态槽位 |
-| D3（IO诊断） | `机械行程(_N)?` | 机械行程_1~_15 | 预留的行程槽位 |
-| D3（IO诊断） | `现在位置(_N)?` | 现在位置_1~_15 | 预留的位置槽位 |
-| D3（IO诊断） | `绝对位置(_N)?` | 绝对位置_1~_15 | 预留的位置槽位 |
-| D3（IO诊断） | `限长(_N)?` | 限长_1~_15 | 预留的限长槽位 |
-| D3（IO诊断） | `最小校正保存值(_N)?` | 最小校正保存值_1~_15 | 预留的校正槽位 |
-| D3（IO诊断） | `最大校正保存值(_N)?` | 最大校正保存值_1~_15 | 预留的校正槽位 |
-| D3（IO诊断） | `最小校正(_N)?` | 最小校正_1~_7 | 预留的校正槽位 |
-| D3（IO诊断） | `最大校正(_N)?` | 最大校正_1~_7 | 预留的校正槽位 |
-| D3（IO诊断） | `最大压力(_N)?` | 最大压力_1~_14 | 预留的压力槽位 |
-| D3（IO诊断） | `合模终止(_N)?` | 合模终止_1~_15 | 预留的终止状态槽位 |
-| D3（IO诊断） | `备用(_N)?` | 备用, 备用_1~_4 | 预留的备用槽位 |
-| D7（参考值） | `设置值参考值N` | 全部 | 纯HMI模板 |
-| D7（参考值） | `数据值参考值N` | 全部 | 纯HMI模板 |
-
-### 正则表达式技巧
-
-注意要同时匹配基底名（不带 `_N`）和编号版本（带 `_N`）：
-
-```javascript
-// ✅ 正确：同时匹配"托模退结束" 和 "托模退结束_1" ~ "托模退结束_30"
-pattern: /^托模退结束(_\d+)?$/
-
-// ❌ 错误：只匹配了带编号的，漏掉了基底名
-pattern: /^托模退结束_\d+$/
-```
-
-### 占位变量过滤实现
-
-```javascript
-const PLACEHOLDER_RULES = [
-    { sheet: 'D0', pattern: /^验证程序(_\d+)?$/ },
-    { sheet: 'D0', pattern: /^取样间隔(_\d+)?$/ },
-    { sheet: 'D0', pattern: /^功能(_\d+)?$/ },
-    { sheet: 'D3', pattern: /^功能选择(_\d+)?$/ },
-    { sheet: 'D3', pattern: /^托模退结束(_\d+)?$/ },
-    // ... 更多规则
-];
-
-function isPlaceholder(sheet, tagName) {
-    return PLACEHOLDER_RULES.some(r => r.sheet === sheet && r.pattern.test(tagName));
-}
-```
 
 ## 常见问题
 
@@ -580,89 +651,408 @@ await client.setScheduler('scheduler_01', {
 const events = await client.getEventsHistory({ start: '2026-01-01', end: '2026-04-23' });
 ```
 
-### Q: 如何从 HMI 点表 CSV 批量导入标签到现有设备？
+---
 
-```javascript
-// 1. 先获取当前项目
-const project = await client.getProject();
-const device = project.devices['d_modbus_01'];
+## 打包与部署注意事项
 
-// 2. 解析 CSV，构建新 tags 对象
-const newTags = {};
-csvRows.forEach(row => {
-    const addr = parseInt(row.modbusAddr.replace('4x', ''), 10);
-    newTags['t_' + addr] = {
-        id: 't_' + addr,
-        name: row.name,
-        type: typeMap(row.type),
-        memaddress: '400000',
-        address: addr,
-        divisor: null,
-        daq: { enabled: false, interval: 60, changed: false, restored: false }
-    };
-});
+### 原生模块打包
 
-// 3. 替换并提交（会完全替换旧标签！）
-device.tags = newTags;
-await client.setDevice(device);
+FUXA 使用 `pkg` 工具打包为独立 EXE，但原生模块（如 `node-snap7`）需要特殊处理：
+
+```bash
+# 正确的打包命令（包含原生模块参数）
+pkg fuxa-single/package.json \
+  --targets node18-win-x64 \
+  --out-path artifacts \
+  --public-packages "node-snap7,bindings,nan"
 ```
 
-### Q: 如何识别和过滤 HMI 模板占位变量？
+### Node.js 版本要求
+
+| 目标平台 | 推荐 Node.js 版本 | 说明 |
+|----------|------------------|------|
+| node18-win-x64 | 18.x | S7 插件已预编译支持 |
+| node20-win-x64 | 20.x | 需要重新编译 node-snap7 |
+
+**警告**：打包时 Node.js 版本必须与目标平台版本一致，否则会出现 `"try to create S7-1500 but plugin is missing!"` 错误。
+
+### fontkit 编码问题
+
+`fontkit` 模块在 pkg 打包环境下使用 `windows-1252` 编码，会导致 Node.js 18 启动失败。解决方案：
+
+1. 从 `server/package.json` 中移除 `fontkit` 依赖
+2. 从 `server/api/resources/index.js` 中移除 fontkit 引用
+
+### 常见打包错误
+
+| 错误信息 | 原因 | 解决方案 |
+|----------|------|----------|
+| `try to create S7-1500 but plugin is missing!` | Node.js 版本不匹配或原生模块未打包 | 检查 Node.js 版本，添加 `--public-packages` 参数 |
+| `ERR_ENCODING_NOT_SUPPORTED: The "windows-1252" encoding is not supported` | fontkit 编码问题 | 移除 fontkit 依赖 |
+| `Cannot find module 'node-snap7'` | 原生模块未被打包 | 添加 `--public-packages "node-snap7,bindings,nan"` |
+
+---
+
+## 视图组态开发
+
+### 视图创建 API
+
+| 命令 | 说明 |
+|------|------|
+| set-view | 创建/更新视图 (含 SVG 内容、items、variables) |
+| del-view | 删除视图 |
+| layout | 设置全局布局 (导航栏、起始页、头部) |
+
+### 视图数据结构
 
 ```javascript
-// 策略：按基底名分组，>=3个带编号的同类名即视为占位变量
-function getBaseName(name) {
-    return name.replace(/_\d+$/, '');
+{
+  id: 'v_xxx',           // UUID 格式
+  name: '视图名称',
+  profile: {
+    width: 1280,         // 页面宽度
+    height: 960,         // 页面高度
+    bkcolor: '#ffffffff', // 背景色
+    margin: 10,
+    align: 'topCenter',
+    gridType: 'fixed'
+  },
+  items: {},             // 组件对象 { itemId: itemData }
+  variables: {},
+  svgcontent: '<svg>...</svg>',  // SVG 画布内容
+  type: 'svg'
+}
+```
+
+### 表格式布局模式 (推荐)
+
+对于参数密集型监控画面，推荐使用**表格布局**替代分组列表布局：
+
+**优势**:
+- 空间利用率提升 60%+ (112 参数 → 95 参数, 高度减少 50%)
+- 同类型参数同行显示，便于对比和设定
+- 符合工业 HMI 操作习惯
+
+**核心函数**: `buildTable(x, y, colHeaders, rows, items, cellW, cellH)`
+
+```javascript
+// 示例: 合模参数表格
+const table = buildTable(
+    x, y,                    // 起始坐标
+    ['一段', '二段', '三段', '低压', '高压'],  // 列标题
+    [
+        { label: '压力 [bar]', cells: [tag1, tag2, tag3, tag4, tag5] },
+        { label: '速度 [%]',   cells: [tag6, tag7, tag8, tag9, tag10] },
+        { label: '位置 [mm]',  cells: [null, tag11, tag12, null, tag13] },  // null=禁用格
+    ],
+    items,   // items 对象引用
+    80,      // 单元格宽度
+    26       // 单元格高度
+);
+```
+
+**输入组件类型**: `svg-ext-html_input`
+
+```javascript
+function makeInputItem(variableId, name) {
+    return {
+        id: 'HXI_' + uuid(),
+        type: 'svg-ext-html_input',
+        name: name,
+        property: {
+            variableId: variableId,
+            ranges: [{ min: 0, max: 99999 }],
+            options: { numeric: true, type: 'number' }
+        }
+    };
+}
+```
+
+### 开合模监控画面示例
+
+参考 `create-kaihemo-views.js`，包含两个页面:
+
+| 页面 | 尺寸 | 内容 | 参数数 |
+|------|------|------|--------|
+| 开合模参数 | 1280×960 | 合模/开模表格 + 调模 + 功能 + 状态栏 | ~48 |
+| 斜率/PID | 1280×960 | 合模/开模斜率表 + PID参数 + 状态信号 | ~47 |
+
+**运行命令**: `node create-kaihemo-views.js`
+
+### SVG 样式规范
+
+```css
+/* 推荐使用的 CSS 类 */
+.page-bg{fill:#f5f7f9}              /* 页面背景 */
+.section-header{fill:#2a6b9e;rx:3}   /* 分区标题栏 */
+.section-title{font-size:13px;fill:#ffffff}  /* 分区标题文字 */
+.input-bg{fill:#ffffff;stroke:#cccccc} /* 输入框背景 */
+.disabled-bg{fill:#e8e8e8;stroke:#d0d0d0} /* 禁用单元格 */
+.table-border{fill:none;stroke:#c0c8d0}     /* 表格边框 */
+.row-label{font-size:11px;fill:#333333}     /* 行标签 */
+.col-header{font-size:11px;text-anchor:center} /* 列标题 */
+```
+
+---
+
+## ⚠️ FUXA组件核心机制：双字段渲染（重要！）
+
+> **这是FUXA组态开发中最关键的知识点！** 违反此规则会导致组件不显示！
+
+### 核心原理
+
+```
+FUXA组件 = items（配置数据） + svgcontent（SVG渲染元素）
+           ↓                        ↓
+        属性、事件、绑定          实际显示的DOM结构
+```
+
+**必须同时更新两个字段，组件才能正常显示！**
+
+### 视图数据结构详解
+
+```javascript
+{
+  id: 'v_xxx',
+  name: '视图名称',
+  type: 'svg',                    // 视图类型
+  profile: { width: 1280, height: 800 },
+  
+  // ⭐ 字段1：组件配置数据（属性、事件、变量绑定）
+  items: {
+    'HXI_xxx': {
+      id: 'HXI_xxx',
+      type: 'svg-ext-html_input',    // 组件类型
+      name: '合模压力',               // 组件名称
+      property: {                     // ⭐ 属性配置
+        variableId: 't_d0_0100',     // 变量绑定
+        events: [                    // 事件列表
+          { type: 'click', action: 'onpage', actparam: 'v_target' }
+        ],
+        ranges: [...],               // 范围/颜色映射
+        actions: [...]               // 动作配置
+      },
+      label: 'HtmlInput',            // 组件标签
+      hide: false,
+      lock: false
+    }
+  },
+  
+  // ⭐ 字段2：SVG渲染内容（实际DOM元素）
+  svgcontent: `<svg ...>
+    <g data-name="合模压力" id="HXI_xxx" type="svg-ext-html_input">
+      <rect class="inp-bg" height="24" width="80" y="454" x="492"/>
+      <foreignObject id="H-HXI_xxx" width="80" height="24" y="454" x="492">
+        <INPUT id="I-HXI_xxx" style="..." value="#.##" type="text"/>
+      </foreignObject>
+    </g>
+  </svg>`
+}
+```
+
+### 按钮组件完整示例（导航按钮）
+
+```javascript
+// items中的配置
+{
+  id: 'HXB_f2e5030a-33d646e3',
+  type: 'svg-ext-html_button',
+  name: '斜率',
+  property: {
+    ranges: [{ min: 20, max: 80, color: '', type: 2, stroke: '' }],
+    events: [{
+      type: 'click',
+      action: 'onpage',              // 页面跳转动作
+      actparam: 'v_ccebcd69-...',   // 目标视图ID
+      actoptions: {}
+    }],
+    actions: []
+  },
+  label: 'HtmlButton',
+  hide: false,
+  lock: false
 }
 
-// 分组统计
-const groups = {};
-rows.forEach(r => {
-    const base = getBaseName(r.name);
-    if (!groups[base]) groups[base] = [];
-    groups[base].push(r);
-});
-
-// 过滤 >=3 个的占位组
-const placeholderBases = Object.entries(groups)
-    .filter(([_, arr]) => arr.length >= 3)
-    .map(([base]) => base);
-
-// 或直接用预定义的正则规则表匹配（更精确）
-const PLACEHOLDER_RULES = [
-    /^验证程序(_\d+)?$/, /^取样间隔(_\d+)?$/,
-    /^功能(_\d+)?$/,     /^功能选择(_\d+)?$/,
-    // ... 根据实际 HMI 模板扩展
-];
+// svgcontent中对应的SVG元素
+`<g stroke="rgba(0,0,0,0)" fill="rgba(0,0,0,0)" 
+      type="svg-ext-html_button" 
+      id="HXB_f2e5030a-33d646e3">
+   <rect id="svg_2de20d99-d1b84235" 
+         height="32" width="80" y="592" x="100" stroke-width="0"/>
+   <foreignObject id="H-HXB_49aacfc7-0dfe4d88" 
+                  width="80" height="32" y="592" x="100">     
+    <BUTTON style="width:calc(100% - 6px);height:calc(100% - 6px);
+               text-align:center;background-color:#FFFFFF;color:#000000;
+               font-size:14px;font-family:sans-serif;" 
+            class="md-btn md-btn-raised" 
+            id="B-HXB_49aacfc7-0dfe4d88">斜率</BUTTON>
+   </foreignObject>
+</g>`
 ```
 
-### Q: 导入标签后如何验证？
+### 常见组件类型ID前缀
+
+| 组件类型 | ID前缀 | SVG元素前缀 | 说明 |
+|---------|--------|------------|------|
+| 输入框 | `HXI_` | `I-HXI_` | html_input |
+| 按钮 | `HXB_` | `B-HXB_` | **注意：B-前缀！** |
+| 文本标签 | `svg_` | - | 静态文本 |
+| 图表 | `chart_` | - | 数据图表 |
+
+### ⚠️ 常见错误及解决方案
+
+#### 错误1：只更新items，未更新svgcontent
+
+**现象**：组件在编辑器中可见，但运行时不显示或无响应
+
+**原因**：
+```javascript
+// ❌ 错误做法：只改items
+view.items['HXB_new'] = { /* 配置 */ };
+// svgcontent中没有对应的<g>元素 → 组件不显示！
+```
+
+**正确做法**：
+```javascript
+// ✅ 正确做法：同时更新两个字段
+view.items['HXB_new'] = { /* 配置 */ };
+
+// 在svgcontent的</g></svg>之前插入SVG元素
+const svgEnd = view.svgcontent.lastIndexOf('</g>\n</svg>');
+const btnSVG = `<g type="svg-ext-html_button" id="HXB_new">...</g>`;
+view.svgcontent = view.svgcontent.substring(0, svgEnd) + btnSVG + '\n' + view.svgcontent.substring(svgEnd);
+```
+
+#### 错误2：ID不匹配
+
+**现象**：组件显示但无法交互（点击无效）
+
+**原因**：items中的id与svgcontent中的id不一致
 
 ```javascript
-// 获取项目，检查标签数
-const project = await client.getProject();
-const device = project.devices['d_modbus_01'];
-const tagCount = Object.keys(device.tags).length;
-console.log(`Total tags: ${tagCount}`);
+// ❌ 错误：ID不匹配
+view.items['HXB_abc'].id = 'HXB_abc';        // items中是 HXB_abc
+// svgcontent中却是 <g id="HXB_xyz">...       // SVG中是 HXB_xyz
 
-// 抽查边界地址（占位变量不应存在，真实变量应存在）
-['t_d0_0009', 't_d0_0050'].forEach(id => {
-    console.log(`${id}:`, device.tags[id] ? 'PRESENT' : 'FILTERED');
-});
+// ✅ 正确：保持一致
+view.items['HXB_abc'].id = 'HXB_abc';
+// <g id="HXB_abc">...                         // 必须相同
 ```
 
-### Q: ProjectData API 报 "unexpected_error" 怎么办？
+#### 错误3：按钮缺少B-前缀
 
-**99% 的情况是 payload 格式错误。** 检查：
+**现象**：按钮显示但点击事件不触发
 
-1. 键名必须是 `data`，不是 `device`、`devices` 或其他
-   ```javascript
-   // ✅ 正确
-   { cmd: 'set-device', data: device }
-   
-   // ❌ 错误！
-   { cmd: 'set-device', device: device }
-   { cmd: 'set-device', devices: [device] }
-   ```
-2. device 对象必须包含完整的标签结构（`tags` 是一个对象，key 是 tagId）
-3. Content-Type 必须为 `application/json`
+**原因**：FUXA用 `B-HXB_` 前缀识别按钮内部元素
+
+```html
+<!-- ✅ 正确的按钮结构 -->
+<BUTTON id="B-HXB_xxx">按钮文字</BUTTON>  <!-- 必须有B-前缀 -->
+
+<!-- ❌ 错误 -->
+<BUTTON id="HXB_xxx">按钮文字</BUTTON>    <!-- 缺少B-前缀 -->
+```
+
+### 操作工具函数
+
+```javascript
+/**
+ * 安全地添加组件到视图（同时更新items和svgcontent）
+ * @param {Object} view - 视图对象
+ * @param {string} itemId - 组件ID (如 'HXB_xxx')
+ * @param {Object} itemConfig - 组件配置
+ * @param {string} svgElement - 组件的SVG字符串
+ * @returns {boolean} 是否成功添加
+ */
+function addComponentToView(view, itemId, itemConfig, svgElement) {
+    if (!view.items) view.items = {};
+    
+    // 1. 添加到items
+    view.items[itemId] = itemConfig;
+    
+    // 2. 添加到svgcontent
+    if (!view.svgcontent) {
+        console.warn('警告: 视图没有svgcontent字段');
+        return false;
+    }
+    
+    const svgEnd = view.svgcontent.lastIndexOf('</g>\n</svg>');
+    if (svgEnd === -1) {
+        console.error('错误: 无法找到SVG结尾');
+        return false;
+    }
+    
+    view.svgcontent = 
+        view.svgcontent.substring(0, svgEnd) + 
+        '\n' + svgElement + '\n' + 
+        view.svgcontent.substring(svgEnd);
+    
+    return true;
+}
+
+// 使用示例
+addComponentToView(
+    view,
+    'HXB_nav_btn',
+    {
+        id: 'HXB_nav_btn',
+        type: 'svg-ext-html_button',
+        name: '导航',
+        property: {
+            events: [{ type: 'click', action: 'onpage', actparam: 'v_target' }],
+            ranges: [],
+            actions: []
+        },
+        label: 'HtmlButton',
+        hide: false,
+        lock: false
+    },
+    `<g stroke="rgba(0,0,0,0)" fill="rgba(0,0,0,0)" type="svg-ext-html_button" id="HXB_nav_btn">
+       <rect height="32" width="100" y="592" x="100" stroke-width="0"/>
+       <foreignObject width="100" height="32" y="592" x="100">
+         <BUTTON class="md-btn md-btn-raised" id="B-HXB_nav_btn">导航</BUTTON>
+       </foreignObject>
+     </g>`
+);
+```
+
+### 验证清单
+
+添加组件后，使用以下检查确保正确：
+
+```bash
+# 1. 检查items中是否有该组件
+sqlite3 project.fuxap.db "SELECT value FROM views WHERE rowid=1" | grep "HXB_new"
+
+# 2. 检查svgcontent中是否有对应元素
+sqlite3 project.fuxap.db "SELECT value FROM views WHERE rowid=1" | grep 'id="HXB_new"'
+
+# 3. 确保两个ID一致
+# items中: "id": "HXB_new"
+# svgcontent中: <g id="HXB_new">
+
+# 4. 对于按钮，检查B-前缀
+# svgcontent中: <BUTTON id="B-HXB_new">
+```
+
+---
+
+## 最佳实践总结
+
+### ✅ 推荐做法
+
+1. **始终同时更新items和svgcontent**
+2. **保持ID一致性**（items.id === svgcontent.g@id）
+3. **按钮使用正确的ID前缀格式**（`B-HXB_`）
+4. **修改前备份数据库**
+5. **修改后重启FUXA服务**
+6. **使用工具函数封装操作**，避免遗漏字段
+
+### ❌ 禁止做法
+
+1. **只更新一个字段**（最常见错误）
+2. **硬编码ID而不验证一致性**
+3. **在生产环境直接修改**（先测试环境验证）
+4. **忽略SVG命名空间要求**
+
+---

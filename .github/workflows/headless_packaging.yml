@@ -103,7 +103,7 @@ jobs:
             TARGET="node20-macos-x64"
           fi
         fi
-        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts
+        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
       shell: bash
       working-directory: .
 
@@ -128,4 +128,3 @@ jobs:
       with:
         name: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}
         path: artifacts/*
-        retention-days: 1

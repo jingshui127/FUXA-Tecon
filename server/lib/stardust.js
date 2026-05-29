@@ -14,7 +14,10 @@ class StardustTracker {
   }
 
   async start() {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      console.log('[Stardust] APM tracer disabled');
+      return;
+    }
 
     try {
       await this.register();

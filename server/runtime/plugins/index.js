@@ -201,10 +201,29 @@ function _checkPluginsSupported() {
         pg.current = '';
         pg.canRemove = false;
     });
+    
+    // First try to detect plugins using require.resolve
+    Object.values(registry).forEach((pg) => {
+        try {
+            const pkgPath = require.resolve(pg.name);
+            const pkgDir = path.dirname(pkgPath);
+            const pkgJsonPath = path.join(pkgDir, 'package.json');
+            if (fs.existsSync(pkgJsonPath)) {
+                const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
+                pg.current = pkgJson.version;
+            } else {
+                pg.current = 'installed';
+            }
+        } catch (e) {
+            // Plugin not found
+        }
+    });
+    
+    // Then try the traditional method
     const installed = _scanInstalledPlugins();
     const rootPackages = installed.rootPackages;
     Object.entries(rootPackages).forEach(([name, version]) => {
-        if (registry[name]) {
+        if (registry[name] && !registry[name].current) {
             registry[name].current = version;
         }
     });
@@ -243,6 +262,9 @@ function _getRootNodeModules() {
     let modulePath = path.resolve(__dirname, '../../node_modules');
     if (!fs.existsSync(modulePath)) {
         modulePath = path.resolve(__dirname, '../../../node_modules');
+    }
+    if (!fs.existsSync(modulePath)) {
+        modulePath = path.resolve(__dirname, '../node_modules');
     }
     return modulePath;
 }

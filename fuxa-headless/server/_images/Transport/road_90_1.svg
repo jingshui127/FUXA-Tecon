@@ -1,0 +1,37 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+	<g id="frame">
+		<rect fill="none" width="100" height="100"></rect>
+	</g>
+	<g id="shape">
+		<path fill="#000000" d="M62.5,100h-25c0-20.7-16.8-37.5-37.5-37.5v-25C34.5,37.5,62.5,65.5,62.5,100z"></path>
+	</g>
+	<g id="shadow">
+		<path fill="#FBB03B" d="M49,100h-0.5c0-26.7-21.8-48.5-48.5-48.5V51C27,51,49,73,49,100z"></path>
+		<path fill="#FBB03B" d="M51.5,100H51c0-28.1-22.9-51-51-51v-0.5C28.4,48.5,51.5,71.6,51.5,100z"></path>
+	</g>
+	<g id="dark">
+		<path fill="#4D4D4D" d="M50.3,100h-0.5c0-27.4-22.3-49.8-49.8-49.8v-0.5C27.7,49.8,50.3,72.3,50.3,100z"></path>
+	</g>
+	<g id="light">
+		<path fill="#FFFFFF" d="M39,100h-0.5c0-21.2-17.3-38.5-38.5-38.5V61C21.5,61,39,78.5,39,100z"></path>
+		<path fill="#FFFFFF" d="M61.5,100H61c0-33.6-27.4-61-61-61v-0.5C33.9,38.5,61.5,66.1,61.5,100z"></path>
+	</g>
+	<g id="hlight">
+	<rect y="49.8" fill="#FFFFFF" width="3" height="0.5"></rect>
+
+		<path fill="none" stroke="#FFFFFF" stroke-width="0.5" stroke-miterlimit="10" d="M0,50L0,50c1,0,2,0,3,0.1"></path>
+		<path fill="none" stroke="#FFFFFF" stroke-width="0.5" stroke-miterlimit="10" stroke-dasharray="5.5769,5.5769" d="M8.5,50.7
+				c21.7,3.7,38.6,21.4,41.1,43.5"></path>
+		<path fill="none" stroke="#FFFFFF" stroke-width="0.5" stroke-miterlimit="10" d="M49.9,97c0.1,1,0.1,2,0.1,3v0"></path>
+
+		<path fill="#FFFFFF" d="M3,50.3c-1-0.1-2-0.1-3-0.1v-0.5c1,0,2,0,3,0.1L3,50.3z"></path>
+		<path fill="#FFFFFF" d="M49,91.5c-0.3-1.8-0.7-3.6-1.2-5.4l0.5-0.1c0.5,1.8,0.9,3.6,1.3,5.5L49,91.5z M45.9,80.8
+			c-0.7-1.7-1.5-3.4-2.4-5l0.4-0.2c0.9,1.6,1.7,3.3,2.4,5L45.9,80.8z M40.5,71.2c-1.1-1.5-2.2-3-3.5-4.3l0.4-0.3
+			c1.2,1.4,2.4,2.9,3.5,4.4L40.5,71.2z M33.2,62.9c-1.4-1.2-2.8-2.4-4.3-3.5l0.3-0.4c1.5,1.1,3,2.3,4.4,3.5L33.2,62.9z M24.1,56.5
+			c-1.6-0.9-3.3-1.7-5-2.4l0.2-0.5c1.7,0.7,3.4,1.5,5,2.4L24.1,56.5z M13.9,52.2c-1.8-0.5-3.6-0.9-5.4-1.2l0.1-0.5
+			c1.8,0.3,3.7,0.7,5.5,1.3L13.9,52.2z"></path>
+		<path fill="#FFFFFF" d="M50.3,100h-0.5c0-1,0-2-0.1-3l0.5,0C50.2,98,50.3,99,50.3,100z"></path>
+	</g>
+</g>
+</svg>

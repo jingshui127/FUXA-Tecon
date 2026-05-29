@@ -1,0 +1,51 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+<g id="shape">
+	<path fill="#B3B3B3" d="M95.2,17.6H5.3c-2.5,0-4.5,12.5-4.5,27.9s2,27.9,4.5,27.9H13v5.1l2.4,7.4h7.5V73.3h57.3v5.1l2.4,7.4h7.5
+		V73.3h5.1c2.5,0,4.5-12.5,4.5-27.9S97.7,17.6,95.2,17.6z"></path>
+</g>
+<g id="linear">
+	<linearGradient class="linear" id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="52.4545" y1="17.588" x2="52.4545" y2="73.296">
+		<stop offset="0" style="stop-color:#CCCCCC"></stop>
+		<stop offset="0.1559" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<path class="linear" fill="url(#SVGID_1_)" d="M95.2,17.6H5.3c2.5,0,4.5,12.5,4.5,27.9c0,15.4-2,27.9-4.5,27.9h89.9c2.5,0,4.5-12.5,4.5-27.9
+		S97.7,17.6,95.2,17.6z"></path>
+	<linearGradient class="linear" id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="4.0575" y1="36.799" x2="4.0575" y2="54.087">
+		<stop offset="0" style="stop-color:#B3B3B3"></stop>
+		<stop offset="0.2473" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<path class="linear" fill="url(#SVGID_2_)" d="M5.3,36.8H2.1c0.8,0,1.4,3.9,1.4,8.6c0,4.8-0.6,8.6-1.4,8.6c-0.8,0-0.8,0,0,0h3.2
+		c0.8,0,1.4-3.9,1.4-8.6S6,36.8,5.3,36.8z"></path>
+</g>
+<g id="light">
+	<ellipse fill="#E6E6E6" cx="2" cy="45.4" rx="1.4" ry="8.6"></ellipse>
+</g>
+<g id="dark">
+	<path fill="#333333" d="M3,67.1c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M2.8,27.7c-0.6,0-1.2-0.5-1.2-1.2c0-0.6,0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M1.9,35.8c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M1.9,58.6c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M6.2,22.8c-0.6,0-1.2-0.5-1.2-1.2c0-0.6,0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M6.2,70.8c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M7.6,29.6c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M7.6,62.7c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M8.5,38.8c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<path fill="#333333" d="M8.5,54.6c-0.6,0-1.2-0.5-1.2-1.2s0.5-1.2,1.2-1.2"></path>
+	<rect x="15.4" y="64.3" fill="#333333" width="7.5" height="21.4"></rect>
+	<rect x="82.6" y="64.3" fill="#333333" width="7.5" height="21.4"></rect>
+</g>
+<g id="shadow">
+	<path fill="#0D0D0D" d="M13,73.3v5.1l2.4,7.4V64.3C14.8,69.8,14,73.3,13,73.3z"></path>
+	<path fill="#0D0D0D" d="M80.2,73.3v5.1l2.4,7.4V64.3C82,69.8,81.1,73.3,80.2,73.3z"></path>
+	<path fill="#0D0D0D" d="M12.9,45.4h-0.5c0,16.3-2.2,27.6-4.2,27.6v0.2h0.7C11.4,71.4,12.9,58,12.9,45.4z"></path>
+	<path fill="#0D0D0D" d="M97.1,45.4h-0.5C96.6,62,94.4,73,92.3,73v0.2H93C95.7,71.4,97.1,58,97.1,45.4z"></path>
+</g>
+<g id="hlight">
+	<path fill="#FFFFFF" d="M8.8,17.6H8.1v0.3c2,0,4.2,11.3,4.2,27.6h0.5C12.9,32.8,11.4,19.5,8.8,17.6z"></path>
+	<path fill="#FFFFFF" d="M93,17.6h-0.7v0.3c2,0,4.2,11.1,4.2,27.6h0.5C97.1,32.8,95.7,19.5,93,17.6z"></path>
+</g>
+</g>
+</svg>

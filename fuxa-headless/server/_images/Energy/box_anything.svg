@@ -1,0 +1,18 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+	<g>
+		<path fill="#CCCCCC" d="M3.999,30.217c-0.916,0.609-1.645,2.007-1.62,3.106l0.909,39.751c0.025,1.1,0.946,2.015,2.045,2.035
+			l80.834,1.429c1.1,0.019,2.551-0.676,3.224-1.546l6.717-8.671c0.674-0.87,1.225-2.481,1.225-3.581v-36.5c0-1.1-0.9-2.016-2-2.037
+			L17.25,22.777c-1.1-0.02-2.749,0.462-3.665,1.07L3.999,30.217z"></path>
+	</g>
+	<g>
+		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="17.8822" y1="48.9235" x2="78.4317" y2="59.8423">
+			<stop offset="0" style="stop-color:#B3B3B3"></stop>
+			<stop offset="0.492" style="stop-color:#292929"></stop>
+			<stop offset="0.9358" style="stop-color:#999999"></stop>
+		</linearGradient>
+		<path fill="url(#SVGID_1_)" d="M88.167,74.574c0,1.1-0.9,1.984-2,1.965L5.333,75.109c-1.1-0.019-2.02-0.935-2.045-2.035
+			L2.379,33.323c-0.025-1.1,0.854-1.984,1.954-1.965l81.834,1.43c1.1,0.019,2,0.935,2,2.035V74.574z"></path>
+	</g>
+</g>
+</svg>

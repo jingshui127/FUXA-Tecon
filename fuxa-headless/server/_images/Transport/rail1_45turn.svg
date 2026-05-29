@@ -1,0 +1,44 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+	<g id="frame">
+	<rect fill="none" width="100" height="100"></rect>
+</g>
+<g id="shape">
+	<rect x="97.5" y="35.833" fill="#8C6239" width="2.5" height="28.41"></rect>
+	
+		<rect x="86.556" y="36.518" transform="matrix(0.9954 -0.0962 0.0962 0.9954 -4.4551 8.7974)" fill="#8C6239" width="5" height="28.215"></rect>
+	
+		<rect x="74.961" y="38.247" transform="matrix(0.982 -0.1887 0.1887 0.982 -8.4826 15.5546)" fill="#8C6239" width="5" height="28.173"></rect>
+	
+		<rect x="62.964" y="41.258" transform="matrix(0.9591 -0.283 0.283 0.9591 -12.9823 20.7862)" fill="#8C6239" width="4.999" height="28.151"></rect>
+	
+		<rect x="50.79" y="45.744" transform="matrix(0.929 -0.37 0.37 0.929 -18.3876 23.97)" fill="#8C6239" width="4.999" height="28.345"></rect>
+	
+		<rect x="38.752" y="51.525" transform="matrix(0.8902 -0.4556 0.4556 0.8902 -25.4074 26.0118)" fill="#8C6239" width="5" height="28.365"></rect>
+	
+		<rect x="27.984" y="58.189" transform="matrix(0.8422 -0.5391 0.5391 0.8422 -34.2119 27.8535)" fill="#8C6239" width="5" height="28.383"></rect>
+	
+		<rect x="18.059" y="65.596" transform="matrix(0.7786 -0.6275 0.6275 0.7786 -45.549 30.574)" fill="#8C6239" width="5" height="28.499"></rect>
+	
+		<rect x="9.323" y="73.719" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -58.5513 34.0486)" fill="#8C6239" width="4.999" height="27.959"></rect>
+</g>
+<g id="dark">
+
+		<path fill="#4D4D4D" d="M100,61v-2c-29.171,0-60.362,13.357-81.401,34.859L12.591,100h2.798l4.64-4.742
+			C40.704,74.127,71.348,61,100,61z"></path>
+
+		<path fill="#4D4D4D" d="M4.305,79.872L0,84.272v2.86l5.735-5.861C30.037,56.431,66.157,41,100,41v-2
+			C65.639,39,28.97,54.661,4.305,79.872z"></path>
+
+</g>
+<g id="light">
+
+		<path fill="#E6E6E6" d="M100,59.625v-0.25c-29.074,0-60.163,13.314-81.132,34.746L13.116,100h0.351l5.58-5.703
+			C39.971,72.91,70.99,59.625,100,59.625z"></path>
+
+		<path fill="#E6E6E6" d="M4.573,80.134L0,84.807v0.358l4.751-4.856C29.303,55.214,65.801,39.625,100,39.625v-0.25
+			C65.735,39.375,29.17,54.993,4.573,80.134z"></path>
+
+</g>
+	</g>
+</svg>

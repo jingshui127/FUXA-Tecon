@@ -60,7 +60,9 @@ if (parsedArgs.help) {
 
 // Define directory
 var rootDir = __dirname;
-var workDir = path.resolve(process.cwd(), '_appdata');
+// Use the directory where the executable is located as the default working directory
+var execDir = path.dirname(process.execPath);
+var workDir = path.join(execDir, '_appdata');
 
 if (process.env.userDir) {
     rootDir = process.env.userDir;
@@ -108,7 +110,7 @@ try {
     }
 
     settings.workDir = workDir;
-    settings.appDir = __dirname;
+    settings.appDir = rootDir;
     settings.packageDir = path.resolve(rootDir, '_pkg');
     settings.settingsFile = settingsFile;
     settings.environment = process.env.NODE_ENV || 'prod';
@@ -236,7 +238,7 @@ try {
     stardustTracker = new StardustTracker({
         server: 'http://47.113.219.65:6600',
         appName: 'fuxaScada',
-        enabled: true
+        enabled: false
     });
     stardustTracker.start();
 } catch (error) {

@@ -867,8 +867,27 @@ module.exports = {
 
 function loadModbusLib(manager) {
     if (!ModbusRTU) {
-        try { ModbusRTU = require('modbus-serial'); } catch { }
-        if (!ModbusRTU && manager) { try { ModbusRTU = manager.require('modbus-serial'); } catch { } }
+        // Try multiple ways to load the module
+        const possiblePaths = [
+            'modbus-serial',
+            '../node_modules/modbus-serial',
+            '../../node_modules/modbus-serial',
+            '../../../node_modules/modbus-serial'
+        ];
+        
+        for (const path of possiblePaths) {
+            try {
+                ModbusRTU = require(path);
+                break;
+            } catch (e) {
+                // Try next path
+            }
+        }
+        
+        // Try manager.require if still not loaded
+        if (!ModbusRTU && manager) { 
+            try { ModbusRTU = manager.require('modbus-serial'); } catch { } 
+        }
     }
     return !!ModbusRTU;
 }

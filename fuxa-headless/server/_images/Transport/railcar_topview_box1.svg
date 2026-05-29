@@ -1,0 +1,86 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+	<g id="shape">
+	<path fill="#4D4D4D" d="M100,49l-4.7-8h2.9v-0.5h-0.3v-2h0.3V38h-4.7h-0.1h-1.8l0,0h-5.1v0.5h0.3V39H86h-0.6h-0.8v-0.5h0.3V38H73.1
+		v0.5h0.3V39H72l0,0h-5.5l-0.2-1h-3.9L62,39h-9.8L52,38h-4l-0.2,1H38l-0.2-1h-3.9l-0.2,1h-5.3l0,0H27v-0.5h0.3V38H15.5v0.5h0.3V39
+		H15h-0.6h-0.8v-0.5h0.3V38H8.4l0,0H6.6H6.5H2.1v0.5h0.3v2H2.1V41h2.6L0,49v2l4.8,8H2.1v0.5h0.3v2H2.1V62h11.7v-0.5h-0.3V61h0.3h0.6
+		H15h0.6h0.3v0.5h-0.3V62h11.7v-0.5H27V61h0.3h1.2h5.3l0.2,1h3.9l0.2-1h9.8l0.2,1H52l0.2-1H62l0.2,1h3.9l0.2-1h5.5H73h0.3v0.5H73V62
+		h11.7v-0.5h-0.3V61h0.3h0.5H86h0.5h0.3v0.5h-0.3V62h11.7v-0.5h-0.3v-2h0.3V59h-3l4.8-8V49z M6.3,58.6l-4-6.7h4V58.6z M6.3,48h-4
+		l4-6.7V48z M93.7,58.6V52h4L93.7,58.6z M93.7,48v-6.7l4,6.7H93.7z"></path>
+</g>
+<g id="linear">
+	
+		<linearGradient class="linear" id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="2.3428" y1="60.5" x2="13.5098" y2="60.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="2.3" y="38.5" fill="url(#SVGID_1_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="2.3428" y1="39.5" x2="13.5098" y2="39.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="2.3" y="59.5" fill="url(#SVGID_2_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="86.7598" y1="60.5" x2="97.9258" y2="60.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="86.8" y="38.5" fill="url(#SVGID_3_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="86.7598" y1="39.5" x2="97.9258" y2="39.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="86.8" y="59.5" fill="url(#SVGID_4_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="73.3594" y1="60.5" x2="84.5264" y2="60.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="73.4" y="38.5" fill="url(#SVGID_5_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="73.3594" y1="39.5" x2="84.5264" y2="39.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="73.4" y="59.5" fill="url(#SVGID_6_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_7_" gradientUnits="userSpaceOnUse" x1="15.7485" y1="60.5" x2="26.9155" y2="60.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="15.7" y="38.5" fill="url(#SVGID_7_)" width="11.2" height="2"></rect>
+	
+		<linearGradient class="linear" id="SVGID_8_" gradientUnits="userSpaceOnUse" x1="15.7485" y1="39.5" x2="26.9155" y2="39.5" gradientTransform="matrix(1 0 0 -1 0 100)">
+		<stop offset="0" style="stop-color:#FFFFFF"></stop>
+		<stop offset="1" style="stop-color:#000000"></stop>
+	</linearGradient>
+	<rect class="linear" x="15.7" y="59.5" fill="url(#SVGID_8_)" width="11.2" height="2"></rect>
+</g>
+<g id="dark">
+	<polygon fill="#0D0D0D" points="7.5,62 9.3,62 9.6,61 19.4,61 19.6,62 23.5,62 23.8,61 33.6,61 33.8,62 37.7,62 38,61 47.8,61 
+		48,62 52,62 52.2,61 62,61 62.3,62 66.2,62 66.4,61 76.2,61 76.5,62 80.4,62 80.6,61 90.4,61 90.7,62 92.5,62 92.5,38 90.7,38 
+		90.4,39 80.6,39 80.4,38 76.5,38 76.2,39 66.4,39 66.2,38 62.3,38 62,39 52.2,39 52,38 48,38 47.8,39 38,39 37.7,38 33.8,38 
+		33.6,39 23.8,39 23.5,38 19.6,38 19.4,39 9.6,39 9.3,38 7.5,38 	"></polygon>
+	<path fill="#0D0D0D" d="M93.4,38h-1.8v24h1.8l6.6-11v-2L93.4,38z M93.7,41.3l4,6.7h-4V41.3z M93.7,52h4l-4,6.7V52z"></path>
+	<path fill="#0D0D0D" d="M0,49v2l6.6,11h1.8V38H6.6L0,49z M6.3,48h-4l4-6.7V48z M6.3,58.6l-4-6.7h4V58.6z"></path>
+</g>
+<g id="light">
+	<rect x="9.9" y="40.4" fill="#736357" width="80.3" height="19.3"></rect>
+</g>
+<g id="hlight">
+	<rect x="10" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+	<rect x="23.3" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+	<rect x="36.6" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+	<rect x="49.9" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+	<rect x="63.2" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+	<rect x="76.5" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+	<rect x="89.8" y="40.8" fill="#42210B" width="0.3" height="18.7"></rect>
+</g>
+<g id="shadow">
+	<polygon opacity="0.5" fill="#0D0D0D" enable-background="new    " points="90.1,40.3 9.9,40.3 9.9,59.8 11.6,59.8 11.6,41.8 
+		90.1,41.8 	"></polygon>
+</g>
+	</g>
+</svg>

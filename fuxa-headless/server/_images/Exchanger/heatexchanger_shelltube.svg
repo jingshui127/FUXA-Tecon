@@ -1,0 +1,63 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" xml:space="preserve"><desc>Copyright Opto 22</desc> 
+<g>
+    <g id="frame">
+
+		<rect fill="none" width="100" height="100"></rect>
+
+</g>
+<g id="shape">
+	<path fill="#999" d="M31.67,66.908h-9v-2h1.083v-4.663H13.595v4.663h0.96v2h-9v-2h1.206v-4.663H5.085l-0.146-0.146
+		c-5.455-5.455-5.455-14.331,0-19.786l0.146-0.146h1.676v-5.074H5.555v-2h9v2h-0.96v5.074h60.096v-5.074h-1.083v-2h9v2h-1.083v5.074
+		h14.39l0.146,0.146c5.455,5.455,5.455,14.331,0,19.786l-0.146,0.146H30.587v4.663h1.083V66.908z"></path>
+</g>
+<g id="dark">
+	<rect x="16.037" y="43.009" fill="#666" width="70.177" height="0.898"></rect>
+	<rect x="16.037" y="45.635" fill="#666" width="70.177" height="0.898"></rect>
+	<rect x="16.037" y="48.26" fill="#666" width="70.177" height="0.898"></rect>
+	<rect x="16.037" y="51.229" fill="#666" width="70.177" height="0.898"></rect>
+	<rect x="16.037" y="53.854" fill="#666" width="70.177" height="0.898"></rect>
+	<rect x="16.037" y="56.479" fill="#666" width="70.177" height="0.898"></rect>
+</g>
+<g id="light">
+
+		<rect x="56.914" y="55.021" fill="#ccc" width="25.026" height="1.189"></rect>
+		<rect x="44.401" y="44.176" fill="#ccc" width="23.276" height="1.19"></rect>
+		<polygon fill="#ccc" points="69.427,49.427 69.427,50.209 67.676,50.209 67.676,49.427 44.401,49.427 44.401,50.432 
+			42.65,50.432 42.65,49.427 20.125,49.427 20.125,50.96 30.137,50.96 30.137,49.95 31.888,49.95 31.888,50.96 55.163,50.96 
+			55.163,49.95 56.914,49.95 56.914,50.96 81.939,50.96 81.939,49.427 		"></polygon>
+		<rect x="56.914" y="52.396" fill="#ccc" width="25.026" height="1.189"></rect>
+		<rect x="31.888" y="55.021" fill="#ccc" width="23.276" height="1.189"></rect>
+		<rect x="20.125" y="52.396" fill="#ccc" width="10.013" height="1.189"></rect>
+		<polygon fill="#ccc" points="81.939,42.74 81.939,41.166 79.525,41.166 79.525,33.092 74.691,33.092 74.691,41.166 
+			69.427,41.166 69.427,42.74 		"></polygon>
+		<rect x="31.888" y="52.396" fill="#ccc" width="23.276" height="1.189"></rect>
+		<rect x="20.125" y="55.021" fill="#ccc" width="10.013" height="1.189"></rect>
+		<rect x="69.427" y="44.176" fill="#ccc" width="12.513" height="1.19"></rect>
+		<rect x="31.888" y="57.646" fill="#ccc" width="23.276" height="1.6"></rect>
+		<rect x="20.125" y="41.166" fill="#ccc" width="22.526" height="1.574"></rect>
+		<polygon fill="#ccc" points="20.125,57.646 20.125,59.245 24.753,59.245 24.753,66.908 29.587,66.908 29.587,59.245 
+			30.137,59.245 30.137,57.646 		"></polygon>
+		<rect x="56.914" y="57.646" fill="#ccc" width="25.026" height="1.6"></rect>
+		<rect x="20.125" y="46.802" fill="#ccc" width="22.526" height="1.189"></rect>
+		<rect x="20.125" y="44.176" fill="#ccc" width="22.526" height="1.19"></rect>
+		<rect x="44.401" y="46.802" fill="#ccc" width="23.276" height="1.189"></rect>
+		<rect x="69.427" y="46.802" fill="#ccc" width="12.513" height="1.189"></rect>
+		<rect x="44.401" y="41.166" fill="#ccc" width="23.276" height="1.574"></rect>
+
+</g>
+<g id="hlight">
+	<path fill="#f2f2f2" d="M16.037,49.427v-1.436h1.588v-1.189h-1.588v-1.436h1.588v-1.19h-1.588V42.74h1.588v-1.574h-5.03v-8.074
+		H7.761v8.074H5.501c-2.311,2.384-3.512,5.442-3.631,8.535h15.754v-0.274H16.037z"></path>
+	<path fill="#f2f2f2" d="M16.037,57.646V56.21h1.588v-1.189h-1.588v-1.436h1.588v-1.189h-1.588V50.96h1.588v-0.243H1.871
+		c0.121,3.09,1.322,6.146,3.631,8.528h2.259v7.663h4.834v-7.663h5.03v-1.6H16.037z"></path>
+	<path fill="#f2f2f2" d="M94.499,41.166H84.44v1.574h1.774v1.436H84.44v1.19h1.774v1.436H84.44v1.189h1.774v1.436H84.44v1.533h1.774
+		v1.436H84.44v1.189h1.774v1.436H84.44v1.189h1.774v1.436H84.44v1.6h10.059C99.372,54.218,99.372,46.193,94.499,41.166z"></path>
+	<rect x="16.037" y="43.144" fill="#f2f2f2" width="70.177" height="0.629"></rect>
+	<rect x="16.037" y="45.77" fill="#f2f2f2" width="70.177" height="0.629"></rect>
+	<rect x="16.037" y="48.395" fill="#f2f2f2" width="70.177" height="0.629"></rect>
+	<rect x="16.037" y="51.363" fill="#f2f2f2" width="70.177" height="0.629"></rect>
+	<rect x="16.037" y="53.988" fill="#f2f2f2" width="70.177" height="0.629"></rect>
+	<rect x="16.037" y="56.613" fill="#f2f2f2" width="70.177" height="0.629"></rect>
+</g>
+</g>
+</svg>

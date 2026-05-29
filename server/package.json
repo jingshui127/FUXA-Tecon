@@ -18,6 +18,7 @@
     "@influxdata/influxdb-client": "1.25.0",
     "@questdb/nodejs-client": "^3.0.0",
     "@tdengine/rest": "3.0.2",
+    "ads-client": "^2.1.0",
     "app-root-path": "2.2.1",
     "async": "3.2.3",
     "async-mutex": "0.5.0",
@@ -34,15 +35,21 @@
     "influx": "5.9.3",
     "ip": "~2.0.1",
     "jsonwebtoken": "9.0.0",
+    "mcprotocol": "^0.1.2",
+    "modbus-serial": "^8.0.19",
     "morgan": "1.10.1",
     "mqtt": "4.3.7",
+    "node-bacnet": "^0.2.4",
+    "node-opcua": "^2.149.0",
     "node-red": "^4.1.0",
     "node-schedule": "2.1.1",
     "node-snap7": "^1.0.9",
     "nodemailer": "^7.0.13",
+    "nodepccc": "^0.1.17",
     "nopt": "5.0.0",
     "pdfmake": "0.2.5",
     "pg": "^8.18.0",
+    "redis": "^5.8.2",
     "serialport": "12.0.0",
     "socket.io": "4.8.1",
     "sqlite3": "5.1.5",
@@ -61,5 +68,13 @@
     "mocha": "^10.8.2",
     "sinon": "^19.0.2",
     "typescript": "^5.6.3"
+  },
+  "bin": "headless-start.js",
+  "pkg": {
+    "assets": [
+      "**/*",
+      "../client/dist/**/*"
+    ],
+    "compression": "Brotli"
   }
 }

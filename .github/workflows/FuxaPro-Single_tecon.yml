@@ -73,13 +73,14 @@ jobs:
         cat > fuxa-headless/package.json <<EOF
         {
           "name": "FuxaPro-Single",
-          "version": "1.3.1-PRO",
-          "bin": "main.js",
+          "version": "1.3.2-PRO",
+          "bin": "server/headless-start.js",
           "pkg": {
             "assets": [
               "server/**/*",
               "client/dist/**/*",
-              "_reports/**/*"
+              "_reports/**/*",
+              "node_modules/@serialport/**/*"
             ],
             "compression": "Brotli"
           }
@@ -94,7 +95,7 @@ jobs:
     - name: Build Standalone Binaries (Headless)
       run: |
         TARGET="node18-win-x64"
-        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
+        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan,@serialport/bindings-cpp"
       shell: bash
       working-directory: .
 
@@ -109,3 +110,10 @@ jobs:
         ls -la artifacts/
         echo "Build completed! Artifact: FuxaPro-Single-windows-x64.exe"
       shell: bash
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FuxaPro-Single
+        path: artifacts/FuxaPro-Single-windows-x64.exe
+        retention-days: 30

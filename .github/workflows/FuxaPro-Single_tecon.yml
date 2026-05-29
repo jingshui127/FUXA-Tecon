@@ -27,13 +27,6 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Clear cache
-      uses: actions/delete-package-versions@v4
-      continue-on-error: true
-      with:
-        package-name: 'cache'
-        min-versions-to-keep: 1
-
     - name: Display contact information
       run: |
         echo "Build FUXA PRO-Single (TC)"
@@ -46,6 +39,10 @@ jobs:
         npm config set fetch-retries 5
         npm install --prefer-offline --no-audit
       working-directory: ./server
+
+    - name: Install fuxa-headless dependencies
+      run: npm install --prefer-offline --no-audit
+      working-directory: ./fuxa-headless
 
 
 

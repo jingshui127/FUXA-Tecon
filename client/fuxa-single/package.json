@@ -9,5 +9,5 @@
             },
     "bin":  "main.js",
     "name":  "fuxa-single",
-    "version":  "1.3.2-tecon"
+    "version":  "1.3.3-tecon"
 }

@@ -121,24 +121,36 @@ jobs:
         ls -la artifacts/
       shell: bash
 
-    - name: Install rcedit for EXE properties modification
-      run: npm install -g rcedit
-      shell: bash
-
-    - name: Update EXE version properties
+    - name: Update EXE version properties (optional)
       run: |
         if [ ! -f "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" ]; then
-          echo "::error::EXE file not found, skipping version property update"
-          exit 1
+          echo "::warning::EXE file not found, skipping version property update"
+          exit 0
         fi
-        npx rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" \
-          --set-version-string "CompanyName" "科控物联" \
-          --set-version-string "FileDescription" "FUXA SCADA/HMI 系统" \
-          --set-version-string "FileVersion" "1.3.3.0" \
-          --set-version-string "ProductName" "FUXA 科控物联定制版" \
-          --set-version-string "ProductVersion" "1.3.3-tecon" \
-          --set-version-string "LegalCopyright" "Copyright (C) 2026 科控物联" \
-          --set-version-string "OriginalFilename" "FUXA-single-1.3.3-tecon-windows-x64.exe"
+        npm install -g rcedit 2>/dev/null || true
+        # Try multiple ways to run rcedit
+        RCEDIT_CMD=""
+        if command -v rcedit &>/dev/null; then
+          RCEDIT_CMD="rcedit"
+        elif [ -f "/c/npm/prefix/rcedit.cmd" ]; then
+          RCEDIT_CMD="/c/npm/prefix/rcedit.cmd"
+        elif [ -f "$APPDATA/npm/rcedit.cmd" ]; then
+          RCEDIT_CMD="$APPDATA/npm/rcedit.cmd"
+        fi
+        if [ -n "$RCEDIT_CMD" ]; then
+          $RCEDIT_CMD "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" \
+            --set-version-string "CompanyName" "科控物联" \
+            --set-version-string "FileDescription" "FUXA SCADA/HMI 系统" \
+            --set-version-string "FileVersion" "1.3.3.0" \
+            --set-version-string "ProductName" "FUXA 科控物联定制版" \
+            --set-version-string "ProductVersion" "1.3.3-tecon" \
+            --set-version-string "LegalCopyright" "Copyright (C) 2026 科控物联" \
+            --set-version-string "OriginalFilename" "FUXA-single-1.3.3-tecon-windows-x64.exe" && \
+          echo "EXE version properties updated successfully" || \
+          echo "::warning::rcedit failed (non-critical), artifact will be uploaded without version info"
+        else
+          echo "::warning::rcedit not found, skipping version property update (artifact will still upload)"
+        fi
       shell: bash
 
     - name: Upload artifact

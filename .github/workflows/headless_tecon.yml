@@ -105,13 +105,20 @@ jobs:
 
     - name: Prepare artifacts
       run: |
+        echo "=== Looking for generated EXE ==="
+        ls -la artifacts/ || true
         if [ -f artifacts/fuxa-single-win-x64.exe ]; then
           mv artifacts/fuxa-single-win-x64.exe artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe
-          echo "EXE renamed successfully"
+          echo "EXE renamed successfully (fuxa-single-win-x64.exe)"
+        elif [ -f artifacts/fuxa-single.exe ]; then
+          mv artifacts/fuxa-single.exe artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe
+          echo "EXE renamed successfully (fuxa-single.exe)"
         else
-          echo "::warning::fuxa-single-win-x64.exe not found, checking for other exe files..."
-          ls -la artifacts/ || true
+          echo "::error::No exe file found in artifacts/"
+          ls -laR artifacts/ || true
+          exit 1
         fi
+        ls -la artifacts/
       shell: bash
 
     - name: Install rcedit for EXE properties modification

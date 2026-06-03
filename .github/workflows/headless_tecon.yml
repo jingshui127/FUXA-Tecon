@@ -86,28 +86,52 @@ jobs:
     - name: Build Standalone Binaries (Headless)
       run: |
         TARGET="node18-win-x64"
-        pkg fuxa-single/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
+        echo "=== Starting pkg build ==="
+        echo "Working directory: $(pwd)"
+        echo "Package file:"
+        cat fuxa-single/package.json
+        echo "=== Running pkg ==="
+        npx @yao-pkg/pkg fuxa-single/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan" --debug 2>&1
+        PKG_EXIT=$?
+        echo "=== pkg exit code: $PKG_EXIT ==="
+        echo "=== Artifacts after build ==="
+        ls -la artifacts/ || true
+        if [ $PKG_EXIT -ne 0 ]; then
+          echo "::error::pkg build failed with exit code $PKG_EXIT"
+          exit $PKG_EXIT
+        fi
       shell: bash
       working-directory: .
 
-
     - name: Prepare artifacts
       run: |
-        mv artifacts/fuxa-single-win-x64.exe artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe || true
+        if [ -f artifacts/fuxa-single-win-x64.exe ]; then
+          mv artifacts/fuxa-single-win-x64.exe artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe
+          echo "EXE renamed successfully"
+        else
+          echo "::warning::fuxa-single-win-x64.exe not found, checking for other exe files..."
+          ls -la artifacts/ || true
+        fi
       shell: bash
 
     - name: Install rcedit for EXE properties modification
       run: npm install -g rcedit
+      shell: bash
 
     - name: Update EXE version properties
       run: |
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "CompanyName" "科控物联"
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "FileDescription" "FUXA SCADA/HMI 系统"
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "FileVersion" "1.3.3.0"
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "ProductName" "FUXA 科控物联定制版"
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "ProductVersion" "1.3.3-tecon"
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "LegalCopyright" "Copyright (C) 2026 科控物联"
-        rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" --set-version-string "OriginalFilename" "FUXA-single-1.3.3-tecon-windows-x64.exe"
+        if [ ! -f "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" ]; then
+          echo "::error::EXE file not found, skipping version property update"
+          exit 1
+        fi
+        npx rcedit "artifacts/FUXA-single-1.3.3-tecon-windows-x64.exe" \
+          --set-version-string "CompanyName" "科控物联" \
+          --set-version-string "FileDescription" "FUXA SCADA/HMI 系统" \
+          --set-version-string "FileVersion" "1.3.3.0" \
+          --set-version-string "ProductName" "FUXA 科控物联定制版" \
+          --set-version-string "ProductVersion" "1.3.3-tecon" \
+          --set-version-string "LegalCopyright" "Copyright (C) 2026 科控物联" \
+          --set-version-string "OriginalFilename" "FUXA-single-1.3.3-tecon-windows-x64.exe"
       shell: bash
 
     - name: Upload artifact

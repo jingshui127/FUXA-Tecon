@@ -487,41 +487,23 @@ function update(cmd, data) {
 }
 
 function restart(clear) {
-    // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
-    // Exit with code 10 to signal launcher script to restart the process.
+    // This build is always pkg-packaged; in-process restart (stop->start) is unreliable.
+    // Always exit with code 10 to signal launcher script to restart the process.
     var PKG_RESTART_CODE = 10;
-    // Detect pkg: process.env.PKG (newer pkg), process.pkg (older), or .exe extension
-    var isPkg = !!process.env.PKG || typeof process.pkg !== 'undefined' || process.execPath.endsWith('.exe');
+    logger.info('runtime.restart: stopping for external restart (exit code ' + PKG_RESTART_CODE + ')...');
     return new Promise(function (resolve, reject) {
         try {
-            if (isPkg) {
-                logger.info('runtime.restart: pkg mode detected, exiting for external restart...');
-                stop().then(function () {
-                    logger.info('runtime.restart: stopped, requesting restart (exit code ' + PKG_RESTART_CODE + ')');
-                    setTimeout(function () { process.exit(PKG_RESTART_CODE); }, 500);
-                    resolve(true);
-                }).catch(function (err) {
-                    logger.error('runtime.restart-stop (pkg): ' + err);
-                    setTimeout(function () { process.exit(1); }, 500);
-                    reject();
-                });
-                return;
-            }
             stop().then(function () {
                 if (clear) {
                     alarmsMgr.clear();
                     notificatorMgr.clear();
                 }
-                logger.info('runtime.update-project: stopped!', true);
-                start().then(function () {
-                    logger.info('runtime.update-project: restart!');
-                    resolve(true);
-                }).catch(function (err) {
-                    logger.error('runtime.update-project-start: ' + err);
-                    reject();
-                });
+                logger.info('runtime.restart: stopped cleanly, requesting restart');
+                setTimeout(function () { process.exit(PKG_RESTART_CODE); }, 500);
+                resolve(true);
             }).catch(function (err) {
-                logger.error('runtime.update-project-stop: ' + err);
+                logger.error('runtime.restart-stop: ' + err);
+                setTimeout(function () { process.exit(1); }, 500);
                 reject();
             });
         } catch (err) {

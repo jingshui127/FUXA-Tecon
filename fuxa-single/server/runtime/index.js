@@ -490,7 +490,8 @@ function restart(clear) {
     // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
     // Exit with code 10 to signal launcher script to restart the process.
     var PKG_RESTART_CODE = 10;
-    var isPkg = typeof process.pkg !== 'undefined';
+    // Detect pkg: process.env.PKG (newer pkg), process.pkg (older), or .exe extension
+    var isPkg = !!process.env.PKG || typeof process.pkg !== 'undefined' || process.execPath.endsWith('.exe');
     return new Promise(function (resolve, reject) {
         try {
             if (isPkg) {

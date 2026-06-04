@@ -487,8 +487,29 @@ function update(cmd, data) {
 }
 
 function restart(clear) {
+    // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
+    // Exit with code 10 to signal launcher script (启动FUXA.bat) to restart.
+    var PKG_RESTART_CODE = 10;
+    var isPkg = !!process.env.PKG || typeof process.pkg !== 'undefined' || process.execPath.endsWith('.exe');
     return new Promise(function (resolve, reject) {
         try {
+            if (isPkg) {
+                logger.info('runtime.restart: pkg mode, stopping for external restart...');
+                stop().then(function () {
+                    if (clear) {
+                        alarmsMgr.clear();
+                        notificatorMgr.clear();
+                    }
+                    logger.info('runtime.restart: stopped cleanly, exit code ' + PKG_RESTART_CODE);
+                    setTimeout(function () { process.exit(PKG_RESTART_CODE); }, 500);
+                    resolve(true);
+                }).catch(function (err) {
+                    logger.error('runtime.restart-stop: ' + err);
+                    setTimeout(function () { process.exit(1); }, 500);
+                    reject();
+                });
+                return;
+            }
             stop().then(function () {
                 if (clear) {
                     alarmsMgr.clear();

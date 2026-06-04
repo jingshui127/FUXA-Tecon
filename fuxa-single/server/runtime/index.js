@@ -487,8 +487,25 @@ function update(cmd, data) {
 }
 
 function restart(clear) {
+    // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
+    // Exit with code 10 to signal launcher script to restart the process.
+    var PKG_RESTART_CODE = 10;
+    var isPkg = typeof process.pkg !== 'undefined';
     return new Promise(function (resolve, reject) {
         try {
+            if (isPkg) {
+                logger.info('runtime.restart: pkg mode detected, exiting for external restart...');
+                stop().then(function () {
+                    logger.info('runtime.restart: stopped, requesting restart (exit code ' + PKG_RESTART_CODE + ')');
+                    setTimeout(function () { process.exit(PKG_RESTART_CODE); }, 500);
+                    resolve(true);
+                }).catch(function (err) {
+                    logger.error('runtime.restart-stop (pkg): ' + err);
+                    setTimeout(function () { process.exit(1); }, 500);
+                    reject();
+                });
+                return;
+            }
             stop().then(function () {
                 if (clear) {
                     alarmsMgr.clear();

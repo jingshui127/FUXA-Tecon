@@ -488,25 +488,34 @@ function update(cmd, data) {
 
 function restart(clear) {
     // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
-    // Use file signal (restart.flag) since process.exit(code) doesn't work reliably in pkg on Windows.
+    // Instead, spawn a hidden CMD that waits for us to exit then relaunches the exe.
+    var { spawn } = require('child_process');
+    var path = require('path');
     var isPkg = !!process.env.PKG || typeof process.pkg !== 'undefined' || process.execPath.endsWith('.exe');
     return new Promise(function (resolve, reject) {
         try {
             if (isPkg) {
-                logger.info('runtime.restart: pkg mode, stopping for external restart...');
+                logger.info('runtime.restart: pkg mode, spawning self-restart CMD...');
                 stop().then(function () {
                     if (clear) {
                         alarmsMgr.clear();
                         notificatorMgr.clear();
                     }
-                    // Write restart flag file - bat script checks for this
+                    // Spawn a detached CMD that will relaunch this exe after we exit
+                    var exePath = process.execPath;
+                    var workDir = process.cwd();
+                    var cmdLine = 'timeout /t 2 /nobreak >nul & start "" "' + exePath + '"';
                     try {
-                        require('fs').writeFileSync('_restart.flag', new Date().toISOString());
-                        logger.info('runtime.restart: wrote _restart.flag');
-                    } catch (flagErr) {
-                        logger.error('runtime.restart: failed to write flag: ' + flagErr.message);
+                        spawn('cmd', ['/c', cmdLine], {
+                            detached: true,
+                            stdio: 'ignore',
+                            cwd: workDir,
+                            windowsHide: true
+                        }).unref();
+                        logger.info('runtime.restart: self-restart CMD spawned, exiting');
+                    } catch (spawnErr) {
+                        logger.error('runtime.restart: failed to spawn CMD: ' + spawnErr.message);
                     }
-                    logger.info('runtime.restart: stopped cleanly, exiting');
                     process.exit(0);
                 }).catch(function (err) {
                     logger.error('runtime.restart-stop: ' + err);

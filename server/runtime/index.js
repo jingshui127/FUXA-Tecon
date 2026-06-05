@@ -495,27 +495,29 @@ function restart(clear) {
     return new Promise(function (resolve, reject) {
         try {
             if (isPkg) {
-                logger.info('runtime.restart: pkg mode, spawning self-restart CMD...');
+                logger.info('runtime.restart: pkg mode, spawning self-restart...');
                 stop().then(function () {
                     if (clear) {
                         alarmsMgr.clear();
                         notificatorMgr.clear();
                     }
-                    // Spawn a detached CMD that will relaunch this exe after we exit
+                    // Write a temp bat script that waits 2s then relaunches this exe, then deletes itself
+                    var fs = require('fs');
                     var exePath = process.execPath;
                     var workDir = process.cwd();
-                    // Use & to chain: wait 2s then run exe directly (no 'start' - it fails in hidden CMD)
-                    var cmdLine = 'timeout /t 2 /nobreak >nul & "' + exePath + '"';
+                    var batPath = path.join(workDir, '_self_restart.bat');
+                    var batContent = '@echo off\r\ntimeout /t 2 /nobreak >nul\r\nstart "" "' + exePath + '"\rdel "%~f0"\r\n';
                     try {
-                        spawn('cmd', ['/c', cmdLine], {
+                        fs.writeFileSync(batPath, batContent);
+                        spawn(batPath, [], {
                             detached: true,
                             stdio: 'ignore',
                             cwd: workDir,
                             windowsHide: true
                         }).unref();
-                        logger.info('runtime.restart: self-restart CMD spawned, exiting');
+                        logger.info('runtime.restart: _self_restart.bat spawned, exiting');
                     } catch (spawnErr) {
-                        logger.error('runtime.restart: failed to spawn CMD: ' + spawnErr.message);
+                        logger.error('runtime.restart: failed to spawn restart: ' + spawnErr.message);
                     }
                     process.exit(0);
                 }).catch(function (err) {

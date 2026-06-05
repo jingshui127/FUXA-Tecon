@@ -504,7 +504,8 @@ function restart(clear) {
                     // Spawn a detached CMD that will relaunch this exe after we exit
                     var exePath = process.execPath;
                     var workDir = process.cwd();
-                    var cmdLine = 'timeout /t 2 /nobreak >nul & start "" "' + exePath + '"';
+                    // Use & to chain: wait 2s then run exe directly (no 'start' - it fails in hidden CMD)
+                    var cmdLine = 'timeout /t 2 /nobreak >nul & "' + exePath + '"';
                     try {
                         spawn('cmd', ['/c', cmdLine], {
                             detached: true,

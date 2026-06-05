@@ -505,7 +505,6 @@ function restart(clear) {
                     }
                     var fs = require('fs');
                     var exePath = process.execPath;
-                    var exeName = path.basename(exePath);
                     var workDir = process.cwd();
 
                     // Method 1: flag file for 启动FUXA.bat
@@ -514,21 +513,21 @@ function restart(clear) {
                         logger.info('runtime.restart: wrote _restart.flag');
                     } catch (e) { /* ignore */ }
 
-                    // Method 2: write a simple relaunch script for robustness
-                    // The flag file (Method 1) is the primary mechanism used by 启动FUXA.bat
-                    // This script provides standalone relaunch capability when exe is run directly
-                    var scriptPath = path.join(workDir, '_relaunch.cmd');
-                    var scriptContent = '@echo off\r\n' +
-                        'timeout /t 3 /nobreak >nul\r\n' +
-                        'start "" "' + exePath + '"\r\n' +
-                        'del "%~f0"\r\n';
+                    // Method 2: directly spawn new exe instance (no bat, no cmd, no scripts)
+                    // detached + unref makes it independent of this dying process
                     try {
-                        fs.writeFileSync(scriptPath, scriptContent);
-                        require('child_process').exec('start "" "' + scriptPath + '"', { cwd: workDir });
-                        logger.info('runtime.restart: _relaunch.cmd launched');
-                    } catch (e) { /* ignore - flag file is the primary method */ }
-                    // Delay exit slightly to ensure child process starts before we die
-                    setTimeout(function () { process.exit(0); }, 1000);
+                        var child = spawn(exePath, [], {
+                            detached: true,
+                            stdio: 'ignore',
+                            cwd: workDir
+                        });
+                        child.unref();
+                        logger.info('runtime.restart: new exe spawned (PID=' + child.pid + ')');
+                    } catch (e) {
+                        logger.error('runtime.restart: spawn failed: ' + e.message);
+                    }
+
+                    process.exit(0);
                 }).catch(function (err) {
                     logger.error('runtime.restart-stop: ' + err);
                     process.exit(1);

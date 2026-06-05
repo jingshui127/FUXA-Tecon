@@ -488,36 +488,59 @@ function update(cmd, data) {
 
 function restart(clear) {
     // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
-    // Instead, spawn a hidden CMD that waits for us to exit then relaunches the exe.
+    // Two restart mechanisms work together:
+    //   1. Write _restart.flag for 启动FUXA.bat to detect
+    //   2. Spawn _restart_helper.bat that waits for process exit then relaunches
     var { spawn } = require('child_process');
     var path = require('path');
     var isPkg = !!process.env.PKG || typeof process.pkg !== 'undefined' || process.execPath.endsWith('.exe');
     return new Promise(function (resolve, reject) {
         try {
             if (isPkg) {
-                logger.info('runtime.restart: pkg mode, spawning self-restart...');
+                logger.info('runtime.restart: pkg mode, preparing external restart...');
                 stop().then(function () {
                     if (clear) {
                         alarmsMgr.clear();
                         notificatorMgr.clear();
                     }
-                    // Write a temp bat script that waits 2s then relaunches this exe, then deletes itself
                     var fs = require('fs');
                     var exePath = process.execPath;
+                    var exeName = path.basename(exePath);
                     var workDir = process.cwd();
-                    var batPath = path.join(workDir, '_self_restart.bat');
-                    var batContent = '@echo off\r\ntimeout /t 2 /nobreak >nul\r\nstart "" "' + exePath + '"\rdel "%~f0"\r\n';
+
+                    // Method 1: flag file for 启动FUXA.bat
+                    try {
+                        fs.writeFileSync(path.join(workDir, '_restart.flag'), new Date().toISOString());
+                        logger.info('runtime.restart: wrote _restart.flag');
+                    } catch (e) { /* ignore */ }
+
+                    // Method 2: helper bat - polls for this process to exit, then relaunches
+                    var batPath = path.join(workDir, '_restart_helper.bat');
+                    var batContent = [
+                        '@echo off',
+                        'set "EXE=' + exeName + '"',
+                        ':wait',
+                        'tasklist /FI "IMAGENAME eq %EXE%" 2>NUL | find /I "%EXE%" >NUL',
+                        'if %ERRORLEVEL%==0 (',
+                        '    timeout /t 1 /nobreak >nul',
+                        '    goto wait',
+                        ')',
+                        'start "" "' + exePath + '"',
+                        'del "%~f0"',
+                        ''
+                    ].join('\r\n');
+
                     try {
                         fs.writeFileSync(batPath, batContent);
-                        spawn(batPath, [], {
+                        // Use cmd /c to execute the bat (required for .bat files)
+                        spawn('cmd', ['/c', batPath], {
                             detached: true,
                             stdio: 'ignore',
-                            cwd: workDir,
-                            windowsHide: true
+                            cwd: workDir
                         }).unref();
-                        logger.info('runtime.restart: _self_restart.bat spawned, exiting');
+                        logger.info('runtime.restart: _restart_helper.bat spawned, exiting');
                     } catch (spawnErr) {
-                        logger.error('runtime.restart: failed to spawn restart: ' + spawnErr.message);
+                        logger.error('runtime.restart: failed to spawn helper: ' + spawnErr.message);
                     }
                     process.exit(0);
                 }).catch(function (err) {

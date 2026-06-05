@@ -514,20 +514,19 @@ function restart(clear) {
                         logger.info('runtime.restart: wrote _restart.flag');
                     } catch (e) { /* ignore */ }
 
-                    // Method 2: spawn a detached cmd that polls for this process, then relaunches
-                    // Using a single-line command instead of a bat file for reliability in pkg
-                    var pollCmd = 'cmd /c "@for /L %i in (1,1,60) do @(tasklist /FI \"IMAGENAME eq ' + exeName + '\" 2>NUL | find /I \"' + exeName + '\" >NUL && timeout /t 1 /nobreak >nul || (start \"\" \"' + exePath + '\" & exit))"';
+                    // Method 2: write a simple relaunch script for robustness
+                    // The flag file (Method 1) is the primary mechanism used by 启动FUXA.bat
+                    // This script provides standalone relaunch capability when exe is run directly
+                    var scriptPath = path.join(workDir, '_relaunch.cmd');
+                    var scriptContent = '@echo off\r\n' +
+                        'timeout /t 3 /nobreak >nul\r\n' +
+                        'start "" "' + exePath + '"\r\n' +
+                        'del "%~f0"\r\n';
                     try {
-                        var child = spawn('cmd', ['/c', 'start \"\" /B cmd /C ' + pollCmd], {
-                            detached: true,
-                            stdio: 'ignore',
-                            cwd: workDir
-                        });
-                        child.unref();
-                        logger.info('runtime.restart: poll-relaunch CMD spawned (PID=' + child.pid + ')');
-                    } catch (spawnErr) {
-                        logger.error('runtime.restart: failed to spawn relauncher: ' + spawnErr.message);
-                    }
+                        fs.writeFileSync(scriptPath, scriptContent);
+                        require('child_process').exec('start "" "' + scriptPath + '"', { cwd: workDir });
+                        logger.info('runtime.restart: _relaunch.cmd launched');
+                    } catch (e) { /* ignore - flag file is the primary method */ }
                     // Delay exit slightly to ensure child process starts before we die
                     setTimeout(function () { process.exit(0); }, 1000);
                 }).catch(function (err) {

@@ -532,11 +532,12 @@ function restart(clear) {
 
                     try {
                         fs.writeFileSync(batPath, batContent);
-                        // Use cmd /c to execute the bat (required for .bat files)
-                        var child = spawn('cmd', ['/c', batPath], {
+                        // Use shell:true to run the bat file (more reliable than cmd /c from pkg)
+                        var child = spawn(batPath, [], {
                             detached: true,
                             stdio: 'ignore',
-                            cwd: workDir
+                            cwd: workDir,
+                            shell: true
                         });
                         child.unref();
                         logger.info('runtime.restart: _restart_helper.bat spawned (PID=' + child.pid + ')');
@@ -544,7 +545,7 @@ function restart(clear) {
                         logger.error('runtime.restart: failed to spawn helper: ' + spawnErr.message);
                     }
                     // Delay exit slightly to ensure child process starts before we die
-                    setTimeout(function () { process.exit(0); }, 500);
+                    setTimeout(function () { process.exit(0); }, 1000);
                 }).catch(function (err) {
                     logger.error('runtime.restart-stop: ' + err);
                     process.exit(1);

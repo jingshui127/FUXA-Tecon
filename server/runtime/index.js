@@ -514,11 +514,12 @@ function restart(clear) {
                     } catch (e) { /* ignore */ }
 
                     // Method 2: directly spawn new exe instance (no bat, no cmd, no scripts)
-                    // Use 'inherit' so the new process shows logs in its own console window
+                    // detached + unref makes it independent of this dying process
+                    // Logs are written to _appdata/_logs/fuxa*.log files (same as normal startup)
                     try {
                         var child = spawn(exePath, [], {
                             detached: true,
-                            stdio: 'inherit',
+                            stdio: 'ignore',
                             cwd: workDir
                         });
                         child.unref();

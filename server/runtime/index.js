@@ -515,10 +515,15 @@ function restart(clear) {
 
                     // Method 2: directly spawn new exe instance (no bat, no cmd, no scripts)
                     // detached + unref makes it independent of this dying process
+                    // Redirect stdout/stderr to log file so we can see restart output
                     try {
+                        var logDir = path.join(workDir, '_appdata', '_logs');
+                        try { fs.mkdirSync(logDir, { recursive: true }); } catch (e) { /* ignore */ }
+                        var logFile = path.join(logDir, 'fuxa-restart.log');
+                        var outFd = fs.openSync(logFile, 'a');
                         var child = spawn(exePath, [], {
                             detached: true,
-                            stdio: 'ignore',
+                            stdio: ['ignore', outFd, outFd],
                             cwd: workDir
                         });
                         child.unref();

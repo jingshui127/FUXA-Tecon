@@ -495,18 +495,19 @@ function restart(clear) {
         try {
             if (isPkg) {
                 logger.info('runtime.restart: pkg mode, stopping for external restart...');
+                // Set exit code FIRST so it takes effect even if event loop continues briefly
+                process.exitCode = PKG_RESTART_CODE;
                 stop().then(function () {
                     if (clear) {
                         alarmsMgr.clear();
                         notificatorMgr.clear();
                     }
-                    logger.info('runtime.restart: stopped cleanly, exit code ' + PKG_RESTART_CODE);
-                    setTimeout(function () { process.exit(PKG_RESTART_CODE); }, 500);
-                    resolve(true);
+                    logger.info('runtime.restart: stopped cleanly, forcing exit code ' + PKG_RESTART_CODE);
+                    // Force immediate exit - don't rely on setTimeout
+                    process.exit(PKG_RESTART_CODE);
                 }).catch(function (err) {
                     logger.error('runtime.restart-stop: ' + err);
-                    setTimeout(function () { process.exit(1); }, 500);
-                    reject();
+                    process.exit(1);
                 });
                 return;
             }

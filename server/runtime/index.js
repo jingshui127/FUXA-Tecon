@@ -533,12 +533,13 @@ function restart(clear) {
                     try {
                         fs.writeFileSync(batPath, batContent);
                         // Use shell:true to run the bat file (more reliable than cmd /c from pkg)
+                        // Note: windowsHide removed - it prevents bat from executing in some pkg environments
+                        // The bat self-deletes quickly so any flash is minimal
                         var child = spawn(batPath, [], {
                             detached: true,
                             stdio: 'ignore',
                             cwd: workDir,
-                            shell: true,
-                            windowsHide: true
+                            shell: true
                         });
                         child.unref();
                         logger.info('runtime.restart: _restart_helper.bat spawned (PID=' + child.pid + ')');

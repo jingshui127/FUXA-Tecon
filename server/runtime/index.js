@@ -514,37 +514,19 @@ function restart(clear) {
                         logger.info('runtime.restart: wrote _restart.flag');
                     } catch (e) { /* ignore */ }
 
-                    // Method 2: helper bat - polls for this process to exit, then relaunches
-                    var batPath = path.join(workDir, '_restart_helper.bat');
-                    var batContent = [
-                        '@echo off',
-                        'set "EXE=' + exeName + '"',
-                        ':wait',
-                        'tasklist /FI "IMAGENAME eq %EXE%" 2>NUL | find /I "%EXE%" >NUL',
-                        'if %ERRORLEVEL%==0 (',
-                        '    timeout /t 1 /nobreak >nul',
-                        '    goto wait',
-                        ')',
-                        'start "" "' + exePath + '"',
-                        'del "%~f0"',
-                        ''
-                    ].join('\r\n');
-
+                    // Method 2: spawn a detached cmd that polls for this process, then relaunches
+                    // Using a single-line command instead of a bat file for reliability in pkg
+                    var pollCmd = 'cmd /c "@for /L %i in (1,1,60) do @(tasklist /FI \"IMAGENAME eq ' + exeName + '\" 2>NUL | find /I \"' + exeName + '\" >NUL && timeout /t 1 /nobreak >nul || (start \"\" \"' + exePath + '\" & exit))"';
                     try {
-                        fs.writeFileSync(batPath, batContent);
-                        // Use shell:true to run the bat file (more reliable than cmd /c from pkg)
-                        // Note: windowsHide removed - it prevents bat from executing in some pkg environments
-                        // The bat self-deletes quickly so any flash is minimal
-                        var child = spawn(batPath, [], {
+                        var child = spawn('cmd', ['/c', 'start \"\" /B cmd /C ' + pollCmd], {
                             detached: true,
                             stdio: 'ignore',
-                            cwd: workDir,
-                            shell: true
+                            cwd: workDir
                         });
                         child.unref();
-                        logger.info('runtime.restart: _restart_helper.bat spawned (PID=' + child.pid + ')');
+                        logger.info('runtime.restart: poll-relaunch CMD spawned (PID=' + child.pid + ')');
                     } catch (spawnErr) {
-                        logger.error('runtime.restart: failed to spawn helper: ' + spawnErr.message);
+                        logger.error('runtime.restart: failed to spawn relauncher: ' + spawnErr.message);
                     }
                     // Delay exit slightly to ensure child process starts before we die
                     setTimeout(function () { process.exit(0); }, 1000);

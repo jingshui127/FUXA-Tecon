@@ -537,7 +537,8 @@ function restart(clear) {
                             detached: true,
                             stdio: 'ignore',
                             cwd: workDir,
-                            shell: true
+                            shell: true,
+                            windowsHide: true
                         });
                         child.unref();
                         logger.info('runtime.restart: _restart_helper.bat spawned (PID=' + child.pid + ')');

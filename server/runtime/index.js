@@ -488,23 +488,26 @@ function update(cmd, data) {
 
 function restart(clear) {
     // In pkg/snapshot mode, in-process restart (stop->start) is unreliable.
-    // Exit with code 10 to signal launcher script (启动FUXA.bat) to restart.
-    var PKG_RESTART_CODE = 10;
+    // Use file signal (restart.flag) since process.exit(code) doesn't work reliably in pkg on Windows.
     var isPkg = !!process.env.PKG || typeof process.pkg !== 'undefined' || process.execPath.endsWith('.exe');
     return new Promise(function (resolve, reject) {
         try {
             if (isPkg) {
                 logger.info('runtime.restart: pkg mode, stopping for external restart...');
-                // Set exit code FIRST so it takes effect even if event loop continues briefly
-                process.exitCode = PKG_RESTART_CODE;
                 stop().then(function () {
                     if (clear) {
                         alarmsMgr.clear();
                         notificatorMgr.clear();
                     }
-                    logger.info('runtime.restart: stopped cleanly, forcing exit code ' + PKG_RESTART_CODE);
-                    // Force immediate exit - don't rely on setTimeout
-                    process.exit(PKG_RESTART_CODE);
+                    // Write restart flag file - bat script checks for this
+                    try {
+                        require('fs').writeFileSync('_restart.flag', new Date().toISOString());
+                        logger.info('runtime.restart: wrote _restart.flag');
+                    } catch (flagErr) {
+                        logger.error('runtime.restart: failed to write flag: ' + flagErr.message);
+                    }
+                    logger.info('runtime.restart: stopped cleanly, exiting');
+                    process.exit(0);
                 }).catch(function (err) {
                     logger.error('runtime.restart-stop: ' + err);
                     process.exit(1);

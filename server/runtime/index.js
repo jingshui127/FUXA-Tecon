@@ -513,18 +513,27 @@ function restart(clear) {
                         logger.info('runtime.restart: wrote _restart.flag');
                     } catch (e) { /* ignore */ }
 
-                    // Method 2: directly spawn new exe instance (no bat, no cmd, no scripts)
-                    // detached + unref makes it independent of this dying process
+                    // Method 2: launch new exe via PowerShell Start-Process
+                    // This gives the new process its own console window with working stdout/stderr
                     try {
-                        var child = spawn(exePath, [], {
+                        var psCmd = 'Start-Process -FilePath "' + exePath + '" -WorkingDirectory "' + workDir + '"';
+                        var child = spawn('powershell', ['-Command', psCmd], {
                             detached: true,
                             stdio: 'ignore',
                             cwd: workDir
                         });
                         child.unref();
-                        logger.info('runtime.restart: new exe spawned (PID=' + child.pid + ')');
+                        logger.info('runtime.restart: launched via powershell (PID=' + child.pid + ')');
                     } catch (e) {
-                        logger.error('runtime.restart: spawn failed: ' + e.message);
+                        logger.error('runtime.restart: powershell failed, fallback to direct spawn: ' + e.message);
+                        try {
+                            var child2 = spawn(exePath, [], {
+                                detached: true,
+                                stdio: 'ignore',
+                                cwd: workDir
+                            });
+                            child2.unref();
+                        } catch (e2) { /* ignore */ }
                     }
 
                     process.exit(0);

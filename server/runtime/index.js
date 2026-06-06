@@ -513,26 +513,18 @@ function restart(clear) {
                         logger.info('runtime.restart: wrote _restart.flag');
                     } catch (e) { /* ignore */ }
 
-                    // Method 2: launch new exe in its own console window via 'cmd /c start'
-                    // This gives the new process a fresh console with working stdout/stderr
+                    // Method 2: directly spawn new exe instance (no bat, no cmd, no scripts)
+                    // detached + unref makes it independent of this dying process
                     try {
-                        var child = spawn('cmd', ['/c', 'start', '', '"' + exePath + '"'], {
+                        var child = spawn(exePath, [], {
                             detached: true,
                             stdio: 'ignore',
                             cwd: workDir
                         });
                         child.unref();
-                        logger.info('runtime.restart: launched via cmd/start (PID=' + child.pid + ')');
+                        logger.info('runtime.restart: new exe spawned (PID=' + child.pid + ')');
                     } catch (e) {
-                        logger.error('runtime.restart: cmd/start failed, trying direct spawn: ' + e.message);
-                        try {
-                            var child2 = spawn(exePath, [], {
-                                detached: true,
-                                stdio: 'ignore',
-                                cwd: workDir
-                            });
-                            child2.unref();
-                        } catch (e2) { /* ignore */ }
+                        logger.error('runtime.restart: spawn failed: ' + e.message);
                     }
 
                     process.exit(0);

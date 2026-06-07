@@ -545,7 +545,9 @@ function restart(clear) {
                     resolve(true);
                 }).catch(function (err) {
                     logger.error('runtime.update-project-start: ' + err);
-                    reject();
+                    // Internal restart failed, exit and let StarAgent/systemd handle restart
+                    logger.info('runtime.restart: internal restart failed, exiting for external restart...');
+                    process.exit(0);
                 });
             }).catch(function (err) {
                 logger.error('runtime.update-project-stop: ' + err);

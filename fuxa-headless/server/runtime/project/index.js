@@ -340,11 +340,14 @@ function removeView(view) {
  * @param {*} merge merge with exist (tags)
  */
 function setDevice(device, merge) {
+    // Deep copy to prevent runtime data pollution from affecting stored project data
+    // This fixes the issue where S7 communication causes exit on save due to non-serializable objects
+    var deviceCopy = JSON.parse(JSON.stringify(device));
     if (merge && data.devices[device.id]) {
-        device.enabled = data.devices[device.id].enabled;
-        data.devices[device.id] = {...data.devices[device.id], ...device};
+        deviceCopy.enabled = data.devices[device.id].enabled;
+        data.devices[device.id] = {...data.devices[device.id], ...deviceCopy};
     } else {
-        data.devices[device.id] = device;
+        data.devices[device.id] = deviceCopy;
     }
 }
 
@@ -950,8 +953,101 @@ function getProjectDemo() {
     return JSON.parse(fs.readFileSync(demoProject, 'utf8'));;
 }
 
+/**
+ * Safe deep copy for project data that may contain non-serializable runtime objects
+ * This is a fallback when JSON.stringify fails due to circular references or special objects
+ * @param {*} projectData - The project data object
+ * @returns {*} Cleaned project data safe for serialization
+ */
+function _safeDeepCopyProject(projectData) {
+    var result = {};
+    try {
+        // Copy basic properties
+        if (projectData.version) result.version = projectData.version;
+        if (projectData.hmi) result.hmi = JSON.parse(JSON.stringify(projectData.hmi));
+        if (projectData.viewtree) result.viewtree = JSON.parse(JSON.stringify(projectData.viewtree));
+        if (projectData.charts) result.charts = JSON.parse(JSON.stringify(projectData.charts));
+        if (projectData.languages) result.languages = JSON.parse(JSON.stringify(projectData.languages));
+        if (projectData.clientAccess) result.clientAccess = JSON.parse(JSON.stringify(projectData.clientAccess));
+        if (projectData.graphs) result.graphs = JSON.parse(JSON.stringify(projectData.graphs));
+
+        // Safely copy devices - clean runtime properties from tags
+        result.devices = {};
+        if (projectData.devices) {
+            for (var deviceId in projectData.devices) {
+                try {
+                    var device = projectData.devices[deviceId];
+                    var cleanDevice = {
+                        id: device.id,
+                        name: device.name,
+                        type: device.type,
+                        enabled: device.enabled,
+                        property: device.property ? JSON.parse(JSON.stringify(device.property)) : {},
+                        tags: {},
+                        polling: device.polling
+                    };
+                    // Clean tags by removing runtime properties (value, rawValue, changed, etc.)
+                    if (device.tags) {
+                        for (var tagId in device.tags) {
+                            var tag = device.tags[tagId];
+                            if (tag && typeof tag === 'object') {
+                                cleanDevice.tags[tagId] = {
+                                    id: tag.id,
+                                    name: tag.name,
+                                    type: tag.type,
+                                    memaddress: tag.memaddress,
+                                    address: tag.address,
+                                    value: tag.value !== undefined ? tag.value : 0,
+                                    write: tag.write,
+                                    daq: tag.daq ? JSON.parse(JSON.stringify(tag.daq)) : {},
+                                    format: tag.format,
+                                    scale: tag.scale ? JSON.parse(JSON.stringify(tag.scale)) : undefined,
+                                    deadband: tag.deadband ? JSON.parse(JSON.stringify(tag.deadband)) : undefined,
+                                    property: tag.property ? JSON.parse(JSON.stringify(tag.property)) : {}
+                                };
+                            }
+                        }
+                    }
+                    result.devices[deviceId] = cleanDevice;
+                } catch (deviceErr) {
+                    logger.error(`project.safe-copy-device-error: '${deviceId}' ${deviceErr.message}`);
+                    // Skip this device if it cannot be cleaned
+                }
+            }
+        }
+
+        // Copy arrays (texts, alarms, notifications, scripts, reports, mapsLocations)
+        var arrayFields = ['texts', 'alarms', 'notifications', 'scripts', 'reports', 'mapsLocations'];
+        arrayFields.forEach(function(field) {
+            if (Array.isArray(projectData[field])) {
+                try {
+                    result[field] = JSON.parse(JSON.stringify(projectData[field]));
+                } catch (e) {
+                    result[field] = [];
+                    logger.error(`project.safe-copy-array-error: '${field}' ${e.message}`);
+                }
+            }
+        });
+
+    } catch (err) {
+        logger.error(`project.safe-copy-error: ${err.message}`);
+        // Return minimal valid structure
+        result = { devices: {}, hmi: { views: [] }, texts: [], alarms: [] };
+    }
+    return result;
+}
+
 function _filterProjectPermission(userPermission) {
-    var result = JSON.parse(JSON.stringify(data));// = { devices: {}, hmi: { views: [] } };
+    // Safe deep copy with error handling to prevent crash when S7 or other devices
+    // have non-serializable runtime data (e.g., circular references, functions, Buffer objects)
+    var result;
+    try {
+        result = JSON.parse(JSON.stringify(data));
+    } catch (serializeError) {
+        logger.error(`project.serialize-error: Failed to serialize project data! ${serializeError.message}`);
+        // Fallback: create a clean copy by manually cleaning device data
+        result = _safeDeepCopyProject(data);
+    }
     const projectPermission = runtime.checkPermission(userPermission, false);
     if (!projectPermission.show || !projectPermission.enabled) {   // is admin or secure disabled
         // from device remove the not used (no permission)

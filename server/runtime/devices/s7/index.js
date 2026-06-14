@@ -15,7 +15,7 @@ function S7client(_data, _logger, _events, _runtime) {
     var db = {};                        // Loaded Signal in DB format { DB index, start, size, ... }
     var data = JSON.parse(JSON.stringify(_data));                   // Current Device data { id, name, tags, enabled, ... }
     var logger = _logger;               // Logger
-    var s7client = new snap7.S7Client();// Client node-S7
+    var s7client = null;                // Client node-S7 (lazy init on connect)
     var working = false;                // Working flag to manage overloading polling and connection
     var events = _events;               // Events to commit change to runtime
     var lastStatus = '';                // Last Device status
@@ -33,6 +33,12 @@ function S7client(_data, _logger, _events, _runtime) {
         return new Promise(function (resolve, reject) {
             if (data.property && data.property.rack >= 0 && data.property.slot >= 0) {
                 try {
+                    // Lazy init S7Client only when actually connecting
+                    if (!s7client) {
+                        logger.info(`'${data.name}' creating S7Client...`, true);
+                        s7client = new snap7.S7Client();
+                        logger.info(`'${data.name}' S7Client created`, true);
+                    }
                     if (!s7client.Connected() && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
                         s7client.ConnectTo(data.property.address, data.property.rack, data.property.slot, function (err) {

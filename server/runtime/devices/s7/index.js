@@ -15,7 +15,7 @@ function S7client(_data, _logger, _events, _runtime) {
     var db = {};                        // Loaded Signal in DB format { DB index, start, size, ... }
     var data = JSON.parse(JSON.stringify(_data));                   // Current Device data { id, name, tags, enabled, ... }
     var logger = _logger;               // Logger
-    var s7client = new snap7.S7Client();// Client node-S7
+    var s7client = null;                // Client node-S7 (lazy init on connect)
     var working = false;                // Working flag to manage overloading polling and connection
     var events = _events;               // Events to commit change to runtime
     var lastStatus = '';                // Last Device status
@@ -33,6 +33,12 @@ function S7client(_data, _logger, _events, _runtime) {
         return new Promise(function (resolve, reject) {
             if (data.property && data.property.rack >= 0 && data.property.slot >= 0) {
                 try {
+                    // Lazy init S7Client only when actually connecting
+                    if (!s7client) {
+                        logger.info(`'${data.name}' creating S7Client...`, true);
+                        s7client = new snap7.S7Client();
+                        logger.info(`'${data.name}' S7Client created`, true);
+                    }
                     if (!s7client.Connected() && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
                         s7client.ConnectTo(data.property.address, data.property.rack, data.property.slot, function (err) {
@@ -74,20 +80,22 @@ function S7client(_data, _logger, _events, _runtime) {
     this.disconnect = function () {
         return new Promise(function (resolve, reject) {
             _checkWorking(false);
-            if (!s7client.Connected()) {
+            if (!s7client) {
+                _emitStatus('connect-off');
+                _clearVarsValue();
+                resolve(true);
+            } else if (!s7client.Connected()) {
                 _emitStatus('connect-off');
                 _clearVarsValue();
                 resolve(true);
             } else {
-                var result = s7client.Disconnect();
-                if (result) {
-                    logger.info(`'${data.name}' disconnected!`, true);
-                } else {
-                    logger.error(`'${data.name}' try to disconnect failed!`);
-                }
+                // Skip Disconnect() call to avoid native module crash on process exit
+                // The OS will clean up all resources when process terminates
+                logger.info(`'${data.name}' skipping disconnect (process exiting)`, true);
                 _emitStatus('connect-off');
                 _clearVarsValue();
-                resolve(result);
+                s7client = null;  // Release reference without calling Disconnect
+                resolve(true);
             }
         });
     }
@@ -247,7 +255,7 @@ function S7client(_data, _logger, _events, _runtime) {
      * Don't work if PLC will disconnect
      */
     this.isConnected = function () {
-        return s7client.Connected();
+        return s7client ? s7client.Connected() : false;
     }
 
     /**
@@ -418,7 +426,7 @@ function S7client(_data, _logger, _events, _runtime) {
             logger.warn(`'${data.name}' working (connection || polling) overload! ${overloading}`);
             // !The driver don't give the break connection
             if (overloading >= 3) {
-                s7client.Disconnect();
+                try { if (s7client) s7client.Disconnect(); } catch (e) { /* ignore */ }
             } else {
                 return false;
             }

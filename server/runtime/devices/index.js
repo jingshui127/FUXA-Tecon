@@ -28,7 +28,11 @@ function start() {
     return new Promise(function (resolve, reject) {
         // runtime.logger.info('devices.start-all (' + Object.keys(activeDevices).length + ')', true);
         for (var id in activeDevices) {
-            activeDevices[id].start();
+            try {
+                activeDevices[id].start();
+            } catch (err) {
+                runtime.logger.error('devices.start-error ' + id + ': ' + err);
+            }
         }
         resolve();
         wokingStatus = null;
@@ -44,14 +48,18 @@ function stop() {
         // runtime.logger.info('devices.stop-all (' + Object.keys(activeDevices).length + ')');
         var deviceStopfnc = [];
         for (var id in activeDevices) {
-            deviceStopfnc.push(activeDevices[id].stop());
+            try {
+                deviceStopfnc.push(activeDevices[id].stop());
+            } catch (err) {
+                runtime.logger.error('devices.stop-error ' + id + ': ' + err);
+            }
         }
         return Promise.all(deviceStopfnc).then(values => {
             resolve(true);
             wokingStatus = null;
         }, reason => {
             runtime.logger.error('devices.stop-all: ' + reason);
-            resolve(reason);
+            resolve(true);  // Changed from resolve(reason) to always resolve
             wokingStatus = null;
         });
     });

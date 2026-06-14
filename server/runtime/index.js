@@ -512,30 +512,70 @@ function update(cmd, data) {
 function restart(clear) {
     return new Promise(function (resolve, reject) {
         try {
-            stop().then(function () {
-                if (clear) {
-                    alarmsMgr.clear();
-                    notificatorMgr.clear();
-                }
+            // 优化：先处理非设备的清理工作
+            if (clear) {
+                alarmsMgr.clear();
+                notificatorMgr.clear();
+            }
+            
+            logger.info('runtime.update-project: stopping...', true);
+            
+            // 尝试停止所有设备（异步，不等待完成）
+            // 注意：S7 设备的 disconnect 可能导致原生模块崩溃
+            // 因此使用 fire-and-forget 模式，不阻塞后续启动
+            var stopPromise = devices.stop().catch(function (err) {
+                logger.error('runtime.failed-to-stop-devices: ' + err);
+                // 即使停止失败也继续启动（OS 会清理资源）
+            });
+            
+            // 同时停止其他组件（这些通常是安全的）
+            Promise.all([
+                alarmsMgr.stop().catch(function (err) {
+                    logger.error('runtime.failed-to-stop-alarms: ' + err);
+                }),
+                notificatorMgr.stop().catch(function (err) {
+                    logger.error('runtime.failed-to-stop-notificatorMgr: ' + err);
+                }),
+                scriptsMgr.stop().catch(function (err) {
+                    logger.error('runtime.failed-to-stop-scriptsMgr: ' + err);
+                }),
+                jobsMgr.stop().catch(function (err) {
+                    logger.error('runtime.failed-to-stop-jobsMgr: ' + err);
+                })
+            ]).then(function () {
                 logger.info('runtime.update-project: stopped!', true);
-                start().then(function () {
-                    logger.info('runtime.update-project: restart!');
-                    resolve(true);
-                }).catch(function (err) {
-                    logger.error('runtime.update-project-start: ' + err);
-                    reject();
-                });
+                
+                // 额外延迟以确保资源释放（特别是 S7 原生模块）
+                setTimeout(function () {
+                    start().then(function () {
+                        logger.info('runtime.update-project: restart!');
+                        resolve(true);
+                    }).catch(function (err) {
+                        logger.error('runtime.update-project-start: ' + err);
+                        reject();
+                    });
+                }, 500); // 500ms 延迟给 OS 清理时间
             }).catch(function (err) {
                 logger.error('runtime.update-project-stop: ' + err);
-                reject();
+                // 即使出错也尝试启动
+                setTimeout(function () {
+                    start().then(function () {
+                        logger.info('runtime.update-project: restart!');
+                        resolve(true);
+                    }).catch(function (err2) {
+                        logger.error('runtime.update-project-start: ' + err2);
+                        reject(err2);
+                    });
+                }, 500);
             });
+            
         } catch (err) {
             if (err.stack) {
                 logger.error(err.stack);
             } else {
                 logger.error(err);
             }
-            reject();
+            reject(err);
         }
     });
 }

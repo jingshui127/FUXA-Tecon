@@ -78,7 +78,7 @@ function Device(data, runtime) {
         if (!MQTTclient) {
             return null;
         }
-        data.certificatesDir = path.resolve(runtime.settings.appDir, '_certificates');
+        data.certificatesDir = path.resolve(process.env.FUXA_DATA_DIR || runtime.settings.appDir, '_certificates');
         comm = MQTTclient.create(data, logger, events, runtime);
     } else if (data.type === DeviceEnum.EthernetIP) {
         if (!EthernetIPclient) {

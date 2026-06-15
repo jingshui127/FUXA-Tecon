@@ -57,6 +57,10 @@ if (process.env.FUXA_SERVER === '1') {
 //  GUARDIAN MODE: 守护进程（默认模式）
 //  监控子进程，崩溃后自动重启
 // ============================================================
+console.log('================================================');
+console.log('  FUXA Headless Server (Guardian Mode)');
+console.log('  科控物联提供技术支持。QQ:2492123056');
+console.log('================================================');
 
 const CONFIG = {
     maxRestarts: 1000,

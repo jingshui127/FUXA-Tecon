@@ -123,8 +123,18 @@ jobs:
         fi
       shell: bash
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v2
       with:
-        name: FUXA-headless-${{ matrix.os }}-${{ matrix.arch }}
-        path: artifacts/*
+        tag_name: headless-latest
+        name: FUXA Headless Latest Build
+        body: |
+          FUXA Headless (守护进程模式) 自动构建
+          
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Build Date: ${{ github.event.repository.updated_at }}
+        files: artifacts/*
+        fail_on_unmatched_files: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -26,7 +26,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '18'
 
     - name: Install build dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -60,7 +60,7 @@ jobs:
         cp -r client/dist/. fuxa-headless/client/dist/
         
         # Use the entry point as the main file for pkg
-        cp app/headless/headless-entry.js fuxa-headless/main.js
+        cp app/headless/headless-guardian.js fuxa-headless/main.js
       shell: bash
 
     - name: Create Package Config
@@ -90,17 +90,17 @@ jobs:
       run: |
         if [ "$RUNNER_OS" = "Linux" ]; then
           if [ "${{ matrix.arch }}" = "arm64" ]; then
-            TARGET="node20-linux-arm64"
+            TARGET="node18-linux-arm64"
           else
-            TARGET="node20-linux-x64"
+            TARGET="node18-linux-x64"
           fi
         elif [ "$RUNNER_OS" = "Windows" ]; then
-          TARGET="node20-win-x64"
+          TARGET="node18-win-x64"
         elif [ "$RUNNER_OS" = "macOS" ]; then
           if [ "${{ matrix.arch }}" = "arm64" ]; then
-            TARGET="node20-macos-arm64"
+            TARGET="node18-macos-arm64"
           else
-            TARGET="node20-macos-x64"
+            TARGET="node18-macos-x64"
           fi
         fi
         pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts

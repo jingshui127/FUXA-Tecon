@@ -2,6 +2,11 @@ name: Build FUXA Headless (Latest)
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [build-headless]
+  push:
+    branches: [1.3.3-2843]
+    paths: ['.github/workflows/headless_packaging.yml', 'server/**', 'fuxa-headless/**']
 
 jobs:
   build:

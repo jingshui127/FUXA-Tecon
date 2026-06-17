@@ -76,6 +76,15 @@ jobs:
               "client/dist/**/*",
               "_reports/**/*"
             ],
+            "publicPackages": [
+              "node-snap7",
+              "sqlite3",
+              "serialport",
+              "@serialport/bindings-cpp",
+              "@serialport/parser-readline",
+              "@serialport/parser-regex",
+              "@serialstream/bindings-cpp"
+            ],
             "compression": "Brotli"
           }
         }
@@ -109,8 +118,8 @@ jobs:
 
 
     - name: Prepare artifacts
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
+      run: |、
+          if [ "${{ matrix.os }}" = "windows-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
           mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-headless-windows-x64.exe || true
         elif [ "${{ matrix.os }}" = "ubuntu-latest" ] && [ "${{ matrix.arch }}" = "x64" ]; then
           mv artifacts/fuxa-headless-linux-x64 artifacts/FUXA-headless-linux-x64 || true

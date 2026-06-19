@@ -9,6 +9,12 @@ const deviceUtils = require('../device-utils');
 
 const MAX_MIX_ITEM = 20;
 
+// S7 Area constants (independent of s7client instance)
+const S7AreaMK = 0x83;   // Merker / Memory
+const S7AreaPE = 0x81;   // Input (Eingang)
+const S7AreaPA = 0x82;   // Output (Ausgang)
+const S7AreaDB = 0x84;   // DB (Datenbaustein)
+
 function S7client(_data, _logger, _events, _runtime) {
 
     var runtime = _runtime;
@@ -154,9 +160,17 @@ function S7client(_data, _logger, _events, _runtime) {
         dbItemsMap = {};
         mixItemsMap = {};
         var count = 0;
+        logger.info(`[S7-DEBUG] '${data.name}' load called, tags: ${Object.keys(data.tags || {}).length}`, true);
+        if (Object.keys(data.tags || {}).length === 0) {
+            logger.info(`[S7-DEBUG] '${data.name}' _data keys: ${Object.keys(_data).join(',')}`, true);
+            logger.info(`[S7-DEBUG] '${data.name}' _data.id: ${_data.id}`, true);
+        }
         for (var id in data.tags) {
             try {
-                var varDb = _getTagItem(data.tags[id]);
+                var tag = data.tags[id];
+                logger.info(`[S7-DEBUG] '${data.name}' processing tag '${id}': address=${tag.address}, type=${tag.type}`, true);
+                var varDb = _getTagItem(tag);
+                logger.info(`[S7-DEBUG] '${data.name}' _getTagItem result: ${varDb ? (varDb instanceof DbItem ? 'DbItem(dbnum=' + varDb.dbnum + ',Start=' + varDb.Start + ',type=' + varDb.type + ')' : 'mixItem(Start=' + varDb.Start + ')') : 'null'}`, true);
                 if (varDb instanceof DbItem) {
                     if (!db[varDb.dbnum]) {
                         var grptag = new DbItems(varDb.dbnum);
@@ -187,7 +201,7 @@ function S7client(_data, _logger, _events, _runtime) {
                 logger.error(`'${data.name}' load error! ${err}`);
             }
         }
-        logger.info(`'${data.name}' data loaded (${count})`, true);
+        logger.info(`'${data.name}' data loaded (${count}) [tags=${Object.keys(data.tags || {}).length}] [v2]`, true);
     }
 
     /**
@@ -593,7 +607,7 @@ function S7client(_data, _logger, _events, _runtime) {
                         var dbStart = variable.substring(startpos + 4);
                         var result = new DbItem(dbNum);
                         result.type = tag.type.toUpperCase();
-                        result.Area = s7client['S7AreaDB'];
+                        result.Area = S7AreaDB;
                         if (dbType === 'DBB') {
                             result.Start = parseInt(dbStart);
                             if (result.Start >= 0) {
@@ -630,18 +644,18 @@ function S7client(_data, _logger, _events, _runtime) {
                         case 'IW':
                         case 'ED':
                         case 'ID':
-                            return { Area: s7client['S7AreaPE'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: S7AreaPE, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         case 'AB':
                         case 'QB':
                         case 'AW':
                         case 'QW':
                         case 'AD':
                         case 'QD':
-                            return { Area: s7client['S7AreaPA'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: S7AreaPA, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         case 'MB':
                         case 'MW':
                         case 'MD':
-                            return { Area: s7client['S7AreaMK'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: S7AreaMK, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         default:
                             len = datatypes['BYTE'].S7WordLen;
                             var start = parseInt(variable.substring(1, variable.indexOf('.')));
@@ -649,12 +663,12 @@ function S7client(_data, _logger, _events, _runtime) {
                             switch (prefix.substring(0, 1)) {
                                 case 'E':
                                 case 'I':
-                                    return { Area: s7client['S7AreaPE'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: S7AreaPE, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'A':
                                 case 'Q':
-                                    return { Area: s7client['S7AreaPA'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: S7AreaPA, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'M':
-                                    return { Area: s7client['S7AreaMK'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: S7AreaMK, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'O':
                                 case 'T':
                                 case 'Z':
@@ -667,7 +681,7 @@ function S7client(_data, _logger, _events, _runtime) {
                 }
             }
         } catch (err) {
-
+            logger.error(`_getTagItem error: ${err.message || err}`);
         }
         return null;
     }
@@ -695,8 +709,20 @@ module.exports = {
 
 function loadSnap7Lib(manager) {
     if (!snap7) {
-        try { snap7 = require('node-snap7'); } catch { }
-        if (!snap7 && manager) { try { snap7 = manager.require('node-snap7'); } catch { } }
+        try { 
+            snap7 = require('node-snap7'); 
+            console.log('[S7] node-snap7 loaded via require');
+        } catch (e) { 
+            console.log('[S7] require failed:', e.message);
+        }
+        if (!snap7 && manager) { 
+            try { 
+                snap7 = manager.require('node-snap7'); 
+                console.log('[S7] node-snap7 loaded via manager');
+            } catch (e) { 
+                console.log('[S7] manager.require failed:', e.message);
+            }
+        }
     }
     return !!snap7;
 }

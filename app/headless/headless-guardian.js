@@ -5,11 +5,6 @@
  * 同一个 EXE，双模式运行：
  *   默认模式 (Guardian): 监控 + 崩溃自动重启
  *   FUXA_SERVER=1:       实际运行 FUXA 服务器
- * 
- * 解决的问题：
- *   - 无需外部 bat/wrapper.js 守护脚本
- *   - S7 设备保存时崩溃后自动恢复
- *   - EXE 单文件自愈，部署更简单
  */
 
 const path = require('path');
@@ -22,20 +17,19 @@ const { spawn } = require('child_process');
 //  当环境变量 FUXA_SERVER=1 时进入此模式
 // ============================================================
 if (process.env.FUXA_SERVER === '1') {
-    const homeDir = os.homedir();
-    const fuxaDataDir = path.join(homeDir, 'fuxa-headless-data');
+    // 数据目录：EXE 同目录下的 data 子目录
+    const exeDir = path.dirname(process.execPath);
+    const fuxaDataDir = path.join(exeDir, 'data');
     
-    // 确保数据目录存在
     if (!fs.existsSync(fuxaDataDir)) {
         console.log(`[FUXA] Creating data directory: ${fuxaDataDir}`);
         fs.mkdirSync(fuxaDataDir, { recursive: true });
     }
     console.log(`[FUXA] Data directory: ${fuxaDataDir}`);
     
-    // 设置数据目录环境变量
     process.env.userDir = fuxaDataDir;
+    process.env.FUXA_DATA_DIR = fuxaDataDir;
     
-    // 加载并运行 FUXA 服务器
     const serverPath = path.join(__dirname, 'server', 'main.js');
     
     if (!fs.existsSync(serverPath)) {
@@ -50,12 +44,11 @@ if (process.env.FUXA_SERVER === '1') {
         if (err.stack) console.error(err.stack);
         process.exit(1);
     }
-    return; // 不会到达这里（main.js 会持有进程）
+    return;
 }
 
 // ============================================================
 //  GUARDIAN MODE: 守护进程（默认模式）
-//  监控子进程，崩溃后自动重启
 // ============================================================
 console.log('================================================');
 console.log('  FUXA Headless Server (Guardian Mode)');
@@ -64,9 +57,9 @@ console.log('================================================');
 
 const CONFIG = {
     maxRestarts: 1000,
-    restartDelay: 2000,       // 崩溃后等待 2 秒再重启
-    cooldownWindow: 10000,    // 10 秒内如果频繁崩溃，延长等待
-    maxRapidRestarts: 5,      // 冷却窗口内最多快速重启次数
+    restartDelay: 2000,
+    cooldownWindow: 10000,
+    maxRapidRestarts: 5,
 };
 
 let restartCount = 0;
@@ -82,7 +75,6 @@ function log(msg) {
 function startServer() {
     const now = Date.now();
     
-    // 冷却窗口检查：防止频繁崩溃导致死循环
     if (now - lastRestartTime < CONFIG.cooldownWindow) {
         rapidRestarts++;
         if (rapidRestarts >= CONFIG.maxRapidRestarts) {
@@ -109,7 +101,6 @@ function startServer() {
             childProcess = null;
         }
         
-        // 正常退出（Ctrl+C/关机）不重启
         if (signal === 'SIGINT' || signal === 'SIGTERM') {
             log('Normal shutdown signal received. Exiting guardian.');
             process.exit(0);
@@ -138,7 +129,6 @@ function startServer() {
     });
 }
 
-// ----- 启动守护进程 -----
 log('========================================');
 log('  FUXA Headless Server (Guardian Mode)');
 log('========================================');
@@ -149,17 +139,14 @@ log('========================================');
 
 startServer();
 
-// 优雅退出处理
 process.on('SIGINT', () => {
     log('Received SIGINT. Shutting down...');
     if (childProcess) {
-        // 先通知子进程退出
         if (process.platform === 'win32') {
             childProcess.kill('SIGINT');
         } else {
             childProcess.kill('SIGTERM');
         }
-        // 等待子进程退出后自身退出
         setTimeout(() => process.exit(0), 10000);
     } else {
         process.exit(0);

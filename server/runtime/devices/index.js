@@ -160,6 +160,7 @@ function load() {
  * @param {*} device
  */
 function loadDevice(device) {
+    runtime.logger.info(`[DEV-DEBUG] loadDevice '${device.name}', tags: ${Object.keys(device.tags || {}).length}, keys: ${Object.keys(device).join(',')}`, true);
     if (activeDevices[device.id]) {
         // device exist
         runtime.logger.info(`'${device.name}' exist`, true);

@@ -6,7 +6,11 @@ on:
     types: [build-headless]
   push:
     branches: [1.3.3-2843]
-    paths: ['.github/workflows/headless_packaging.yml', 'server/**', 'fuxa-headless/**']
+    paths:
+      - '.github/workflows/headless_packaging.yml'
+      - 'server/**'
+      - 'client/src/**'
+      - 'app/headless/**'
 
 jobs:
   build:

@@ -1,9 +1,9 @@
-name: Build FUXA PRO (Tecon)
+name: Build FUXA PRO Headless EXE
 
 on:
   workflow_dispatch:
   push:
-    branches: [1.3.2-PRO]
+    branches: [main, master]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -13,21 +13,14 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            arch: x64
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
+    - name: Setup Node.js 18
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-
-
 
     - name: Install server dependencies
       run: |
@@ -36,27 +29,26 @@ jobs:
         npm install --prefer-offline --no-audit
       working-directory: ./server
 
-
-
     - name: Setup Headless Package Directory
+      shell: bash
       run: |
         mkdir -p fuxa-headless/server
         mkdir -p fuxa-headless/client/dist
-        
-        # Copy everything just like the Electron workflow does
+
+        # Copy server and client/dist
         cp -r server/. fuxa-headless/server/
         cp -r client/dist/. fuxa-headless/client/dist/
-        
-        # Use the entry point as the main file for pkg
-        cp app/headless/headless-entry.js fuxa-headless/main.js
-      shell: bash
+
+        # 使用 Guardian 双模式入口（替代旧的 headless-entry.js）
+        cp app/headless/headless-guardian.js fuxa-headless/main.js
 
     - name: Create Package Config
+      shell: bash
       run: |
-        cat > fuxa-headless/package.json <<EOF
+        cat > fuxa-headless/package.json <<'EOF'
         {
-          "name": "fuxa-headless",
-          "version": "1.0.0",
+          "name": "fuxa-pro-headless",
+          "version": "1.3.2-PRO",
           "bin": "main.js",
           "pkg": {
             "assets": [
@@ -68,27 +60,49 @@ jobs:
           }
         }
         EOF
-      shell: bash
 
     - name: Install yao-pkg
       run: npm install -g @yao-pkg/pkg
 
-
-    - name: Build Standalone Binaries (Headless)
-      run: |
-        TARGET="node18-win-x64"
-        pkg fuxa-headless/package.json --targets $TARGET --out-path artifacts --public-packages "node-snap7,bindings,nan"
+    - name: Build Standalone EXE (Node.js 18 + Brotli)
       shell: bash
-      working-directory: .
-
-
-    - name: Prepare artifacts
       run: |
-        mv artifacts/fuxa-headless-win-x64.exe artifacts/FUXA-single-windows-x64.exe || true
+        pkg fuxa-headless/package.json \
+          --targets node18-win-x64 \
+          --out-path artifacts \
+          --public-packages "node-snap7,bindings,nan"
+
+    - name: Rename artifact
       shell: bash
+      run: mv artifacts/fuxa-pro-headless-win-x64.exe artifacts/fuxa-pro-headless.exe || true
 
     - name: List built files
-      run: |
-        ls -la artifacts/
-        echo "Build completed! Artifact: FUXA-single-windows-x64.exe"
       shell: bash
+      run: ls -la artifacts/
+
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: headless-pro-latest
+        name: FUXA PRO Headless (Latest)
+        body: |
+          ## FUXA PRO Headless EXE - 自动构建产物
+
+          **构建时间**: ${{ github.run_started_at }}
+          **Commit**: [${{ github.sha }}](${{ github.event.repository.html_url }}/commit/${{ github.sha }})
+          **工作流**: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          ### 使用方法
+          1. 下载 `fuxa-pro-headless.exe`
+          2. 放到任意目录，双击运行
+          3. 浏览器打开 http://127.0.0.1:1881/
+          4. 数据自动保存在 exe 同目录的 `data\` 文件夹下
+
+          ### 特性
+          - 内置 Node.js 18 运行时，无需安装任何环境
+          - Guardian 守护模式：崩溃后 2 秒自动重启
+          - 便携式部署：整个目录可拷贝到其他电脑直接使用
+          - 支持 S7/Modbus/MQTT/OPC UA 等全部设备驱动
+        files: artifacts/fuxa-pro-headless.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

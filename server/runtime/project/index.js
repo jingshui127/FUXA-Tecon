@@ -950,7 +950,7 @@ function setDeviceProperty(query) {
  */
 function getProjectDemo() {
     var demoProject = path.join(settings.appDir, 'project.demo.fuxap');
-    return JSON.parse(fs.readFileSync(demoProject, 'utf8));;
+    return JSON.parse(fs.readFileSync(demoProject, 'utf8'));
 }
 
 /**

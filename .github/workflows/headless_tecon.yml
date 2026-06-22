@@ -3,7 +3,7 @@ name: Build FUXA PRO Headless EXE
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
+    branches: [main, master, 1.3.2-PRO]
     paths-ignore:
       - '**.md'
       - 'docs/**'

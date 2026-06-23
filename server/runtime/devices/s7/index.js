@@ -9,6 +9,13 @@ const deviceUtils = require('../device-utils');
 
 const MAX_MIX_ITEM = 20;
 
+// S7 Area 常量（模块级定义，不依赖 s7client 实例）
+// 修复：load() 时 s7client 尚未连接为 null，访问其属性会抛异常导致标签解析失败
+const S7AreaMK = 0x83;  // Merkers / 标志区 M
+const S7AreaPE = 0x81;  // Inputs / 输入区 E/I
+const S7AreaPA = 0x82;  // Outputs / 输出区 A/Q
+const S7AreaDB = 0x84;  // DB / 数据块
+
 function S7client(_data, _logger, _events, _runtime) {
 
     var runtime = _runtime;
@@ -80,7 +87,7 @@ function S7client(_data, _logger, _events, _runtime) {
     this.disconnect = function () {
         return new Promise(function (resolve, reject) {
             _checkWorking(false);
-            if (!s7client.Connected()) {
+            if (!s7client || !s7client.Connected()) {
                 _emitStatus('connect-off');
                 _clearVarsValue();
                 resolve(true);
@@ -253,7 +260,7 @@ function S7client(_data, _logger, _events, _runtime) {
      * Don't work if PLC will disconnect
      */
     this.isConnected = function () {
-        return s7client.Connected();
+        return s7client && s7client.Connected();
     }
 
     /**
@@ -423,7 +430,7 @@ function S7client(_data, _logger, _events, _runtime) {
             overloading++;
             logger.warn(`'${data.name}' working (connection || polling) overload! ${overloading}`);
             // !The driver don't give the break connection
-            if (overloading >= 3) {
+            if (overloading >= 3 && s7client) {
                 s7client.Disconnect();
             } else {
                 return false;
@@ -591,7 +598,7 @@ function S7client(_data, _logger, _events, _runtime) {
                         var dbStart = variable.substring(startpos + 4);
                         var result = new DbItem(dbNum);
                         result.type = tag.type.toUpperCase();
-                        result.Area = s7client['S7AreaDB'];
+                        result.Area = S7AreaDB;
                         if (dbType === 'DBB') {
                             result.Start = parseInt(dbStart);
                             if (result.Start >= 0) {
@@ -628,18 +635,18 @@ function S7client(_data, _logger, _events, _runtime) {
                         case 'IW':
                         case 'ED':
                         case 'ID':
-                            return { Area: s7client['S7AreaPE'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: S7AreaPE, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         case 'AB':
                         case 'QB':
                         case 'AW':
                         case 'QW':
                         case 'AD':
                         case 'QD':
-                            return { Area: s7client['S7AreaPA'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: S7AreaPA, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         case 'MB':
                         case 'MW':
                         case 'MD':
-                            return { Area: s7client['S7AreaMK'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: S7AreaMK, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         default:
                             len = datatypes['BYTE'].S7WordLen;
                             var start = parseInt(variable.substring(1, variable.indexOf('.')));
@@ -647,12 +654,12 @@ function S7client(_data, _logger, _events, _runtime) {
                             switch (prefix.substring(0, 1)) {
                                 case 'E':
                                 case 'I':
-                                    return { Area: s7client['S7AreaPE'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: S7AreaPE, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'A':
                                 case 'Q':
-                                    return { Area: s7client['S7AreaPA'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: S7AreaPA, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'M':
-                                    return { Area: s7client['S7AreaMK'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: S7AreaMK, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'O':
                                 case 'T':
                                 case 'Z':

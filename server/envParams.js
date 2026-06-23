@@ -4,8 +4,8 @@ process.env.DEVICES = `[
         "name":"wApi",
         "type":"WebAPI",
         "configs": {
-            "getTags":"http://192.168.1.177:1888/api/tags",
-            "postTags":"http://192.168.1.177:1888/api/tags",
+            "getTags":"http://192.168.1.177:1881/api/tags",
+            "postTags":"http://192.168.1.177:1881/api/tags",
             "requestTimeoutMs":5000,
             "requestIntervalMs":500
         }

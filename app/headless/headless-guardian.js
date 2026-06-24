@@ -13,10 +13,32 @@ const os = require('os');
 const { spawn } = require('child_process');
 
 // ============================================================
+//  Simple CLI argument parser (supports -p / --port)
+// ============================================================
+function parseArgs(argv) {
+    const args = {};
+    for (let i = 2; i < argv.length; i++) {
+        if (argv[i] === '-p' || argv[i] === '--port') {
+            args.port = argv[i + 1];
+            i++;
+        }
+    }
+    return args;
+}
+
+// ============================================================
 //  SERVER MODE: 实际运行 FUXA 服务器
 //  当环境变量 FUXA_SERVER=1 时进入此模式
 // ============================================================
 if (process.env.FUXA_SERVER === '1') {
+    const cliArgs = parseArgs(process.argv);
+    
+    // 端口（-p 参数或环境变量 PORT）
+    if (cliArgs.port) {
+        process.env.PORT = cliArgs.port;
+        console.log(`[FUXA] Port set to: ${cliArgs.port}`);
+    }
+    
     // 数据目录：EXE 同目录下的 data 子目录
     const exeDir = path.dirname(process.execPath);
     const fuxaDataDir = path.join(exeDir, 'data');
@@ -89,7 +111,15 @@ function startServer() {
     
     log(`Starting FUXA server (restart #${restartCount + 1})...`);
     
-    childProcess = spawn(process.execPath, [], {
+    // 解析命令行参数，传递给子进程
+    const cliArgs = parseArgs(process.argv);
+    const spawnArgs = [];
+    if (cliArgs.port) {
+        spawnArgs.push('-p', cliArgs.port);
+        log(`Port: ${cliArgs.port}`);
+    }
+    
+    childProcess = spawn(process.execPath, spawnArgs, {
         env: { ...process.env, FUXA_SERVER: '1' },
         stdio: 'inherit',
         windowsHide: false,

@@ -1,7 +1,7 @@
 ![1781532469406](image/FUXA定制化优化指南/1781532469406.png)# FUXA Headless EXE 定制化优化指南
 
-> 最后更新: 2026-06-15
-> 基于版本: 1.3.3-2843
+> 最后更新: 2026-06-24
+> 当前版本: 1.3.3 (基于上游 v1.3.3 正式版)
 > 分支: `1.3.3-2843`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
 
@@ -21,16 +21,20 @@
 
 | 文件 | 操作 | 用途 |
 |------|:----:|------|
-| `app/headless/headless-guardian.js` | 新建 | EXE 双模式入口（Guardian + Server） |
-| `.github/workflows/headless_packaging.yml` | 修改 | 构建配置：Node.js 18 + Release 上传 |
-| `server/api/resources/index.js` | 修改 | fontkit 懒加载修复 windows-1252 崩溃 |
-| `server/runtime/devices/s7/index.js` | 修改（之前已完成）| S7 驱动优化：延迟初始化 + 跳过 Disconnect() |
-| `server/runtime/devices/index.js` | 修改（之前已完成）| 设备 start/stop try-catch 保护 |
-| `server/api/projects/index.js` | 修改（之前已完成）| API 异步重启，消除"保存失败"提示 |
+| `app/headless/headless-guardian.js` | 新建 | 数据目录改为 EXE 同目录 `data\`，双模式入口 |
+| `.github/workflows/headless_packaging.yml` | 修改 | 构建配置：Node.js 18 + Release 上传（仅 Windows x64） |
+| `server/api/resources/index.js` | 上游已含 | fontkit 懒加载修复 windows-1252 崩溃 |
+| `server/runtime/devices/s7/index.js` | **修改** | S7 驱动修复：S7Area 常量 + 延迟初始化 + 跳过 Disconnect |
+| `server/runtime/devices/index.js` | 已含 | 设备 start/stop try-catch 保护 |
+| `server/api/projects/index.js` | 已含 | API 异步重启，消除"保存失败"提示 |
+| `server/api/index.js` | 上游同步 | Node-RED 安全漏洞修复 |
+| `server/api/jwt-helper.js` | 上游同步 | 设置脱敏 + refresh token 修复 |
+| `server/integrations/node-red/index.js` | 上游同步 | Node-RED 授权修复 |
+| `server/main.js` | 上游同步 | 安全修复 |
+| `server/runtime/users/` | 上游同步 | 角色清理 + 存储安全 |
+| `client/src/app/_services/auth.service.ts` | 上游同步 | refresh token 修复 |
 | `client/src/app/maps/maps-view/maps-view.component.ts` | 修改 | 地图源改为法国 OSM 热区镜像（国内加速） |
-| `server/package.json` | 修改 | 添加设备驱动依赖 + 修正版本号 |
-
----
+| `server/package.json` | 修改 | 添加 node-snap7 + omron-ethernet-ip + 版本号 |
 
 ## 二、各文件修改详情
 
@@ -41,7 +45,9 @@
 
 **模式一：Server 模式** (`FUXA_SERVER=1`)
 - 由 Guardian 进程以子进程方式启动
-- 设置数据目录为 `%USERPROFILE%\fuxa-headless-data\`
+- 设置数据目录为 **EXE 同目录下的 `data\` 子目录**
+- 例如: `D:\FUXA\fuxa-headless.exe` → `D:\FUXA\data\`
+- 支持 `-p` / `--port` 参数指定端口（通过 `PORT` 环境变量传递给 server）
 - 直接 require FUXA server 主程序
 
 **模式二：Guardian 模式** (默认)
@@ -50,30 +56,46 @@
 - 最大重启次数：1000 次（基本无限制）
 - 重启间隔：2 秒
 - 日志输出带时间戳和重启计数
+- **将 CLI 参数 `-p` 透传给子进程**
+
+**命令行使用**:
+```powershell
+fuxa-headless-new.exe                  # 默认端口 1881
+fuxa-headless-new.exe -p 1882          # 使用 1882 端口
+fuxa-headless-new.exe --port 8080      # 也可用 --port
+```
 
 **关键代码结构**:
 ```javascript
-// Server 模式检测
+// 参数解析
+function parseArgs(argv) {
+    const args = {};
+    for (let i = 2; i < argv.length; i++) {
+        if (argv[i] === '-p' || argv[i] === '--port') {
+            args.port = argv[i + 1];
+            i++;
+        }
+    }
+    return args;
+}
+
+// Server 模式
 if (process.env.FUXA_SERVER === '1') {
-    const homeDir = os.homedir();
-    const fuxaDataDir = path.join(homeDir, 'fuxa-headless-data');
-    // 确保目录存在 → 设置环境变量 → 启动 server
-    require(serverPath);
-    return;
+    const cliArgs = parseArgs(process.argv);
+    if (cliArgs.port) {
+        process.env.PORT = cliArgs.port;  // → settings.uiPort 读取
+    }
+    // ... 数据目录 → 启动 server
 }
 
-// Guardian 模式配置
-const CONFIG = {
-    maxRestarts: 1000,
-    restartDelay: 2000,
-    cooldownWindow: 10000,
-    maxRapidRestarts: 5,
-};
-
-function startServer() {
-    // 冷却窗口检查 → spawn 子进程(FUXA_SERVER=1) → 监控退出事件
+// Guardian 模式 → spawn 自身时透传 -p 参数
+const spawnArgs = [];
+if (cliArgs.port) {
+    spawnArgs.push('-p', cliArgs.port);
 }
-```
+childProcess = spawn(process.execPath, spawnArgs, {
+    env: { ...process.env, FUXA_SERVER: '1' },
+});
 
 ### 2.2 headless_packaging.yml — GitHub Actions 构建
 
@@ -236,6 +258,9 @@ curl.exe -L \
 # 直接运行（默认 Guardian 守护模式）
 .\fuxa-headless-local\fuxa-headless.exe
 
+# 指定端口运行
+.\fuxa-headless-local\fuxa-headless.exe -p 1882
+
 # 访问 Web 界面
 # 浏览器打开 http://127.0.0.1:1881/
 ```
@@ -326,6 +351,101 @@ Select-String C:\Windows\System32\drivers\etc\hosts -Pattern "github"
 
 **解决**: 全部使用 Node.js 18 LTS（本地开发 + GitHub Actions + pkg 打包目标）。
 
+### 4.6 S7 设备标签解析失败导致数据不刷新（已修复）
+
+**症状**:
+- Web 界面能看到 S7 设备和标签，但数值始终不刷新（显示 `--` 或空值）
+- 日志显示 `load called, tags: 4` 但 `data loaded (0)` —— 标签数量对但加载计数为 0
+
+**根因**: `_getTagItem()` 内部访问 `s7client['S7AreaDB']`，此时 `s7client = null`（尚未连接PLC），抛异常被静默捕获 → 所有标签返回 null。
+
+**修复**: 定义模块级 S7 区域常量，不依赖 s7client 实例：
+```javascript
+const S7AreaMK = 0x83, S7AreaPE = 0x81, S7AreaPA = 0x82, S7AreaDB = 0x84;
+result.Area = S7AreaDB;  // 替代 s7client['S7AreaDB']
+```
+
+**验证**: `data loaded (0)` → `data loaded (2)`，DB 标签 `db1000.dbb32` 正确解析为 `DbItem(dbnum=1000,Start=32)`。
+
+**教训**:
+1. 时序问题：`load()` 早于 `connect()`，此时 s7client 尚未初始化
+2. 静默 `catch (err) {}` 空体吞掉关键错误
+3. 调试日志逐层追踪是定位根因的最有效手段
+4. 常量优于运行时属性访问
+
+### 4.7 教训：不要上传构建产物
+
+`client/dist/`、`node_modules/`、`*.exe` 都是构建产物，由 GitHub Actions 自动生成。**只推送源码**，CI/CD 负责构建。
+
+| 应该推送 | 不应该推送 |
+|---------|-----------|
+| `*.ts`, `*.js` (源码) | `client/dist/` (构建产物) |
+| `*.json` (配置) | `node_modules/` (依赖) |
+| `*.yml` (CI 配置) | `*.exe` (二进制) |
+
+### 4.8 验证结果（2026-06-21 实测）
+
+本地 EXE `fuxa-headless-local\fuxa-headless-new.exe` 完整测试通过：
+
+```
+[S7] node-snap7 loaded via require                    ← 原生模块加载成功
+'FUXA Server' created                                 ← 内部设备
+'S7-1200' created                                     ← S7设备(4个标签)
+'S7-1500' created                                     ← S7-1500(2个标签)
+FUXA started!
+WebServer is running http://127.0.0.1:1881/
+socket.io client connected                            ← WebSocket正常
+'S7-1200' restored 0/0 values                         ← 标签值恢复
+```
+
+**Guardian 守护进程验证**:
+```
+第1次启动 → Server exited (code=3221225477)          ← node-snap7 退出时 native 崩溃
+Guardian Restarting in 2s...                          ← 自动检测并重启
+Starting FUXA server (restart #2)...                  ← 2秒后恢复
+→ 第2次启动完全正常，所有设备和标签工作正常            ← 守护模式成功
+```
+
+> **3221225477 说明**: 这是 node-snap7 原生模块在进程退出时的已知行为（`ConnectTo` 回调未完成时进程终止触发 native stack 访问异常）。Guardian 模式自动处理此问题，2秒后重启即可正常运行。
+
+| 功能 | 状态 |
+|------|:--:|
+| S7-1200 通讯（读写） | ✅ |
+| S7-1500 通讯 | ✅ |
+| 标签数据显示/刷新 | ✅ |
+| 项目保存 | ✅ |
+| 地图（法国OSM镜像） | ✅ |
+| Guardian 崩溃自恢复 | ✅ |
+| WebSocket 连接 | ✅ |
+
+### 4.9 EXE 打包时机导致前端未更新（地图不可用）
+
+**症状**: 修改了前端源码（如地图源），重新打包 EXE 后地图仍然不可用。
+
+**根因**: `fuxa-headless/client/dist/` 是旧版构建产物。`pkg` 打包时直接内嵌 `client/dist/`，不会自动运行 `npm run build`。
+
+**修复流程**:
+```powershell
+# 1. 确认源码已修改
+# client/src/app/maps/maps-view/maps-view.component.ts → 法国 OSM 镜像
+
+# 2. 构建前端 → 生成新 dist/
+cd client
+npm run build
+
+# 3. 同步 dist 到 headless 目录
+robocopy "client/dist" "fuxa-headless/client/dist" /MIR
+
+# 4. 重新打包
+cd fuxa-headless
+pkg . --targets "node18-windows-x64" --output "../fuxa-headless-local/fuxa-headless-new.exe"
+```
+
+**验证**: 打包后检查 `main.js` 是否包含新 URL：
+```powershell
+Select-String -Path "fuxa-headless\client\dist\main.js" -Pattern "tile-c.openstreetmap"
+```
+
 ---
 
 ## 五、待办事项
@@ -396,6 +516,7 @@ S7 (西门子)、MQTT、Ethernet/IP (AB罗克韦尔)、Omron Ethernet/IP (欧姆
 │                                                      │
 │ 运行测试:                                             │
 │   .\fuxa-headless-local\fuxa-headless.exe            │
+│   .\fuxa-headless-local\fuxa-headless.exe -p 1882    │
 │   浏览器 http://127.0.0.1:1881/                      │
 │                                                      │
 │ 关键文件:                                             │
@@ -406,5 +527,9 @@ S7 (西门子)、MQTT、Ethernet/IP (AB罗克韦尔)、Omron Ethernet/IP (欧姆
 │   字体:  server/api/resources/index.js                │
 │   地图: client/src/app/maps/maps-view/               │
 │         maps-view.component.ts (第80行)              │
+│                                                      │
+│ 端口机制:                                             │
+│   -p/--port → PARSE → PORT 环境变量                  │
+│   settings.default.js: uiPort: process.env.PORT||1881│
 └─────────────────────────────────────────────────────┘
 ```

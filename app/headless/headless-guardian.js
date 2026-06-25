@@ -111,16 +111,17 @@ function startServer() {
     
     log(`Starting FUXA server (restart #${restartCount + 1})...`);
     
-    // 解析命令行参数，传递给子进程
+    // 解析命令行参数，通过环境变量传递给子进程
     const cliArgs = parseArgs(process.argv);
-    const spawnArgs = [];
+    const childEnv = { ...process.env, FUXA_SERVER: '1' };
     if (cliArgs.port) {
-        spawnArgs.push('-p', cliArgs.port);
+        childEnv.PORT = cliArgs.port;
         log(`Port: ${cliArgs.port}`);
     }
     
-    childProcess = spawn(process.execPath, spawnArgs, {
-        env: { ...process.env, FUXA_SERVER: '1' },
+    // pkg EXE 不接受 CLI 参数（会被当成 JS 文件路径），用环境变量传递
+    childProcess = spawn(process.execPath, [], {
+        env: childEnv,
         stdio: 'inherit',
         windowsHide: false,
     });

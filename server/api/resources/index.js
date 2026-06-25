@@ -87,8 +87,8 @@ module.exports = {
                             if (!fontkit) { fontkit = require('fontkit'); }
                             const font = fontkit.openSync(filePath);
                             fileLabel = font.fullName;
-                        } catch (e) {
-                            fileLabel = fileName;
+                        } catch (err) {
+                            runtime.logger.error(`fontkit load error: ${err.message}`);
                         }
                     }
 
@@ -321,8 +321,6 @@ module.exports = {
                 let basePath = path.resolve(runtime.settings.appDir);
                 if (process.versions.electron) {
                     basePath = process.env.userDir || path.join(os.homedir(), '.fuxa');
-                } else {
-                    basePath = process.env.FUXA_DATA_DIR || path.join(os.homedir(), 'fuxa-headless-data');
                 }
                 const resolvedWidget = resolveWithin(basePath, relPath);
                 if (!resolvedWidget) {

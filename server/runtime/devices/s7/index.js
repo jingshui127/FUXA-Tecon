@@ -9,11 +9,11 @@ const deviceUtils = require('../device-utils');
 
 const MAX_MIX_ITEM = 20;
 
-// S7 Area constants (independent of s7client instance)
-const S7AreaMK = 0x83;   // Merker / Memory
-const S7AreaPE = 0x81;   // Input (Eingang)
-const S7AreaPA = 0x82;   // Output (Ausgang)
-const S7AreaDB = 0x84;   // DB (Datenbaustein)
+// S7 Area constants (avoid dependency on s7client instance)
+const S7AreaPE = 0x81;
+const S7AreaPA = 0x82;
+const S7AreaMK = 0x83;
+const S7AreaDB = 0x84;
 
 function S7client(_data, _logger, _events, _runtime) {
 
@@ -21,7 +21,7 @@ function S7client(_data, _logger, _events, _runtime) {
     var db = {};                        // Loaded Signal in DB format { DB index, start, size, ... }
     var data = JSON.parse(JSON.stringify(_data));                   // Current Device data { id, name, tags, enabled, ... }
     var logger = _logger;               // Logger
-    var s7client = null;                // Client node-S7 (lazy init on connect)
+    var s7client = null;                // Client node-S7 (lazy init)
     var working = false;                // Working flag to manage overloading polling and connection
     var events = _events;               // Events to commit change to runtime
     var lastStatus = '';                // Last Device status
@@ -39,12 +39,7 @@ function S7client(_data, _logger, _events, _runtime) {
         return new Promise(function (resolve, reject) {
             if (data.property && data.property.rack >= 0 && data.property.slot >= 0) {
                 try {
-                    // Lazy init S7Client only when actually connecting
-                    if (!s7client) {
-                        logger.info(`'${data.name}' creating S7Client...`, true);
-                        s7client = new snap7.S7Client();
-                        logger.info(`'${data.name}' S7Client created`, true);
-                    }
+                    if (!s7client) { s7client = new snap7.S7Client(); }
                     if (!s7client.Connected() && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
                         s7client.ConnectTo(data.property.address, data.property.rack, data.property.slot, function (err) {
@@ -86,21 +81,23 @@ function S7client(_data, _logger, _events, _runtime) {
     this.disconnect = function () {
         return new Promise(function (resolve, reject) {
             _checkWorking(false);
-            if (!s7client) {
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(true);
-            } else if (!s7client.Connected()) {
+            if (!s7client || !s7client.Connected()) {
                 _emitStatus('connect-off');
                 _clearVarsValue();
                 resolve(true);
             } else {
-                // Skip Disconnect() call to avoid native module crash on process exit
-                // The OS will clean up all resources when process terminates
-                logger.info(`'${data.name}' skipping disconnect (process exiting)`, true);
+                try {
+                    var result = s7client.Disconnect();
+                    if (result) {
+                        logger.info(`'${data.name}' disconnected!`, true);
+                    } else {
+                        logger.error(`'${data.name}' try to disconnect failed!`);
+                    }
+                } catch (err) {
+                    logger.error(`'${data.name}' disconnect error: ${err.message}`);
+                }
                 _emitStatus('connect-off');
                 _clearVarsValue();
-                s7client = null;  // Release reference without calling Disconnect
                 resolve(true);
             }
         });
@@ -160,17 +157,9 @@ function S7client(_data, _logger, _events, _runtime) {
         dbItemsMap = {};
         mixItemsMap = {};
         var count = 0;
-        logger.info(`[S7-DEBUG] '${data.name}' load called, tags: ${Object.keys(data.tags || {}).length}`, true);
-        if (Object.keys(data.tags || {}).length === 0) {
-            logger.info(`[S7-DEBUG] '${data.name}' _data keys: ${Object.keys(_data).join(',')}`, true);
-            logger.info(`[S7-DEBUG] '${data.name}' _data.id: ${_data.id}`, true);
-        }
         for (var id in data.tags) {
             try {
-                var tag = data.tags[id];
-                logger.info(`[S7-DEBUG] '${data.name}' processing tag '${id}': address=${tag.address}, type=${tag.type}`, true);
-                var varDb = _getTagItem(tag);
-                logger.info(`[S7-DEBUG] '${data.name}' _getTagItem result: ${varDb ? (varDb instanceof DbItem ? 'DbItem(dbnum=' + varDb.dbnum + ',Start=' + varDb.Start + ',type=' + varDb.type + ')' : 'mixItem(Start=' + varDb.Start + ')') : 'null'}`, true);
+                var varDb = _getTagItem(data.tags[id]);
                 if (varDb instanceof DbItem) {
                     if (!db[varDb.dbnum]) {
                         var grptag = new DbItems(varDb.dbnum);
@@ -201,7 +190,7 @@ function S7client(_data, _logger, _events, _runtime) {
                 logger.error(`'${data.name}' load error! ${err}`);
             }
         }
-        logger.info(`'${data.name}' data loaded (${count}) [tags=${Object.keys(data.tags || {}).length}] [v2]`, true);
+        logger.info(`'${data.name}' data loaded (${count})`, true);
     }
 
     /**
@@ -269,7 +258,7 @@ function S7client(_data, _logger, _events, _runtime) {
      * Don't work if PLC will disconnect
      */
     this.isConnected = function () {
-        return s7client ? s7client.Connected() : false;
+        return s7client && s7client.Connected();
     }
 
     /**
@@ -439,8 +428,8 @@ function S7client(_data, _logger, _events, _runtime) {
             overloading++;
             logger.warn(`'${data.name}' working (connection || polling) overload! ${overloading}`);
             // !The driver don't give the break connection
-            if (overloading >= 3) {
-                try { if (s7client) s7client.Disconnect(); } catch (e) { /* ignore */ }
+            if (overloading >= 3 && s7client) {
+                try { s7client.Disconnect(); } catch (err) { }
             } else {
                 return false;
             }
@@ -681,7 +670,7 @@ function S7client(_data, _logger, _events, _runtime) {
                 }
             }
         } catch (err) {
-            logger.error(`_getTagItem error: ${err.message || err}`);
+
         }
         return null;
     }
@@ -692,7 +681,8 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _getErr = function (s7err) {
         if (Array.isArray(s7err)) return new Error('Errors: ' + s7err.join('; '));
-        return new Error(s7client.ErrorText(s7err));
+        if (s7client) { return new Error(s7client.ErrorText(s7err)); }
+        return new Error('S7 error code: ' + s7err);
     }
 }
 
@@ -709,20 +699,8 @@ module.exports = {
 
 function loadSnap7Lib(manager) {
     if (!snap7) {
-        try { 
-            snap7 = require('node-snap7'); 
-            console.log('[S7] node-snap7 loaded via require');
-        } catch (e) { 
-            console.log('[S7] require failed:', e.message);
-        }
-        if (!snap7 && manager) { 
-            try { 
-                snap7 = manager.require('node-snap7'); 
-                console.log('[S7] node-snap7 loaded via manager');
-            } catch (e) { 
-                console.log('[S7] manager.require failed:', e.message);
-            }
-        }
+        try { snap7 = require('node-snap7'); } catch { }
+        if (!snap7 && manager) { try { snap7 = manager.require('node-snap7'); } catch { } }
     }
     return !!snap7;
 }

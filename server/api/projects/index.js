@@ -97,15 +97,10 @@ module.exports = {
                 runtime.logger.error("api post project: Unauthorized");
             } else {
                 runtime.project.setProject(req.body).then(function(data) {
-                    // 立即返回成功响应（数据已保存）
-                    res.json({success: true, message: "Project saved successfully"});
-                    // 异步执行 restart（不等待完成，避免 S7 崩溃影响响应）
-                    runtime.restart(true).then(function(result) {
-                        runtime.logger.info("api post project: restart completed", true);
-                    }).catch(function(err) {
-                        runtime.logger.error("api post project: restart error - " + (err ? err.message : "unknown"), true);
-                        // Wrapper 会自动重启进程，无需处理
-                    });
+                    res.json({ success: true });
+                    setTimeout(() => {
+                        runtime.restart(true);
+                    }, 0);
                 }).catch(function(err) {
                     if (err && err.code) {
                         res.status(400).json({error:err.code, message: err.message});
@@ -131,13 +126,8 @@ module.exports = {
                 runtime.logger.error("api post projectData: Unauthorized");
             } else {
                 runtime.project.setProjectData(req.body.cmd, req.body.data).then(setres => {
-                    // 立即返回成功响应
-                    res.json({success: true, message: "Project data saved successfully"});
-                    // 异步执行 update（可能触发 restart）
                     runtime.update(req.body.cmd, req.body.data).then(result => {
-                        runtime.logger.info("api post projectData: update completed", true);
-                    }).catch(function(err) {
-                        runtime.logger.error("api post projectData: update error - " + (err ? err.message : "unknown"), true);
+                        res.end();
                     });
                 }).catch(function(err) {
                     if (err && err.code) {
@@ -268,7 +258,7 @@ module.exports = {
                 if (destination) {
                     const baseDir = process.versions.electron
                         ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
-                        : (process.env.FUXA_DATA_DIR || path.join(os.homedir(), 'fuxa-headless-data'));
+                        : runtime.settings.appDir;
                     const normalizedDestination = normalizeRelativePath(destination);
                     if (!normalizedDestination) {
                         res.status(400).json({error:"invalid_destination", message: "Invalid destination path."});

@@ -31,7 +31,7 @@ function start() {
             try {
                 activeDevices[id].start();
             } catch (err) {
-                runtime.logger.error('devices.start-error ' + id + ': ' + err);
+                runtime.logger.error('devices.start: ' + err);
             }
         }
         resolve();
@@ -51,7 +51,7 @@ function stop() {
             try {
                 deviceStopfnc.push(activeDevices[id].stop());
             } catch (err) {
-                runtime.logger.error('devices.stop-error ' + id + ': ' + err);
+                runtime.logger.error('devices.stop: ' + err);
             }
         }
         return Promise.all(deviceStopfnc).then(values => {
@@ -59,7 +59,7 @@ function stop() {
             wokingStatus = null;
         }, reason => {
             runtime.logger.error('devices.stop-all: ' + reason);
-            resolve(true);  // Changed from resolve(reason) to always resolve
+            resolve(reason);
             wokingStatus = null;
         });
     });
@@ -160,7 +160,6 @@ function load() {
  * @param {*} device
  */
 function loadDevice(device) {
-    runtime.logger.info(`[DEV-DEBUG] loadDevice '${device.name}', tags: ${Object.keys(device.tags || {}).length}, keys: ${Object.keys(device).join(',')}`, true);
     if (activeDevices[device.id]) {
         // device exist
         runtime.logger.info(`'${device.name}' exist`, true);

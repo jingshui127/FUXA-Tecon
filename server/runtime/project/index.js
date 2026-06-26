@@ -1232,7 +1232,7 @@ module.exports = {
     setDeviceProperty: setDeviceProperty,
     setProjectData: setProjectData,
     getProject: getProject,
-    getRawProject: function() { return JSON.parse(JSON.stringify(data)); },
+    getRawProject: function() { return Promise.resolve(JSON.parse(JSON.stringify(data))); },
     getProjectView: getProjectView,
     setProject: setProject,
     getProjectDemo: getProjectDemo,

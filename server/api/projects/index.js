@@ -106,16 +106,21 @@ module.exports = {
                 runtime.project.getRawProject().then(function(oldProject) {
                     if (oldProject) {
                         var restartKeys = ['devices', 'server', 'alarms', 'notifications'];
-                        // normalize: 两边都只取 restartKeys 子集，undefined → null
-                        var oldPart = {};
-                        var newPart = {};
                         var changed = false;
                         for (var ki = 0; ki < restartKeys.length; ki++) {
                             var key = restartKeys[ki];
-                            oldPart[key] = oldProject[key] ?? null;
-                            newPart[key] = newProject[key] ?? null;
+                            var oldPart = oldProject[key] ?? null;
+                            var newPart = newProject[key] ?? null;
+                            // stable stringify: sort object keys to ignore key order diff
+                            var keyOld = JSON.stringify(oldPart, Object.keys(oldPart || {}).sort());
+                            var keyNew = JSON.stringify(newPart, Object.keys(newPart || {}).sort());
+                            if (keyOld !== keyNew) {
+                                changed = true;
+                                runtime.logger.info(`api post project: key '${key}' differs (old=${keyOld.length}chars, new=${keyNew.length}chars)`);
+                                runtime.logger.info(`  OLD[${key}] start: ${keyOld.substring(0, 200)}`);
+                                runtime.logger.info(`  NEW[${key}] start: ${keyNew.substring(0, 200)}`);
+                            }
                         }
-                        changed = JSON.stringify(oldPart) !== JSON.stringify(newPart);
                         if (!changed) {
                             needsRestart = false;
                             runtime.logger.info('api post project: views-only change, skip restart');

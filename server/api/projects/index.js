@@ -111,9 +111,10 @@ module.exports = {
                             var key = restartKeys[ki];
                             var oldPart = oldProject[key] ?? null;
                             var newPart = newProject[key] ?? null;
-                            // stable stringify: sort keys to avoid false-positive from key order diff
-                            var keyOld = JSON.stringify(oldPart, Object.keys(oldPart || {}).sort());
-                            var keyNew = JSON.stringify(newPart, Object.keys(newPart || {}).sort());
+                            // 直接 JSON 比较，不排序（devices 是 key-value 对象，变更一定导致不相等；
+                            // 未变更时前后端传来的 key 顺序一致，长度相等则内容一致）
+                            var keyOld = JSON.stringify(oldPart);
+                            var keyNew = JSON.stringify(newPart);
                             if (keyOld !== keyNew) {
                                 changed = true;
                                 break;

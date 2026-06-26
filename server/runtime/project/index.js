@@ -82,11 +82,6 @@ function load() {
                             data.devices[drows[id].name] = JSON.parse(drows[id].value);
                         }
                     }
-                    // DEBUG: 检查设备标签
-                    for (var devId in data.devices) {
-                        var dev = data.devices[devId];
-                        console.log(`[PRJ-DEBUG] Device '${dev.name}' (${devId}) has ${Object.keys(dev.tags || {}).length} tags`);
-                    }
                     async.series([
                         // step 1 get texts
                         function (callback) {
@@ -1237,6 +1232,7 @@ module.exports = {
     setDeviceProperty: setDeviceProperty,
     setProjectData: setProjectData,
     getProject: getProject,
+    getRawProject: function() { return JSON.parse(JSON.stringify(data)); },
     getProjectView: getProjectView,
     setProject: setProject,
     getProjectDemo: getProjectDemo,

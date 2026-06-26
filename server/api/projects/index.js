@@ -103,7 +103,7 @@ module.exports = {
                 var needsRestart = true;
                 var newProject = req.body;
                 
-                runtime.project.getProject().then(function(oldProject) {
+                runtime.project.getRawProject().then(function(oldProject) {
                     if (oldProject) {
                         // 需要重启的字段
                         var restartKeys = ['devices', 'server', 'alarms', 'notifications', 'plugins', 'daqs'];

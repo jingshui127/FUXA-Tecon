@@ -87,6 +87,7 @@ module.exports = {
         /**
          * POST Project data
          * Set to project storage
+         * 优化：仅视图/文本/HMI布局修改时无需重启运行时（设备保持连接）
          */
         prjApp.post("/api/project", secureFnc, function(req, res, next) {
             const permission = checkGroupsFnc(req);
@@ -96,11 +97,33 @@ module.exports = {
                 res.status(401).json({error:"unauthorized_error", message: "Unauthorized!"});
                 runtime.logger.error("api post project: Unauthorized");
             } else {
-                runtime.project.setProject(req.body).then(function(data) {
+                // 判断是否需要重启运行时
+                // 只有修改 devices/server/alarms/notifications/plugins/daqs 时才需要重启
+                // 仅修改 hmi/views/texts 不需要重启
+                var needsRestart = true;
+                var newProject = req.body;
+                
+                runtime.project.getProject().then(function(oldProject) {
+                    if (oldProject) {
+                        // 需要重启的字段
+                        var restartKeys = ['devices', 'server', 'alarms', 'notifications', 'plugins', 'daqs'];
+                        var hasRuntimeChange = restartKeys.some(function(key) {
+                            return JSON.stringify(newProject[key]) !== JSON.stringify(oldProject[key]);
+                        });
+                        if (!hasRuntimeChange) {
+                            needsRestart = false;
+                            runtime.logger.info('api post project: views-only change, skip restart');
+                        }
+                    }
+                    
+                    return runtime.project.setProject(newProject);
+                }).then(function(data) {
                     res.json({ success: true });
-                    setTimeout(() => {
-                        runtime.restart(true);
-                    }, 0);
+                    if (needsRestart) {
+                        setTimeout(() => {
+                            runtime.restart(true);
+                        }, 0);
+                    }
                 }).catch(function(err) {
                     if (err && err.code) {
                         res.status(400).json({error:err.code, message: err.message});
@@ -258,7 +281,7 @@ module.exports = {
                 if (destination) {
                     const baseDir = process.versions.electron
                         ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
-                        : runtime.settings.appDir;
+                        : (process.env.userDir || runtime.settings.appDir);
                     const normalizedDestination = normalizeRelativePath(destination);
                     if (!normalizedDestination) {
                         res.status(400).json({error:"invalid_destination", message: "Invalid destination path."});

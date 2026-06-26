@@ -111,7 +111,7 @@ module.exports = {
                             var key = restartKeys[ki];
                             var oldPart = oldProject[key] ?? null;
                             var newPart = newProject[key] ?? null;
-                            // stable stringify: sort object keys to ignore key order diff
+                            // stable stringify: sort keys to avoid false-positive from key order diff
                             var keyOld = JSON.stringify(oldPart, Object.keys(oldPart || {}).sort());
                             var keyNew = JSON.stringify(newPart, Object.keys(newPart || {}).sort());
                             if (keyOld !== keyNew) {

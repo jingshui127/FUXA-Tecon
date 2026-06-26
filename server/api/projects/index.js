@@ -98,27 +98,29 @@ module.exports = {
                 runtime.logger.error("api post project: Unauthorized");
             } else {
                 // 判断是否需要重启运行时
-                // 只有修改 devices/server/alarms/notifications/plugins/daqs 时才需要重启
-                // 仅修改 hmi/views/texts 不需要重启
+                // 只比较 devices, server, alarms, notifications 这几个决定设备/通讯的关键字段
+                // plugins/daqs 在 raw data 中可能不存在，统一按 null 处理避免 undefined vs null 误判
                 var needsRestart = true;
                 var newProject = req.body;
                 
                 runtime.project.getRawProject().then(function(oldProject) {
                     if (oldProject) {
-                        // 需要重启的字段
-                        var restartKeys = ['devices', 'server', 'alarms', 'notifications', 'plugins', 'daqs'];
-                        var hasRuntimeChange = restartKeys.some(function(key) {
-                            var oldJson = JSON.stringify(oldProject[key]);
-                            var newJson = JSON.stringify(newProject[key]);
-                            var changed = oldJson !== newJson;
-                            if (changed) {
-                                runtime.logger.info(`api post project: key '${key}' changed (len: ${oldJson.length} -> ${newJson.length})`, true);
-                            }
-                            return changed;
-                        });
-                        if (!hasRuntimeChange) {
+                        var restartKeys = ['devices', 'server', 'alarms', 'notifications'];
+                        // normalize: 两边都只取 restartKeys 子集，undefined → null
+                        var oldPart = {};
+                        var newPart = {};
+                        var changed = false;
+                        for (var ki = 0; ki < restartKeys.length; ki++) {
+                            var key = restartKeys[ki];
+                            oldPart[key] = oldProject[key] ?? null;
+                            newPart[key] = newProject[key] ?? null;
+                        }
+                        changed = JSON.stringify(oldPart) !== JSON.stringify(newPart);
+                        if (!changed) {
                             needsRestart = false;
                             runtime.logger.info('api post project: views-only change, skip restart');
+                        } else {
+                            runtime.logger.info('api post project: runtime config changed, will restart');
                         }
                     }
                     

@@ -1,0 +1,21 @@
+{
+  "name": "fuxa-headless",
+  "version": "1.0.0",
+  "bin": "main.js",
+  "pkg": {
+    "assets": [
+      "server/**/*",
+      "client/dist/**/*",
+      "_reports/**/*"
+    ],
+    "publicPackages": [
+      "node-snap7",
+      "sqlite3",
+      "serialport",
+      "@serialport/bindings-cpp",
+      "@serialport/parser-readline",
+      "@serialport/parser-regex"
+    ],
+    "compression": "GZip"
+  }
+}

@@ -1,0 +1,268 @@
+name: Build FUXA Headless (Latest)
+
+on:
+  
+workflow_dispatch:
+  repository_dispatch:
+ 
+   types: [build-headless]
+  push:
+    bran
+ches: [1.3.3-2843]
+    paths: ['.github/work
+flows/headless_packaging.yml', 'server/**', '
+fuxa-headless/**']
+
+jobs:
+  build:
+    ru
+ns-on: ${{ matrix.os }}
+    strategy:
+     
+ matrix:
+        include:
+          - os: u
+buntu-latest
+            arch: x64
+        
+  - os: ubuntu-24.04-arm
+            arch: a
+rm64
+          - os: windows-latest
+       
+     arch: x64
+          - os: macos-latest
+
+            arch: x64
+          - os: macos
+-latest
+            arch: arm64
+    steps:
+
+    - name: Checkout code
+      uses: actio
+ns/checkout@v4
+
+    - name: Setup Node.js
+
+      uses: actions/setup-node@v4
+      with
+:
+        node-version: '18'
+
+    - name: 
+Install build dependencies
+      if: startsW
+ith(matrix.os, 'ubuntu')
+      run: sudo apt
+-get update && sudo apt-get install -y build-
+essential unixodbc unixodbc-dev
+
+    - name
+: Install server dependencies
+      run: |
+
+        npm config set fetch-retry-maxtimeout
+ 120000
+        npm config set fetch-retries
+ 5
+        npm install --prefer-offline --no
+-audit
+      working-directory: ./server
+
+
+    - name: Install client dependencies
+    
+  run: |
+        npm config set fetch-retry-
+maxtimeout 120000
+        npm config set fet
+ch-retries 5
+        npm install --prefer-of
+fline --no-audit
+      working-directory: ./
+client
+
+    - name: Build client
+      run
+: npm run build -- --configuration=production
+
+      working-directory: ./client
+
+    - 
+name: Setup Headless Package Directory
+     
+ run: |
+        mkdir -p fuxa-headless/serve
+r
+        mkdir -p fuxa-headless/client/dist
+
+        
+        # Copy everything just li
+ke the Electron workflow does
+        cp -r 
+server/. fuxa-headless/server/
+        cp -r
+ client/dist/. fuxa-headless/client/dist/
+  
+      
+        # Use the entry point as the 
+main file for pkg
+        cp app/headless/he
+adless-guardian.js fuxa-headless/main.js
+   
+   shell: bash
+
+    - name: Create Package 
+Config
+      run: |
+        cat > fuxa-head
+less/package.json <<EOF
+        {
+         
+ "name": "fuxa-headless",
+          "version
+": "1.0.0",
+          "bin": "main.js",
+   
+       "pkg": {
+            "assets": [
+   
+           "server/**/*",
+              "cli
+ent/dist/**/*",
+              "_reports/**/*
+"
+            ],
+            "publicPackage
+s": [
+              "node-snap7",
+         
+     "sqlite3",
+              "serialport",
+
+              "@serialport/bindings-cpp",
+ 
+             "@serialport/parser-readline",
+
+              "@serialport/parser-regex",
+  
+            "@serialstream/bindings-cpp"
+   
+         ],
+            "compression": "Brot
+li"
+          }
+        }
+        EOF
+   
+   shell: bash
+
+    - name: Install yao-pkg
+
+      run: npm install -g @yao-pkg/pkg
+
+
+
+    - name: Build Standalone Binaries (Headl
+ess)
+      run: |
+        if [ "$RUNNER_OS"
+ = "Linux" ]; then
+          if [ "${{ matri
+x.arch }}" = "arm64" ]; then
+            TAR
+GET="node18-linux-arm64"
+          else
+   
+         TARGET="node18-linux-x64"
+         
+ fi
+        elif [ "$RUNNER_OS" = "Windows" 
+]; then
+          TARGET="node18-win-x64"
+ 
+       elif [ "$RUNNER_OS" = "macOS" ]; then
+
+          if [ "${{ matrix.arch }}" = "arm64
+" ]; then
+            TARGET="node18-macos-a
+rm64"
+          else
+            TARGET="no
+de18-macos-x64"
+          fi
+        fi
+  
+      pkg fuxa-headless/package.json --target
+s $TARGET --out-path artifacts
+      shell: 
+bash
+      working-directory: .
+
+
+    - n
+ame: Prepare artifacts
+      run: |、
+    
+      if [ "${{ matrix.os }}" = "windows-late
+st" ] && [ "${{ matrix.arch }}" = "x64" ]; th
+en
+          mv artifacts/fuxa-headless-win-
+x64.exe artifacts/FUXA-headless-windows-x64.e
+xe || true
+        elif [ "${{ matrix.os }}"
+ = "ubuntu-latest" ] && [ "${{ matrix.arch }}
+" = "x64" ]; then
+          mv artifacts/fux
+a-headless-linux-x64 artifacts/FUXA-headless-
+linux-x64 || true
+        elif [ "${{ matrix
+.os }}" = "ubuntu-24.04-arm" ] && [ "${{ matr
+ix.arch }}" = "arm64" ]; then
+          mv a
+rtifacts/fuxa-headless-linux-arm64 artifacts/
+FUXA-headless-linux-arm64 || true
+        el
+if [ "${{ matrix.os }}" = "macos-latest" ] &&
+ [ "${{ matrix.arch }}" = "x64" ]; then
+    
+      mv artifacts/fuxa-headless-macos-x64 ar
+tifacts/FUXA-headless-macos-x64 || true
+    
+    elif [ "${{ matrix.os }}" = "macos-latest
+" ]; then
+          mv artifacts/fuxa-headle
+ss-macos-arm64 artifacts/FUXA-headless-macos-
+arm64 || true
+        fi
+      shell: bash
+
+
+    - name: Upload to Release
+      uses:
+ softprops/action-gh-release@v2
+      with:
+
+        tag_name: headless-latest
+        n
+ame: FUXA Headless Latest Build
+        body
+: |
+          FUXA Headless (守护进程模
+式) 自动构建
+          
+          Bran
+ch: ${{ github.ref_name }}
+          Commit:
+ ${{ github.sha }}
+          Build Date: ${{
+ github.event.repository.updated_at }}
+     
+   files: artifacts/*
+        fail_on_unmatc
+hed_files: true
+      env:
+        GITHUB_T
+OKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -108,7 +108,13 @@ module.exports = {
                         // 需要重启的字段
                         var restartKeys = ['devices', 'server', 'alarms', 'notifications', 'plugins', 'daqs'];
                         var hasRuntimeChange = restartKeys.some(function(key) {
-                            return JSON.stringify(newProject[key]) !== JSON.stringify(oldProject[key]);
+                            var oldJson = JSON.stringify(oldProject[key]);
+                            var newJson = JSON.stringify(newProject[key]);
+                            var changed = oldJson !== newJson;
+                            if (changed) {
+                                runtime.logger.info(`api post project: key '${key}' changed (len: ${oldJson.length} -> ${newJson.length})`, true);
+                            }
+                            return changed;
                         });
                         if (!hasRuntimeChange) {
                             needsRestart = false;

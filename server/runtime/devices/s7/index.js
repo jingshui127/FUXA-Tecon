@@ -77,29 +77,18 @@ function S7client(_data, _logger, _events, _runtime) {
     /**
      * Disconnect the PLC
      * Emit connection status to clients, clear all Tags values
+     * 注意: node-snap7 的 Disconnect() 调用会导致 native crash (exit code 3221225477)
+     * 因此跳过原生断开，仅清理 JS 侧状态（OS 会在进程退出时回收连接）
      */
     this.disconnect = function () {
         return new Promise(function (resolve, reject) {
             _checkWorking(false);
-            if (!s7client || !s7client.Connected()) {
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(true);
-            } else {
-                try {
-                    var result = s7client.Disconnect();
-                    if (result) {
-                        logger.info(`'${data.name}' disconnected!`, true);
-                    } else {
-                        logger.error(`'${data.name}' try to disconnect failed!`);
-                    }
-                } catch (err) {
-                    logger.error(`'${data.name}' disconnect error: ${err.message}`);
-                }
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(true);
-            }
+            // 跳过 s7client.Disconnect() 调用以避免 native crash
+            // 连接状态和变量值在 JS 侧清理即可
+            _emitStatus('connect-off');
+            _clearVarsValue();
+            logger.info(`'${data.name}' disconnected (clean state only)`, true);
+            resolve(true);
         });
     }
 
@@ -429,7 +418,8 @@ function S7client(_data, _logger, _events, _runtime) {
             logger.warn(`'${data.name}' working (connection || polling) overload! ${overloading}`);
             // !The driver don't give the break connection
             if (overloading >= 3 && s7client) {
-                try { s7client.Disconnect(); } catch (err) { }
+                // 跳过 Disconnect() 避免 native crash，仅重置 client 引用
+                s7client = null;
             } else {
                 return false;
             }

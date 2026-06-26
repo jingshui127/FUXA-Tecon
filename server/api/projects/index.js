@@ -116,16 +116,12 @@ module.exports = {
                             var keyNew = JSON.stringify(newPart, Object.keys(newPart || {}).sort());
                             if (keyOld !== keyNew) {
                                 changed = true;
-                                runtime.logger.info(`api post project: key '${key}' differs (old=${keyOld.length}chars, new=${keyNew.length}chars)`);
-                                runtime.logger.info(`  OLD[${key}] start: ${keyOld.substring(0, 200)}`);
-                                runtime.logger.info(`  NEW[${key}] start: ${keyNew.substring(0, 200)}`);
+                                break;
                             }
                         }
                         if (!changed) {
                             needsRestart = false;
                             runtime.logger.info('api post project: views-only change, skip restart');
-                        } else {
-                            runtime.logger.info('api post project: runtime config changed, will restart');
                         }
                     }
                     

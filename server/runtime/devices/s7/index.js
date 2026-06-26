@@ -674,6 +674,13 @@ function S7client(_data, _logger, _events, _runtime) {
         if (s7client) { return new Error(s7client.ErrorText(s7err)); }
         return new Error('S7 error code: ' + s7err);
     }
+
+    // 进程退出前清理 s7client 引用，降低 node-snap7 原生清理时的 access violation 崩溃风险
+    process.on('exit', function () {
+        if (s7client) {
+            s7client = null;
+        }
+    });
 }
 
 module.exports = {

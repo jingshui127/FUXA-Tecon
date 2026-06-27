@@ -85,23 +85,11 @@ function S7client(_data, _logger, _events, _runtime) {
      * Emit connection status to clients, clear all Tags values
      */
     this.disconnect = function () {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             _checkWorking(false);
-            if (!s7client || !s7client.Connected()) {
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(true);
-            } else {
-                var result = s7client.Disconnect();
-                if (result) {
-                    logger.info(`'${data.name}' disconnected!`, true);
-                } else {
-                    logger.error(`'${data.name}' try to disconnect failed!`);
-                }
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(result);
-            }
+            _emitStatus('connect-off');
+            _clearVarsValue();
+            resolve(true);
         });
     }
 
@@ -429,9 +417,9 @@ function S7client(_data, _logger, _events, _runtime) {
         if (check && working) {
             overloading++;
             logger.warn(`'${data.name}' working (connection || polling) overload! ${overloading}`);
-            // !The driver don't give the break connection
             if (overloading >= 3 && s7client) {
-                s7client.Disconnect();
+                // 重置 client 引用强制全新重连（不调用 Disconnect 防止 native 崩溃）
+                s7client = null;
             } else {
                 return false;
             }
@@ -452,6 +440,7 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _readDB = function (DBNr, vars) {
         return new Promise((resolve, reject) => {
+            if (!s7client) return resolve(vars);
             if (vars.length === 0) return resolve([]);
 
             let end = 0;
@@ -490,6 +479,7 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _readVars = function (vars) {
         return new Promise((resolve, reject) => {
+            if (!s7client) return resolve(vars);
             s7client.ReadMultiVars(vars, (err, res) => {
                 if (err) return _getErr(err);
                 let errs = [];
@@ -683,8 +673,14 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _getErr = function (s7err) {
         if (Array.isArray(s7err)) return new Error('Errors: ' + s7err.join('; '));
-        return new Error(s7client.ErrorText(s7err));
+        if (s7client) { return new Error(s7client.ErrorText(s7err)); }
+        return new Error('S7 error code: ' + s7err);
     }
+
+    // 降低进程退出时 native 清理冲突概率
+    process.on('exit', function () {
+        if (s7client) s7client = null;
+    });
 }
 
 module.exports = {

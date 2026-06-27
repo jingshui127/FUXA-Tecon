@@ -70,9 +70,24 @@ module.exports = {
                 runtime.logger.error("api post project: Unauthorized");
             } else {
                 runtime.project.setProject(req.body).then(function(data) {
-                    runtime.restart(true).then(function(result) {
-                        res.end();
+                    // 异步重启：先返回成功响应，再判断是否需要重启
+                    res.end();
+
+                    const oldProject = runtime.project.getRawProject();
+                    const newProject = req.body;
+
+                    // 比较 devices/server/alarms/notifications 四个关键字段
+                    const fieldsToCheck = ['devices', 'server', 'alarms', 'notifications'];
+                    const needRestart = fieldsToCheck.some(f => {
+                        return JSON.stringify(oldProject[f]) !== JSON.stringify(newProject[f]);
                     });
+
+                    if (needRestart) {
+                        runtime.logger.info('api post project: device/server/alarm change detected, restarting...');
+                        runtime.restart(true);
+                    } else {
+                        runtime.logger.info('api post project: views-only change, skip restart');
+                    }
                 }).catch(function(err) {
                     if (err && err.code) {
                         res.status(400).json({error:err.code, message: err.message});
@@ -230,7 +245,7 @@ module.exports = {
                 if (destination) {
                     const baseDir = process.versions.electron
                         ? (process.env.userDir || path.join(os.homedir(), '.fuxa'))
-                        : runtime.settings.appDir;
+                        : (process.env.userDir || runtime.settings.appDir);
                     const normalizedDestination = normalizeRelativePath(destination);
                     if (!normalizedDestination) {
                         res.status(400).json({error:"invalid_destination", message: "Invalid destination path."});

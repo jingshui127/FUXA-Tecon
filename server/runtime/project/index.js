@@ -633,11 +633,29 @@ function removeMapsLocation(location) {
 /**
  * Get the project data in accordance with autorization
  */
+/**
+ * Get the current Project with user permission filtering
+ * @param {*} userId
+ * @param {*} userPermission
+ */
 function getProject(userId, userPermission) {
     return new Promise(function (resolve, reject) {
         const pdata = _filterProjectPermission(userPermission);
         resolve(pdata);
     });
+}
+
+/**
+ * Get raw project data without permission filtering
+ * Used for comparing before/after save to determine if restart is needed
+ */
+function getRawProject() {
+    try {
+        return JSON.parse(JSON.stringify(data));
+    } catch (err) {
+        logger.error('project.getRawProject: ' + err.message);
+        return {};
+    }
 }
 
 /**
@@ -1216,6 +1234,7 @@ module.exports = {
     setProjectData: setProjectData,
     getProject: getProject,
     setProject: setProject,
+    getRawProject: getRawProject,
     getProjectDemo: getProjectDemo,
     ProjectDataCmdType, ProjectDataCmdType,
 };

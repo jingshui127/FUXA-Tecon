@@ -35,6 +35,9 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
         fs.mkdirSync(userDir, { recursive: true });
     }
 
+    // Server code root in pkg snapshot (use __dirname to work in both dev and EXE)
+    const serverDir = path.join(__dirname, '..', '..');
+
     // Minimal Node-RED settings; extend only what is really needed
     const redSettings = {
         httpAdminRoot: '/nodered/',
@@ -57,11 +60,11 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
             // Expose essential FUXA runtime helpers
             fuxa: {
                 runtime,
-                getTag: require(path.join(settings.appDir, 'runtime/devices')).getTagValue,
-                setTag: require(path.join(settings.appDir, 'runtime/devices')).setTagValue,
-                getDaq: require(path.join(settings.appDir, 'runtime/storage/daqstorage')).getNodeValues,
-                getTagId: require(path.join(settings.appDir, 'runtime/devices')).getTagId,
-                getHistoricalTags: require(path.join(settings.appDir, 'runtime/devices')).getHistoricalTags,
+                getTag: require(path.join(serverDir, 'runtime/devices')).getTagValue,
+                setTag: require(path.join(serverDir, 'runtime/devices')).setTagValue,
+                getDaq: require(path.join(serverDir, 'runtime/storage/daqstorage')).getNodeValues,
+                getTagId: require(path.join(serverDir, 'runtime/devices')).getTagId,
+                getHistoricalTags: require(path.join(serverDir, 'runtime/devices')).getHistoricalTags,
                 emit: events.emit.bind(events),
                 on: events.on.bind(events),
                 removeListener: events.removeListener.bind(events),
@@ -73,7 +76,7 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
                     return runtime.alarmsMgr.getAlarmsHistory(query, -1);
                 },
                 ackAlarm: async (alarmName, types) => {
-                    const utils = require(path.join(settings.appDir, 'runtime/utils'));
+                    const utils = require(path.join(serverDir, 'runtime/utils'));
                     const sep = runtime.alarmsMgr.getIdSeparator();
                     if (alarmName.indexOf(sep) === -1 && !utils.isNullOrUndefined(types)) {
                         const results = [];

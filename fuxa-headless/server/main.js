@@ -316,6 +316,8 @@ settings.httpStatic = settings.httpStatic || www;
 
 if (parsedArgs.port !== undefined) {
     settings.uiPort = parsedArgs.port;
+} else if (process.env.PORT) {
+    settings.uiPort = parseInt(process.env.PORT, 10);
 } else {
     if (settings.uiPort === undefined) {
         settings.uiPort = 1881;
@@ -518,7 +520,12 @@ function startFuxa() {
                 try {
                     await mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events });
                 } catch (e) {
-                    logger.warn('[Node-RED] Failed to initialize, continuing without it.', e);
+                    logger.warn('[Node-RED] Failed to initialize, continuing without it.', true);
+                    if (e && e.stack) {
+                        logger.error('[Node-RED] ' + e.stack);
+                    } else {
+                        logger.error('[Node-RED] ' + (e?.message || e));
+                    }
                 }
             } else if (settings.nodeRedEnabled) {
                 logger.warn('[Node-RED] Enabled but integration not available; continuing without it.');

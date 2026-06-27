@@ -22,6 +22,14 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 
+// ==================== 命令行参数解析 ====================
+const args = process.argv.slice(2);
+const portIdx = args.indexOf('-p');
+let serverArgs = [];
+if (portIdx !== -1 && args[portIdx + 1]) {
+    serverArgs = ['-p', args[portIdx + 1]];
+}
+
 // ==================== Server 模式 ====================
 if (process.env.FUXA_SERVER === '1') {
     // EXE 所在目录 = 便携数据根目录
@@ -36,9 +44,17 @@ if (process.env.FUXA_SERVER === '1') {
     // 设置环境变量，server/main.js 会读取 userDir
     process.env.userDir = fuxaDataDir;
 
+    // 透传端口参数给 main.js（通过环境变量 PORT，pkg EXE 不支持 CLI args 透传）
+    if (serverArgs.length > 0) {
+        process.env.PORT = serverArgs[1];
+    }
+
     console.log('[Server] FUXA PRO Headless Server starting...');
     console.log(`[Server] Data directory: ${fuxaDataDir}`);
     console.log(`[Server] Node.js: ${process.version}`);
+    if (serverArgs.length > 0) {
+        console.log(`[Server] Port override: ${args[portIdx + 1]}`);
+    }
 
     // 启动 FUXA server
     const serverPath = path.join(__dirname, 'server', 'main.js');
@@ -60,7 +76,7 @@ let serverProcess = null;
 
 function log(msg) {
     const ts = new Date().toISOString();
-    console.log(`[Guardian] ${ts} | ${msg}`);
+    console.log(`[TcScada] ${ts} | ${msg}`);
 }
 
 function startServer() {
@@ -75,10 +91,14 @@ function startServer() {
         return;
     }
 
-    serverProcess = spawn(process.execPath, [__filename], {
+    const childEnv = { ...process.env, FUXA_SERVER: '1' };
+    if (serverArgs.length > 0) {
+        childEnv.PORT = serverArgs[1];
+    }
+    serverProcess = spawn(process.execPath, [], {
         cwd: path.dirname(process.execPath),
         stdio: 'inherit',
-        env: { ...process.env, FUXA_SERVER: '1' },
+        env: childEnv,
         windowsHide: true
     });
 
@@ -108,9 +128,13 @@ function startServer() {
 // 启动
 log('=====================================');
 log('FUXA PRO Headless Guardian starting...');
+log('科控物联提供技术支持 | QQ: 2492123056');
 log(`Working directory: ${path.dirname(process.execPath)}`);
 log(`Max restarts: ${CONFIG.maxRestarts}`);
 log(`Cooldown window: ${CONFIG.cooldownWindow / 1000}s / max ${CONFIG.maxRapidRestarts} rapid`);
+if (serverArgs.length > 0) {
+    log(`Port override: ${args[portIdx + 1]}`);
+}
 log('=====================================');
 
 startServer();

@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [build-headless]
   push:
-    branches: [1.3.3-2843, 1.3.3-2855]
+    branches: [1.3.4-2881]
     paths:
       - '.github/workflows/headless_packaging.yml'
       - 'server/**'
@@ -86,7 +86,7 @@ jobs:
               "@serialport/parser-regex",
               "@serialstream/bindings-cpp"
             ],
-            "compression": "Brotli"
+            "compression": "GZip"
           }
         }
         EOF

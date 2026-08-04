@@ -75,23 +75,13 @@ function S7client(_data, _logger, _events, _runtime) {
      * Emit connection status to clients, clear all Tags values
      */
     this.disconnect = function () {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
+            // 跳过 s7client.Disconnect() 避免 native 模块崩溃 (STATUS_ACCESS_VIOLATION)
+            // OS 在进程退出时会自动回收 TCP 连接
             _checkWorking(false);
-            if (!s7client.Connected()) {
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(true);
-            } else {
-                var result = s7client.Disconnect();
-                if (result) {
-                    logger.info(`'${data.name}' disconnected!`, true);
-                } else {
-                    logger.error(`'${data.name}' try to disconnect failed!`);
-                }
-                _emitStatus('connect-off');
-                _clearVarsValue();
-                resolve(result);
-            }
+            _emitStatus('connect-off');
+            _clearVarsValue();
+            resolve(true);
         });
     }
 
@@ -670,6 +660,11 @@ function S7client(_data, _logger, _events, _runtime) {
         return new Error(s7client.ErrorText(s7err));
     }
 }
+
+// 进程退出时释放 s7client 引用，降低原生模块清理冲突概率
+process.on('exit', function () {
+    if (typeof s7client !== 'undefined' && s7client) s7client = null;
+});
 
 module.exports = {
     init: function (settings) {

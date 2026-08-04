@@ -32,6 +32,17 @@ function log(msg) {
     console.log(`[${ts}] [Guard] ${msg}`);
 }
 
+function exitCodeDetail(code) {
+    if (code === 0) return '正常退出';
+    if (code === 1) return '一般错误';
+    if (code === 3221225477) return 'STATUS_ACCESS_VIOLATION (内存访问违规，常见于 native 模块崩溃)';
+    if (code === 3221225725) return 'STATUS_DLL_NOT_FOUND (缺少 DLL)';
+    if (code === 3221225786) return 'STATUS_ILLEGAL_INSTRUCTION';
+    if (code === 3221225617) return 'STATUS_STACK_BUFFER_OVERRUN';
+    if (code === null) return '无 exit code';
+    return `exit code ${code}`;
+}
+
 function startServer() {
     const now = Date.now();
 
@@ -62,14 +73,20 @@ function startServer() {
 
     childProcess.on('exit', (code, signal) => {
         if (childProcess) {
-            log(`Server exited (code=${code || signal || 'none'})`);
+            const detail = exitCodeDetail(code);
+            const uptime = Math.floor((Date.now() - lastRestartTime) / 1000);
+            log(`Server exited: ${detail} | signal=${signal || 'none'} | 运行时长=${uptime}s`);
             childProcess = null;
             restartCount++;
             if (restartCount < CONFIG.maxRestarts) {
-                log(`Restarting in ${CONFIG.restartDelay / 1000}s...`);
+                if (rapidRestarts > 0) {
+                    log(`[快速重启计数器: ${rapidRestarts}/${CONFIG.maxRapidRestarts}] 重启倒计时 ${CONFIG.restartDelay / 1000}s...`);
+                } else {
+                    log(`重启倒计时 ${CONFIG.restartDelay / 1000}s...`);
+                }
                 setTimeout(startServer, CONFIG.restartDelay);
             } else {
-                log(`Max restarts (${CONFIG.maxRestarts}) reached, exiting.`);
+                log(`已达到最大重启次数 (${CONFIG.maxRestarts})，Guard 退出。`);
                 process.exit(1);
             }
         }
@@ -90,5 +107,7 @@ process.on('SIGTERM', () => {
 
 console.log('================================================');
 console.log('  FUXA Server Guard');
+console.log(`  最大重启: ${CONFIG.maxRestarts} | 重启间隔: ${CONFIG.restartDelay / 1000}s`);
+console.log(`  快速重启上限: ${CONFIG.maxRapidRestarts}次/${CONFIG.cooldownWindow / 1000}s`);
 console.log('================================================');
 startServer();

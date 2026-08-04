@@ -741,6 +741,7 @@
     "shapes.action-downup": "Upp och ner",
     "shapes.action-rotate": "Rotera",
     "shapes.action-move": "Flytta",
+    "shapes.action-moveByTags": "Flytta med taggar",
     "shapes.event-click": "Klick",
     "shapes.event-dblclick": "Dubbelklick",
     "shapes.event-mouseup": "Musknapp släppt",
@@ -821,6 +822,9 @@
     "slider.property-slider-color": "Färg för koppling",
     "slider.property-slider-background": "Basfärg",
     "slider.property-slider-handle": "Pekarfärg",
+    "slider.property-slider-width": "Stapeltjocklek",
+    "slider.property-handle-width": "Pekarbredd",
+    "slider.property-handle-height": "Pekarhöjd",
 
     "html-switch.property-off-value": "Av-värde",
     "html-switch.property-on-value": "På-värde",
@@ -1147,6 +1151,13 @@
     "gauges.property-action-toX": "Till position X",
     "gauges.property-action-toY": "Till position Y",
     "gauges.property-action-duration": "Varaktighet",
+    "gauges.property-action-tagX": "Position X tagg",
+    "gauges.property-action-tagY": "Position Y tagg",
+    "gauges.property-action-axis": "Axel",
+    "gauges.property-action-value-min": "Värde min",
+    "gauges.property-action-value-max": "Värde max",
+    "gauges.property-action-position-min": "Position min",
+    "gauges.property-action-position-max": "Position max",
     "gauges.property-events-mapping-from": "Kontextvariabel",
     "gauges.property-map-variable": "Lägg till kontextvariabel för bindning",
     "gauges.property-head-remove-mapvariable": "Ta bort bindning",
@@ -1713,6 +1724,7 @@
     "msg.maps-location-name-exist": "Kartplatsnamnet finns redan!",
     "msg.text-name-exist": "Textnamnet finns redan!",
     "msg.texts-text-remove": "Vill du ta bort texten '{{value}}'?",
-    "msg.operation-unauthorized": "Operation obehörig!"
+    "msg.operation-unauthorized": "Operation obehörig!",
+    "gauges.property-icon-none": "Ingen ikon"
 }
 

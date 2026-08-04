@@ -314,6 +314,7 @@
     "shapes.action-clockwise": "Повернути за годинниковою стрілкою",
     "shapes.action-anticlockwise": "Повернути проти годинникової стрілки",
     "shapes.action-downup": "Вверх і вниз",
+    "shapes.action-moveByTags": "Move by tags",
 
     "pipe.property-props": "Властивості",
     "pipe.property-border-width": "Ширина границі",
@@ -356,6 +357,9 @@
     "slider.property-slider-color": "Колір вмісту",
     "slider.property-slider-background": "Базовий колір",
     "slider.property-slider-handle": "Колір вказівника",
+    "slider.property-slider-width": "Ширина панелі",
+    "slider.property-handle-width": "Ширина вказівника",
+    "slider.property-handle-height": "Висота вказівника",
 
     "html-switch.property-off-value": "Значення OFF",
     "html-switch.property-on-value": "Значення ON",
@@ -467,6 +471,14 @@
     "gauges.property-actions": "Дії",
     "gauges.property-action-type": "Тип",
     "gauges.property-action-param": "Id Дії",
+    "gauges.property-action-duration": "Duration",
+    "gauges.property-action-tagX": "Position X tag",
+    "gauges.property-action-tagY": "Position Y tag",
+    "gauges.property-action-axis": "Axis",
+    "gauges.property-action-value-min": "Value min",
+    "gauges.property-action-value-max": "Value max",
+    "gauges.property-action-position-min": "Position min",
+    "gauges.property-action-position-max": "Position max",
     "gauges.property-events-mapping-from": "Змінні для переназначення",
 
     "bag.property-ticks": "Ticks",
@@ -627,5 +639,6 @@
     "msg.login-username-required": "Користувач",
     "msg.login-password-required": "Пароль",
     "msg.signin-failed": "Не авторизований",
-    "device.tag-uns-path": "UNS Path"
+    "device.tag-uns-path": "UNS Path",
+    "gauges.property-icon-none": "Без значка"
 }

@@ -861,6 +861,7 @@
     "shapes.action-downup": "Up and down",
     "shapes.action-rotate": "Rotate",
     "shapes.action-move": "Move",
+    "shapes.action-moveByTags": "Move by tags",
     "shapes.action-refreshImage": "Refresh image",
     "shapes.action-loadImage": "Load image",
 
@@ -944,6 +945,9 @@
     "slider.property-slider-color": "Connect color",
     "slider.property-slider-background": "Base color",
     "slider.property-slider-handle": "Pointer color",
+    "slider.property-slider-width": "Bar width",
+    "slider.property-handle-width": "Pointer width",
+    "slider.property-handle-height": "Pointer height",
 
     "html-switch.property-off-value": "Off Value",
     "html-switch.property-on-value": "On Value",
@@ -1312,6 +1316,7 @@
     "gauges.property-input-maxlength": "Max length",
     "gauges.property-input-readonly": "Readonly",
     "gauges.property-icon": "Icon",
+    "gauges.property-icon-none": "No icon",
     "gauges.property-icons-filter": "Icons Filter",
 
     "gauges.property-update-enabled": "Enable update",
@@ -1330,6 +1335,16 @@
     "gauges.property-action-toX" : "To position X",
     "gauges.property-action-toY" : "To position Y",
     "gauges.property-action-duration" : "Duration",
+<<<<<<< HEAD
+=======
+    "gauges.property-action-tagX" : "Position X tag",
+    "gauges.property-action-tagY" : "Position Y tag",
+    "gauges.property-action-axis" : "Axis",
+    "gauges.property-action-value-min" : "Value min",
+    "gauges.property-action-value-max" : "Value max",
+    "gauges.property-action-position-min" : "Position min",
+    "gauges.property-action-position-max" : "Position max",
+>>>>>>> upstream/master
     "gauges.property-action-image-url": "Image URL",
     "gauges.property-events-mapping-from": "Context variable",
     "gauges.property-map-variable": "Add context variable to bind",

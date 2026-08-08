@@ -1336,7 +1336,10 @@
     "gauges.property-action-toY" : "To position Y",
     "gauges.property-action-duration" : "Duration",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> upstream/master
     "gauges.property-action-tagX" : "Position X tag",
     "gauges.property-action-tagY" : "Position Y tag",
     "gauges.property-action-axis" : "Axis",
@@ -1344,6 +1347,9 @@
     "gauges.property-action-value-max" : "Value max",
     "gauges.property-action-position-min" : "Position min",
     "gauges.property-action-position-max" : "Position max",
+<<<<<<< HEAD
+>>>>>>> upstream/master
+=======
 >>>>>>> upstream/master
     "gauges.property-action-image-url": "Image URL",
     "gauges.property-events-mapping-from": "Context variable",

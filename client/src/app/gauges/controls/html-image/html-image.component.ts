@@ -267,7 +267,11 @@ export class HtmlImageComponent extends GaugeBaseComponent {
         let element = SVG.adopt(svgele.node);
         let img = Utils.searchTreeTagName(element.node, 'IMG');
         if (img) {
+<<<<<<< HEAD
             img.setAttribute('src', HtmlImageComponent.withSnapshotAuth(`/snapshots${sig.value}`));
+=======
+            img.setAttribute('src', HtmlImageComponent.withSnapshotAuth(`${EndPointApi.getBasePath()}/snapshots${sig.value}`));
+>>>>>>> upstream/master
         }
     }
 
@@ -289,6 +293,7 @@ export class HtmlImageComponent extends GaugeBaseComponent {
     }
 
     private static withSnapshotAuth(src: string): string {
+<<<<<<< HEAD
         if (!src || !src.startsWith('/snapshots')) {
             return src;
         }
@@ -300,6 +305,24 @@ export class HtmlImageComponent extends GaugeBaseComponent {
             return `${src}${separator}${cacheBuster}`;
         }
         return `${src}${separator}token=${encodeURIComponent(token)}&${cacheBuster}`;
+=======
+        if (!src || !src.startsWith(`${EndPointApi.getBasePath()}/snapshots`)) {
+            return src;
+        }
+
+        const [path, query] = src.split('?');
+        const params = new URLSearchParams(query);
+        params.delete('t');
+        params.delete('token');
+
+        const token = (window as any).fuxaAccessToken || HtmlImageComponent.getStoredAccessToken();
+        if (token) {
+            params.set('token', token);
+        }
+        params.set('t', new Date().getTime().toString());
+
+        return `${path}?${params.toString()}`;
+>>>>>>> upstream/master
     }
 
     private static getStoredAccessToken(): string {

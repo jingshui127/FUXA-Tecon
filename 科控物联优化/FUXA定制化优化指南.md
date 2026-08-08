@@ -31,7 +31,8 @@
 | `server/runtime/project/index.js` | 修改 | 新增 getRawProject() 供免重启对比用 |
 | `server/api/resources/index.js` | 修改 | fontkit 懒加载修复 windows-1252 崩溃 |
 | `server/main.js` | 修改 | `PORT` 环境变量端口支持 |
-| `server/package.json` | 修改 | 添加 10 个驱动包 |
+| `server/package.json` | 修改 | 添加 `modbus-serial`、`node-snap7` 等驱动包依赖 |
+| `client/src/app/gauges/controls/html-image/html-image.component.ts` | 修改 | 解决上游合并冲突（BASE_PATH 反向代理） |
 | `client/src/app/maps/maps-view/maps-view.component.ts` | 修改 | 地图源改为法国 OSM 热区镜像（国内加速） |
 
 ---
@@ -342,6 +343,8 @@ node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 - [x] upload mkdir pkg 快照修复
 - [x] 视图修改免重启优化
 - [x] 上游 v1.3.4-2888 合并同步（反向代理、报警权限、输入验证）
+- [x] 修复 `html-image.component.ts` 冲突标记残留，恢复构建
+- [x] 修复 `server/package.json` 缺少 `modbus-serial` 和 `node-snap7` 依赖，导致 EXE 中插件未识别
 
 ### 待处理
 

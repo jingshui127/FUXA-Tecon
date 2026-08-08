@@ -1,7 +1,7 @@
 # FUXA Headless EXE 定制化优化指南
 
-> 最后更新: 2026-08-04
-> 当前版本: 1.3.4 (基于上游 v1.3.4-2881)
+> 最后更新: 2026-08-08
+> 当前版本: 1.3.4 (基于上游 v1.3.4-2888)
 > 分支: `1.3.4-2881`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
 
@@ -164,14 +164,20 @@ if (parsedArgs.port !== undefined) {
 
 ### 2.8 上游 v1.3.4-2881 合并（2026-08-04）
 
-从 `frangoteam/FUXA` 同步 37 个提交：
+从 `frangoteam/FUXA` 同步 37 个提交。
+
+### 2.9 上游 v1.3.4-2888 合并（2026-08-08）
+
+从 `jingshui127/FUXA` master 同步 8 个新提交：
 
 | 类别 | 更新 |
 |------|------|
-| S7 驱动 | `new` 关键字、Promise reject 修复、过载断开移除、懒加载 |
-| 安全 | JWT cookie 认证、socket 消息单播、Node-RED 认证 |
-| 功能 | 滑块更新、报警标签值、标签驱动移动动画、Node-RED 设备属性 |
-| 依赖 | 多项依赖更新 |
+| 反向代理 | 新增 `BASE_PATH` 环境变量支持，WebSocket 和静态资源路径适配 |
+| 报警 | 修复报警权限 #2494、修复负时间输入 #1865 |
+| 资源 | 修复图片组递归 #2489 |
+| 安全 | socket.io origin 从 API endpoint 派生 |
+
+**合并冲突**：`server/main.js`（因 PORT 环境和 BASE_PATH 同时修改），已手动合并保留两者。
 
 ---
 
@@ -335,7 +341,7 @@ node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 - [x] Git 合并冲突修复
 - [x] upload mkdir pkg 快照修复
 - [x] 视图修改免重启优化
-- [x] 上游 v1.3.4-2881 合并同步
+- [x] 上游 v1.3.4-2888 合并同步（反向代理、报警权限、输入验证）
 
 ### 待处理
 

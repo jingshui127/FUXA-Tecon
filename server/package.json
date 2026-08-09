@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha --recursive --timeout 10000",
     "start": "node main.js",
-    "build": "tsc"
+    "build": "tsc",
+    "postinstall": "node scripts/patch-nodered.js"
   },
   "author": "frangoteam <info@frangoteam.org>",
   "license": "MIT",

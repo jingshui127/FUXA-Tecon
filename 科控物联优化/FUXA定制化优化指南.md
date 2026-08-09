@@ -31,7 +31,8 @@
 | `server/runtime/project/index.js` | 修改 | 新增 getRawProject() 供免重启对比用 |
 | `server/api/resources/index.js` | 修改 | fontkit 懒加载修复 windows-1252 崩溃 |
 | `server/main.js` | 修改 | `PORT` 环境变量端口支持 |
-| `server/package.json` | 修改 | 添加 `modbus-serial`、`node-snap7` 等驱动包依赖 |
+| `server/package.json` | 修改 | 添加 `modbus-serial`、`node-snap7` 等驱动包依赖，添加 `postinstall` 补丁脚本 |
+| `server/scripts/patch-nodered.js` | 新建 | pkg ESM 兼容补丁，修复 Node-RED httprequest 节点 `got` 导入失败 |
 | `client/src/app/gauges/controls/html-image/html-image.component.ts` | 修改 | 解决上游合并冲突（BASE_PATH 反向代理） |
 | `client/src/app/maps/maps-view/maps-view.component.ts` | 修改 | 地图源改为法国 OSM 热区镜像（国内加速） |
 
@@ -163,11 +164,21 @@ if (parsedArgs.port !== undefined) {
 
 `start()` / `stop()` 包裹 try-catch，单个设备崩溃不影响其他设备。
 
-### 2.8 上游 v1.3.4-2881 合并（2026-08-04）
+### 2.8 pkg ESM 兼容补丁（Node-RED httprequest）
+
+**文件**: `server/scripts/patch-nodered.js`
+
+pkg 打包的虚拟文件系统不支持 ESM 的 `import()` 动态导入解析。Node-RED 的 httprequest 节点使用 `await import('got')` 加载 `got` 包，在 pkg EXE 中会报 `ERR_MODULE_NOT_FOUND`。
+
+**修复**：通过 `postinstall` 脚本将 `const { got } = await import('got')` 替换为 `const got = require('got');`。`got` v11.x 是 CommonJS 包，`require()` 完全可用，功能不受影响。
+
+> 每次 `npm install` 后自动执行补丁，无需手动干预。
+
+### 2.9 上游 v1.3.4-2881 合并（2026-08-04）
 
 从 `frangoteam/FUXA` 同步 37 个提交。
 
-### 2.9 上游 v1.3.4-2888 合并（2026-08-08）
+### 2.10 上游 v1.3.4-2888 合并（2026-08-08）
 
 从 `jingshui127/FUXA` master 同步 8 个新提交：
 
@@ -345,6 +356,7 @@ node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 - [x] 上游 v1.3.4-2888 合并同步（反向代理、报警权限、输入验证）
 - [x] 修复 `html-image.component.ts` 冲突标记残留，恢复构建
 - [x] 修复 `server/package.json` 缺少 `modbus-serial` 和 `node-snap7` 依赖，导致 EXE 中插件未识别
+- [x] 修复 Node-RED httprequest 节点 `got` 包 pkg ESM 导入失败，新增 `postinstall` 自动补丁
 
 ### 待处理
 

@@ -447,6 +447,10 @@
     "editor.tools-strokecolor-title": "Cambiar el color del trazo",
     "editor.tools-palettecolor-title": "Haga clic para cambiar el color de relleno, presione Mayús y haga clic para cambiar el color del trazo",
 
+    "device.plugins-notice-title": "Complementos y controladores",
+    "device.plugins-notice-message": "Gestione los controladores de dispositivos, instale paquetes de complementos o agregue complementos personalizados aquí.",
+    "device.plugins-notice-hide": "No volver a mostrar este mensaje",
+    "device.plugins-notice-open": "Abrir complementos",
     "device.list-title": "Opciones de dispositivos",
     "device.list-device": "Dispositivo",
     "device.list-filter": "Filtro",

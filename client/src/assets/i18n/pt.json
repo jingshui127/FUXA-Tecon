@@ -413,6 +413,10 @@
     "editor.tools-strokecolor-title": "Mudar Grossura da cor",
     "editor.tools-palettecolor-title": "Clique para mudar o preenchimento da cor, Shift clique para mudar a grossura da cor",
 
+    "device.plugins-notice-title": "Plugins e drivers",
+    "device.plugins-notice-message": "Gerencie drivers de dispositivos, instale pacotes de plugins ou adicione plugins personalizados aqui.",
+    "device.plugins-notice-hide": "Não mostrar mais esta mensagem",
+    "device.plugins-notice-open": "Abrir plugins",
     "device.list-title": "Configurações Aparelho",
     "device.list-device": "Aparelho",
     "device.list-filter": "Filtro",

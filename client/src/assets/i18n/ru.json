@@ -801,6 +801,11 @@
     "device.connect-off": "Выключено",
     "device.connect-busy": "Занято",
 
+    "device.plugins-notice-title": "Плагины и драйверы",
+    "device.plugins-notice-message": "Управляйте драйверами устройств, устанавливайте пакеты плагинов или добавляйте пользовательские плагины здесь.",
+    "device.plugins-notice-hide": "Больше не показывать это сообщение",
+    "device.plugins-notice-open": "Открыть плагины",
+
     "devices.mode-map": "Диаграмма устройств",
     "devices.mode-list": "Список устройств",
     "devices.list-name": "Название",

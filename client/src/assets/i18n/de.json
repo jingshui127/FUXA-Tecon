@@ -860,6 +860,11 @@
     "device.connect-off": "Aus",
     "device.connect-busy": "Besetzt",
 
+    "device.plugins-notice-title": "Plugins und Treiber",
+    "device.plugins-notice-message": "Verwalten Sie hier Gerätetreiber, installieren Sie Plugin-Pakete oder fügen Sie benutzerdefinierte Plugins hinzu.",
+    "device.plugins-notice-hide": "Diese Nachricht nicht mehr anzeigen",
+    "device.plugins-notice-open": "Plugins öffnen",
+
     "devices.mode-map": "Geräte-Diagramm",
     "devices.mode-list": "Geräte-Liste",
     "devices.list-name": "Name",

@@ -447,6 +447,10 @@
     "editor.tools-strokecolor-title": "선 색깔 변경",
     "editor.tools-palettecolor-title": "채우기색 변경을 위해 click, 선 색깔 변경을 위해 shift-click",
 
+    "device.plugins-notice-title": "플러그인 및 드라이버",
+    "device.plugins-notice-message": "여기에서 장치 드라이버를 관리하고, 플러그인 패키지를 설치하거나, 사용자 정의 플러그인을 추가하세요.",
+    "device.plugins-notice-hide": "이 메시지를 더 이상 표시하지 않",
+    "device.plugins-notice-open": "플러그인 열기",
     "device.list-title": "장치 설정",
     "device.list-device": "장치",
     "device.list-filter": "필터",

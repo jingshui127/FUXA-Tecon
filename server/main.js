@@ -16,6 +16,7 @@ var events = require("./runtime/events").create();
 const FUXA = require('./fuxa.js');
 const runtime = require('./runtime');
 const authJwt = require('./api/jwt-helper');
+const brand = require('./brand');
 
 const BASE_PATH = (process.env.BASE_PATH || '').replace(/\/+$/, '');
 
@@ -76,6 +77,9 @@ if (parsedArgs.env) {
 if (!fs.existsSync(workDir)) {
     fs.mkdirSync(workDir);
 }
+
+// Load brand configuration from user directory
+brand.loadBrand(rootDir);
 
 // Read app settings
 var appSettingsFile = path.join(workDir, 'settings.js');
@@ -291,41 +295,49 @@ if (!fs.existsSync(www)) {      // compatibility with docker/npm/electron
 
 settings.httpStatic = settings.httpStatic || www;
 
-// In-memory BASE_PATH, rewrites the in-memory copy to work with read-only deployments
+// In-memory BASE_PATH + Brand, rewrites the in-memory copy to work with read-only deployments
 let indexHtmlCache = null;
 const rewrittenAssets = new Map(); // request path -> { content, type }
 
-if (BASE_PATH) {
-    // here, if a BASE_PATH is set, I push it in the base html, at runtime
-    try {
-        const indexHtmlPath = path.join(settings.httpStatic, 'index.html');
+// Prepare index.html with brand + base path injection
+try {
+    const indexHtmlPath = path.join(settings.httpStatic, 'index.html');
+    let htmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
+
+    // Inject brand config (always, even without BASE_PATH)
+    htmlContent = brand.injectBrandToHtml(htmlContent);
+
+    if (BASE_PATH) {
+        // here, if a BASE_PATH is set, I push it in the base html, at runtime
         const desiredBase = (BASE_PATH || '') + '/';
-        const withBase = fs.readFileSync(indexHtmlPath, 'utf8')
+        htmlContent = htmlContent
             .replace(/<base href="[^"]*"\s*\/?>/, `<base href="${desiredBase}" />`);
         // hook for any runtime code that wants BASE_PATH without parsing <base>
         const bootstrap = `<script>window.__BASE_PATH__=${JSON.stringify(BASE_PATH)};</script>`;
-        indexHtmlCache = withBase.replace('</head>', `${bootstrap}</head>`);
-    } catch (err) {
-        logger.warn('Could not prepare <base href> from BASE_PATH, if working under a reverse proxy check your BASE_PATH env var: ' + err);
-    }
-    // and edit the references in .css/.js files, in memory only
-    const collectAssets = (dir) => {
-        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-            const full = path.join(dir, e.name);
-            if (e.isDirectory()) { collectAssets(full); }
-            else if (/\.(js|css)$/.test(e.name)) {
-                const src = fs.readFileSync(full, 'utf8');
-                const out = src.replace(/(["'(])\/assets\//g, `$1${BASE_PATH}/assets/`);
-                if (out !== src) {
-                    const reqPath = BASE_PATH + '/' + path.relative(settings.httpStatic, full).split(path.sep).join('/');
-                    rewrittenAssets.set(reqPath, { content: out, type: e.name.endsWith('.css') ? 'text/css' : 'application/javascript' });
+        htmlContent = htmlContent.replace('</head>', `${bootstrap}</head>`);
+
+        // and edit the references in .css/.js files, in memory only
+        const collectAssets = (dir) => {
+            for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+                const full = path.join(dir, e.name);
+                if (e.isDirectory()) { collectAssets(full); }
+                else if (/\.(js|css)$/.test(e.name)) {
+                    const src = fs.readFileSync(full, 'utf8');
+                    const out = src.replace(/(["'(])\/assets\//g, `$1${BASE_PATH}/assets/`);
+                    if (out !== src) {
+                        const reqPath = BASE_PATH + '/' + path.relative(settings.httpStatic, full).split(path.sep).join('/');
+                        rewrittenAssets.set(reqPath, { content: out, type: e.name.endsWith('.css') ? 'text/css' : 'application/javascript' });
+                    }
                 }
             }
-        }
-    };
-    try { collectAssets(settings.httpStatic); }
-    catch (err) { logger.warn('asset base-path rewrite (in-memory) failed: ' + err); }
-    // the favicon is handled directly in the index.html that angular uses
+        };
+        try { collectAssets(settings.httpStatic); }
+        catch (err) { logger.warn('asset base-path rewrite (in-memory) failed: ' + err); }
+    }
+
+    indexHtmlCache = htmlContent;
+} catch (err) {
+    logger.warn('Could not prepare index.html: ' + err);
 }
 
 if (parsedArgs.port !== undefined) {
@@ -457,6 +469,32 @@ const SHELL_ROUTES = [
 ];
 
 app.use(allowCrossDomain);
+
+// Public brand API (no auth required - needed for login page branding)
+app.get(BASE_PATH + '/api/brand', (req, res) => {
+    const brandConfig = brand.getBrand();
+    res.json(brandConfig);
+});
+
+// Serve brand logo statically if configured
+app.get(BASE_PATH + '/api/brand/logo', (req, res) => {
+    const logoPath = brand.getLogoPath();
+    if (logoPath) {
+        res.sendFile(logoPath);
+    } else {
+        res.status(404).end();
+    }
+});
+
+// Serve brand favicon statically if configured
+app.get(BASE_PATH + '/api/brand/favicon', (req, res) => {
+    const faviconPath = brand.getFaviconPath();
+    if (faviconPath) {
+        res.sendFile(faviconPath);
+    } else {
+        res.status(404).end();
+    }
+});
 
 if (indexHtmlCache) {
     const serveShell = (req, res) => res.type('html').send(indexHtmlCache);

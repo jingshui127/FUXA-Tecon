@@ -16,6 +16,7 @@ import { HelpData, DEVICE_READONLY } from '../_models/hmi';
 import { TutorialComponent } from '../help/tutorial/tutorial.component';
 import { TranslateService } from '@ngx-translate/core';
 import { EditNameComponent } from '../gui-helpers/edit-name/edit-name.component';
+import { AppService } from '../_services/app.service';
 
 const editorModeRouteKey = ['/editor', '/device', '/messages', '/language', '/users', '/userRoles', '/notifications', '/scripts', '/reports', '/materials', '/logs', '/events', '/mapsLocations', '/arMarkers', '/flows', '/apikeys', '/plugins'];
 const saveFromEditorRouteKey = ['/device', '/messages', '/language', '/users', '/userRoles', '/notifications', '/scripts', '/reports', '/materials', '/logs', '/events', '/mapsLocations', '/arMarkers', '/flows', '/apikeys', '/plugins'];
@@ -238,9 +239,19 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
     templateUrl: 'info.dialog.html',
 })
 export class DialogInfo {
+    brandName: string;
+    brandLogo: string | null;
+    brandFooter: string;
+
     constructor(
         public dialogRef: MatDialogRef<DialogInfo>,
-        @Inject(MAT_DIALOG_DATA) public data: any) { }
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private appService: AppService) {
+        const brand = this.appService.getBrand();
+        this.brandName = brand.name || 'FUXA';
+        this.brandLogo = brand.logo;
+        this.brandFooter = brand.footer || '';
+    }
 
     onNoClick(): void {
         this.dialogRef.close();

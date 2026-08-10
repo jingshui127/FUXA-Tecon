@@ -18,6 +18,7 @@ import { Hmi, View, ViewType, NaviModeType, NotificationModeType, ZoomModeType, 
 import { LoginComponent } from '../login/login.component';
 import { AlarmViewComponent } from '../alarms/alarm-view/alarm-view.component';
 import { Utils } from '../_helpers/utils';
+import { AppService } from '../_services/app.service';
 import { GridOptions } from '../cards-view/cards-view.component';
 import { AlarmStatus, AlarmActionsType } from '../_models/alarm';
 
@@ -594,9 +595,19 @@ export interface IiFrame {
     templateUrl: 'userinfo.dialog.html',
 })
 export class DialogUserInfo {
+    brandName: string;
+    brandFooter: string;
+    brandLogo: string | null;
+
     constructor(
         public dialogRef: MatDialogRef<DialogUserInfo>,
-        @Inject(MAT_DIALOG_DATA) public data: any) { }
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private appService: AppService) {
+        const brand = this.appService.getBrand();
+        this.brandName = brand.name || 'FUXA';
+        this.brandFooter = brand.footer || '';
+        this.brandLogo = brand.logo;
+    }
 
     onOkClick(): void {
         this.dialogRef.close(true);

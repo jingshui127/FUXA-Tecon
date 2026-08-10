@@ -6,6 +6,7 @@ import { LayoutSettings, NaviItem, NavigationSettings, LinkType, NaviItemType } 
 import { Router } from '@angular/router';
 import { ProjectService } from '../_services/project.service';
 import { LanguageService } from '../_services/language.service';
+import { AppService } from '../_services/app.service';
 import { Utils } from '../_helpers/utils';
 
 @Component({
@@ -23,6 +24,8 @@ export class SidenavComponent implements AfterContentChecked {
     viewAsAlarms = LinkType.alarms;
 
     logo = null;
+    brandName: string = 'FUXA';
+    brandLogo: string | null = null;
     layout: LayoutSettings = null;
     showSidenav = false;
     layoutNavigation = new NavigationSettings();
@@ -33,7 +36,12 @@ export class SidenavComponent implements AfterContentChecked {
                 private router: Router,
                 private projectService: ProjectService,
                 private languageService: LanguageService,
+                private appService: AppService,
                 private changeDetector: ChangeDetectorRef) {
+        // Load brand config
+        const brand = this.appService.getBrand();
+        this.brandName = brand.name || 'FUXA';
+        this.brandLogo = brand.logo || null;
     }
 
     ngAfterContentChecked(): void {
@@ -78,7 +86,8 @@ export class SidenavComponent implements AfterContentChecked {
         this.layout = Utils.clone(layout);
         if (this.layout.navigation) {
             this.layoutNavigation = this.layout.navigation;
-            this.logo = this.layout.navigation.logo;
+            // Use brand logo if user hasn't set a custom logo in layout settings
+            this.logo = this.layout.navigation.logo || this.brandLogo;
             this.layout.navigation.items?.forEach(item => {
                 item.text = this.languageService.getTranslation(item.text) ?? item.text;
                 if (!item.id) {

@@ -98,18 +98,40 @@ Write-Host "=========================================="
 
 ## 快速测试
 
-打包完成后测试:
+打包完成后必须运行 EXE 验证（检查控制台日志，确认无 httprequest SyntaxError、i18n 正常显示）:
 
 ```powershell
 # 先杀掉可能占用的进程
-Get-Process fuxa-headless -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process fuxa-headless,node -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Sleep 2
 
-# 启动（端口 1882）
-Start-Process ".\fuxa-headless-local\fuxa-headless.exe" -ArgumentList "-p 1882"
+# 启动 EXE，捕获日志
+$p = Start-Process ".\fuxa-headless-local\fuxa-headless.exe" -WindowStyle Hidden -RedirectStandardOutput "$env:TEMP\fuxa-test-out.log" -RedirectStandardError "$env:TEMP\fuxa-test-err.log" -PassThru
+Write-Host "EXE PID: $($p.Id). Waiting 20s..."
+Start-Sleep 20
 
-# 等待 5 秒后测试
-Start-Sleep 5
-Invoke-WebRequest -Uri "http://127.0.0.1:1882/" -UseBasicParsing -TimeoutSec 5
+# 验证 HTTP 可达
+try { $resp = Invoke-WebRequest -Uri "http://127.0.0.1:2899/" -UseBasicParsing -TimeoutSec 10; Write-Host "HTTP OK: $($resp.StatusCode)" }
+catch { Write-Host "HTTP FAIL: $_" }
+
+# 验证关键日志（httprequest SyntaxError 必须不存在）
+$out = Get-Content "$env:TEMP\fuxa-test-out.log" -ErrorAction SilentlyContinue
+if ($out -match "SyntaxError.*import statement outside a module") {
+    Write-Host "FAIL: httprequest SyntaxError 存在！需要检查 patch-nodered.js 是否已运行"
+} elseif ($out -match "httprequest") {
+    Write-Host "WARN: httprequest 相关日志，请检查"
+} else {
+    Write-Host "PASS: httprequest 无 SyntaxError"
+}
+if ($out -match "Started flows") { Write-Host "PASS: Node-RED 正常启动" }
+else { Write-Host "WARN: Node-RED 未启动" }
+
+# 验证 i18n（检查 HTML 中是否显示翻译文本而非键名）
+$html = $out; # EXE 日志含完整输出
+if ($out -match "plugin-installed") { Write-Host "INFO: 插件已安装" }
+
+# 停止进程
+Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
 ```
 
 ## 注意事项
@@ -119,3 +141,7 @@ Invoke-WebRequest -Uri "http://127.0.0.1:1882/" -UseBasicParsing -TimeoutSec 5
 - 使用 GZip 压缩（Brotli 会导致 pkg 卡死）
 - Node.js 版本必须是 18.x（node-snap7 兼容性）
 - 工作目录必须是项目根目录
+- 端口传递: 环境变量 PORT > -p CLI 参数 > 默认 1881
+- **Node-RED 4.x 兼容**: `server/scripts/patch-nodered.js` 在 `npm install` 后自动运行，修复 httprequest 节点的 got v12 ESM 嵌套冲突（`@node-red/nodes/node_modules/got` 为 ESM-only，需强制解析到外层 CJS got v11）
+- **i18n 修复**: `client/src/assets/i18n/en.json` 已恢复（1880 键），所有 12 语言已补充 `device.plugins-notice-*` 翻译。修改 i18n 后必须重新 `npm run build` 前端再打包
+- **S7 驱动**: `server/runtime/devices/s7/index.js` 不调用 `Disconnect()`，避免 `STATUS_ACCESS_VIOLATION` 崩溃

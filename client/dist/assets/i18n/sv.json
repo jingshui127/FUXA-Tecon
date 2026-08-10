@@ -1046,6 +1046,11 @@
     "device.connect-off": "Av",
     "device.connect-busy": "Upptagen",
 
+    "device.plugins-notice-title": "Plugins och drivrutiner",
+    "device.plugins-notice-message": "Hantera enhetsdrivrutiner, installera plugin-paket eller lägg till anpassade plugins här.",
+    "device.plugins-notice-hide": "Visa inte detta meddelande igen",
+    "device.plugins-notice-open": "Öppna plugins",
+
     "devices.mode-map": "Anslutningsdiagram",
     "devices.mode-list": "Anslutningslista",
     "devices.list-name": "Namn",

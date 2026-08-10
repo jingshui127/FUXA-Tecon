@@ -1088,6 +1088,11 @@
     "device.connect-off": "オフ",
     "device.connect-busy": "ビジー",
 
+    "device.plugins-notice-title": "プラグインとドライバー",
+    "device.plugins-notice-message": "デバイスドライバーの管理、プラグインパッケージのインストール、カスタムプラグインの追加をここで行います。",
+    "device.plugins-notice-hide": "このメッセージを再表示しない",
+    "device.plugins-notice-open": "プラグインを開く",
+
     "devices.mode-map": "デバイス図",
     "devices. mode-list": "デバイス一覧",
     "devices.list-name": "名前",

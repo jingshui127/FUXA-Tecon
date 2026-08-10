@@ -408,6 +408,10 @@
 	"editor.tools-strokecolor-title": "Kenarlık rengini değiştir",
 	"editor.tools-palettecolor-title": "Dolgu rengini değiştirmek için tıklayın, kenarlık rengi için shift ile tıklayın",
 
+    "device.plugins-notice-title": "Eklentiler ve sürücüler",
+    "device.plugins-notice-message": "Cihaz sürücülerini yönetin, eklenti paketleri yükleyin veya özel eklentiler ekleyin.",
+    "device.plugins-notice-hide": "Bu mesajı tekrar gösterme",
+    "device.plugins-notice-open": "Eklentileri aç",
 	"device.list-title": "Aygıt ayarları",
 	"device.list-device": "Aygıt",
 	"device.list-filter": "Filtre",

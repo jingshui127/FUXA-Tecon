@@ -1053,6 +1053,11 @@
     "device.connect-off": "關閉",
     "device.connect-busy": "忙碌",
 
+    "device.plugins-notice-title": "外掛與驅動程式",
+    "device.plugins-notice-message": "在此管理裝置驅動程式、安裝外掛套件或新增自訂外掛。",
+    "device.plugins-notice-hide": "不再顯示此訊息",
+    "device.plugins-notice-open": "開啟外掛",
+
     "devices.mode-map": "裝置圖示",
     "devices.mode-list": "裝置清單",
     "devices.list-name": "名稱",

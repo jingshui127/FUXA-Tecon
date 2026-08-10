@@ -383,6 +383,10 @@
     "editor.tools-strokecolor-title": "Колір штриха",
     "editor.tools-palettecolor-title": "Left Click, щоб змінити колір заливки, Shift+Left Click щоб змінити колір штриха",
 
+    "device.plugins-notice-title": "Плагіни та драйвери",
+    "device.plugins-notice-message": "Керуйте драйверами пристроїв, встановлюйте пакети плагінів або додавайте користувацькі плагіни тут.",
+    "device.plugins-notice-hide": "Більше не показувати це повідомлення",
+    "device.plugins-notice-open": "Відкрити плагіни",
     "device.list-title": "Налаштування пристроїв",
     "device.list-device": "Пристрій",
     "device.list-filter": "Фільтр",

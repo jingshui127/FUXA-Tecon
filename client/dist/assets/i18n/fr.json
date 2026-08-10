@@ -1053,6 +1053,11 @@
   "device.connect-off": "Eteint",
   "device.connect-busy": "Occupé",
 
+    "device.plugins-notice-title": "Plugins et pilotes",
+    "device.plugins-notice-message": "Gérez les pilotes d'appareils, installez des packages de plugins ou ajoutez des plugins personnalisés ici.",
+    "device.plugins-notice-hide": "Ne plus afficher ce message",
+    "device.plugins-notice-open": "Ouvrir les plugins",
+
   "devices.mode-map": "Carte des appareils",
   "devices.mode-list": "Liste des appareils",
   "devices.list-name": "Nom",

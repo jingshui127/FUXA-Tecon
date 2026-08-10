@@ -1,6 +1,6 @@
 # FUXA Headless EXE 定制化优化指南
 
-> 最后更新: 2026-08-08
+> 最后更新: 2026-08-10
 > 当前版本: 1.3.4 (基于上游 v1.3.4-2888)
 > 分支: `1.3.4-2881`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
@@ -168,11 +168,38 @@ if (parsedArgs.port !== undefined) {
 
 **文件**: `server/scripts/patch-nodered.js`
 
-pkg 打包的虚拟文件系统不支持 ESM 的 `import()` 动态导入解析。Node-RED 的 httprequest 节点使用 `await import('got')` 加载 `got` 包，在 pkg EXE 中会报 `ERR_MODULE_NOT_FOUND`。
+Node-RED httprequest 节点在 EXE 环境下存在**两阶段**兼容问题，均由本补丁处理：
 
-**修复**：通过 `postinstall` 脚本将 `const { got } = await import('got')` 替换为 `const got = require('got');`。`got` v11.x 是 CommonJS 包，`require()` 完全可用，功能不受影响。
+#### 阶段一（首次修复，v1.3.4-2888 引入）
+pkg 打包的虚拟文件系统不支持 ESM 的 `import()` 动态导入解析。Node-RED httprequest 使用 `await import('got')` 加载 `got` 包，在 pkg EXE 中报错：
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'got' imported from C:\snapshot\fuxa-headless\...\21-httprequest.js
+```
+**修复**：将 `const { got } = await import('got')` 替换为 CommonJS 的 `require('got')`。外层 `server/node_modules/got` 是 v11.x（CommonJS），`require()` 完全可用。
+
+#### 阶段二（上游 Node-RED 4.x 升级触发，2026-08-10 追加修复）
+上游升级到 Node-RED 4.1.10 后，`@node-red/nodes` 自带了嵌套的 got **v12.6.1**（ESM-only，`"type": "module"`，位于 `@node-red/nodes/node_modules/got`）。此时虽然外层 server/node_modules 仍是 got v11（CJS），但 httprequest 内部 `require('got')` 会优先命中**嵌套的 ESM got v12**，导致：
+```
+[warn] [node-red/httprequest] SyntaxError: Cannot use import statement outside a module
+```
+> 注：这也是用户反馈"1.3.3 没有这些警告"的原因 —— 1.3.3 用的是 Node-RED 3.x，单版本 got v11（CJS），不存在嵌套冲突。
+
+**修复**：改用 `require.resolve('got', { paths: [...] })` 显式指定查找路径为外层 4 级以上的 `server/node_modules`，跳过嵌套的 ESM got v12，强制命中 CommonJS got v11。最终写法：
+```js
+const got = require(require.resolve('got', {
+  paths: [require('path').resolve(__dirname, '..', '..', '..', '..')]
+}));
+```
 
 > 每次 `npm install` 后自动执行补丁，无需手动干预。
+
+### 2.11 i18n 翻译与 httprequest 二次修复（2026-08-10）
+
+| 类别 | 修复内容 |
+|------|---------|
+| i18n en.json | 上游合并冲突导致 `client/src/assets/i18n/en.json` 被损坏为仅 `{}`，恢复为 1880 键完整版本（commit d0dd240，恢复自 commit 17fb009a） |
+| i18n 翻译键 | 为 12 种语言补充缺失的 `device.plugins-notice-*` 按钮翻译键（commit ed6edf19），设备页插件通知对话框显示中文（"插件和驱动程序"/"不再显示此消息"/"打开插件"）而非原始键名 |
+| httprequest 嵌套 ESM | 修复 Node-RED 4.x `@node-red/nodes/node_modules/got` v12（ESM-only）与外层 got v11 的嵌套冲突，消除 `SyntaxError: Cannot use import statement outside a module` 警告，确保 HTTP Request 节点在 EXE 中正常工作 |
 
 ### 2.9 上游 v1.3.4-2881 合并（2026-08-04）
 

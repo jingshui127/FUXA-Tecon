@@ -1054,6 +1054,11 @@
     "device.connect-off": "关闭",
     "device.connect-busy": "忙",
 
+    "device.plugins-notice-title": "插件和驱动程序",
+    "device.plugins-notice-message": "在这里管理设备驱动程序、安装插件包或添加自定义插件。",
+    "device.plugins-notice-hide": "不再显示此消息",
+    "device.plugins-notice-open": "打开插件",
+
     "devices.mode-map": "设备图示",
     "devices.mode-list": "设备列表",
     "devices.list-name": "名称",

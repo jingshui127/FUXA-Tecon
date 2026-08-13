@@ -82,10 +82,6 @@ function sendInvalidSignInResponse(res) {
     res.status(401).json({ status: 'error', message: 'Invalid email/password!!!', data: null });
 }
 
-function sendInvalidSignInResponse(res) {
-    res.status(401).json({ status: 'error', message: 'Invalid email/password!!!', data: null });
-}
-
 module.exports = {
     init: function (_runtime, _secretCode, _tokenExpires, _enableRefreshCookieAuth, _refreshTokenExpires) {
         runtime = _runtime;

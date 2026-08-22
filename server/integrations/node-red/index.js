@@ -4,6 +4,51 @@
 const fs = require('fs');
 const path = require('path');
 
+const BLOCKED_DEVICE_PROPERTY_KEYS = new Set(['__proto__', 'prototype', 'constructor', 'password', 'pass', 'secret', 'token', 'apikey', 'api_key', 'privatekey', 'private_key', 'certificate', 'cert', 'key']);
+const READABLE_DEVICE_PROPERTY_KEYS = new Set(['address', 'baudRate', 'broker', 'clientId', 'cycle', 'dataBits', 'endpoint', 'namespace', 'parity', 'polling', 'port', 'rack', 'slot', 'station', 'stopBits', 'timeout', 'topic', 'unitId']);
+const WRITABLE_DEVICE_PROPERTY_KEYS = new Set(['cycle', 'polling', 'timeout']);
+
+function createDevicePropertyHelpers(devices) {
+    const validate = (property, allowed, action) => {
+        if (typeof property !== 'string') throw new Error(`Device property '${property}' is not ${action}`);
+        const key = property.trim();
+        if (!key || key.includes('.') || key.includes('[') || key.includes(']') || BLOCKED_DEVICE_PROPERTY_KEYS.has(key.toLowerCase()) || !allowed.has(key)) {
+            throw new Error(`Device property '${property}' is not ${action}`);
+        }
+        return key;
+    };
+    return {
+        getDeviceProperty(deviceName, property) {
+            const key = validate(property, READABLE_DEVICE_PROPERTY_KEYS, 'readable');
+            const value = devices.getDeviceProperty(deviceName);
+            return value && Object.prototype.hasOwnProperty.call(value, key) ? value[key] : undefined;
+        },
+        setDeviceProperty(deviceName, property, value) {
+            const key = validate(property, WRITABLE_DEVICE_PROPERTY_KEYS, 'writable');
+            if (value !== null && !['string', 'number', 'boolean'].includes(typeof value)) throw new Error(`Device property '${property}' value must be a scalar`);
+            const current = devices.getDeviceProperty(deviceName);
+            if (!current) return null;
+            current[key] = value;
+            return devices.setDeviceProperty(deviceName, current);
+        },
+    };
+}
+
+function createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt }) {
+    return (req, res, next) => {
+        if (req.baseUrl === '/dashboard') return next();
+        if (!settings.secureEnabled || settings.nodeRedAuthMode === 'legacy-open') return next();
+        const apiKey = req.headers['x-api-key'];
+        if (apiKey) return runtime.apiKeys.getApiKeys().then(keys => keys.some(k => k && k.key === apiKey && k.enabled !== false && (!k.expires || new Date(k.expires).getTime() > Date.now())) ? next() : res.status(401).json({ error: 'unauthorized_error', message: 'Invalid API Key' })).catch(() => res.status(500).json({ error: 'unexpected_error', message: 'ApiKey validation failed' }));
+        const token = req.headers['x-access-token'] || req.query?.token;
+        if (!token) return res.status(401).json({ error: 'unauthorized_error', message: 'Authentication required!' });
+        return authJwt.verifyAndDecode(token).then(decoded => {
+            if (!decoded?.id || decoded.type === 'refresh' || authJwt.isGuestUser(decoded.id, decoded.groups)) return res.status(403).json({ error: 'forbidden_error', message: 'Authenticated user required!' });
+            return next();
+        }).catch(() => res.status(401).json({ error: 'unauthorized_error', message: 'Invalid token!' }));
+    };
+}
+
 function tryRequireNodeRed(runtime) {
     try {
         // Fast check whether the module is resolvable
@@ -37,6 +82,8 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
 
     // Server code root in pkg snapshot (use __dirname to work in both dev and EXE)
     const serverDir = path.join(__dirname, '..', '..');
+    const devices = require(path.join(settings.appDir, 'runtime/devices'));
+    const devicePropertyHelpers = createDevicePropertyHelpers(devices);
 
     // Minimal Node-RED settings; extend only what is really needed
     const redSettings = {
@@ -60,11 +107,13 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
             // Expose essential FUXA runtime helpers
             fuxa: {
                 runtime,
-                getTag: require(path.join(serverDir, 'runtime/devices')).getTagValue,
-                setTag: require(path.join(serverDir, 'runtime/devices')).setTagValue,
+                getTag: devices.getTagValue,
+                setTag: devices.setTagValue,
                 getDaq: require(path.join(serverDir, 'runtime/storage/daqstorage')).getNodeValues,
-                getTagId: require(path.join(serverDir, 'runtime/devices')).getTagId,
-                getHistoricalTags: require(path.join(serverDir, 'runtime/devices')).getHistoricalTags,
+                getTagId: devices.getTagId,
+                getHistoricalTags: devices.getHistoricalTags,
+                getDeviceProperty: devicePropertyHelpers.getDeviceProperty,
+                setDeviceProperty: devicePropertyHelpers.setDeviceProperty,
                 emit: events.emit.bind(events),
                 on: events.on.bind(events),
                 removeListener: events.removeListener.bind(events),

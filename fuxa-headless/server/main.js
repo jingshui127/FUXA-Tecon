@@ -7,6 +7,7 @@ const https = require('https');
 const socketIO = require('socket.io');
 const nopt = require("nopt");
 const schedule = require('node-schedule');
+const jwt = require('jsonwebtoken');
 
 const paths = require('./paths');
 const logger = require('./runtime/logger');
@@ -16,10 +17,7 @@ const FUXA = require('./fuxa.js');
 const runtime = require('./runtime');
 const authJwt = require('./api/jwt-helper');
 
-// Stardust APM 监控
-const StardustTracker = require('./lib/stardust');
-const stardustMiddleware = require('./lib/stardust-middleware');
-let stardustTracker;
+const BASE_PATH = (process.env.BASE_PATH || '').replace(/\/+$/, '');
 
 const express = require('express');
 const app = express();
@@ -194,6 +192,9 @@ try {
         if (!utils.isNullOrUndefined(mysettings.broadcastAll)) {
             settings.broadcastAll = mysettings.broadcastAll;
         }
+        if (!utils.isNullOrUndefined(mysettings.lazyViewLoading)) {
+            settings.lazyViewLoading = mysettings.lazyViewLoading;
+        }
         if (!utils.isNullOrUndefined(mysettings.logFull)) {
             settings.logFull = mysettings.logFull;
         }
@@ -232,19 +233,6 @@ if (!fs.existsSync(settings.logDir)) {
 }
 
 logger.init(settings);
-
-// 初始化 Stardust APM 监控
-try {
-    stardustTracker = new StardustTracker({
-        server: 'http://47.113.219.65:6600',
-        appName: 'fuxaScada',
-        enabled: false
-    });
-    stardustTracker.start();
-} catch (error) {
-    logger.error('Stardust initialization failed:', error.message);
-}
-
 const version = FUXA.version();
 if (version.indexOf('beta') > 0) {
     logger.warn(`${settings.appName} V.` + version);
@@ -303,7 +291,8 @@ const io = socketIO(server, {
         origin: "*",
         methods: ["GET", "POST"],
         credentials: false
-    }
+    },
+    path: BASE_PATH + '/socket.io'
 });
 
 // Check settings value
@@ -313,6 +302,49 @@ if (!fs.existsSync(www)) {      // compatibility with docker/npm/electron
 }
 
 settings.httpStatic = settings.httpStatic || www;
+
+let indexHtmlCache = null;
+const rewrittenAssets = new Map();
+
+if (BASE_PATH) {
+    try {
+        const indexHtmlPath = path.join(settings.httpStatic, 'index.html');
+        const desiredBase = BASE_PATH + '/';
+        const withBase = fs.readFileSync(indexHtmlPath, 'utf8')
+            .replace(/<base href="[^"]*"\s*\/?\s*>/, `<base href="${desiredBase}" />`);
+        const bootstrap = `<script>window.__BASE_PATH__=${JSON.stringify(BASE_PATH)};</script>`;
+        indexHtmlCache = withBase.replace('</head>', `${bootstrap}</head>`);
+    } catch (err) {
+        logger.warn('Could not prepare <base href> from BASE_PATH: ' + err);
+    }
+
+    const collectAssets = (dir) => {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const fullPath = path.join(dir, entry.name);
+            if (entry.isDirectory()) {
+                collectAssets(fullPath);
+            } else if (/\.(js|css)$/.test(entry.name)) {
+                const source = fs.readFileSync(fullPath, 'utf8');
+                const rewritten = source.replace(/(["'(])\/assets\//g, `$1${BASE_PATH}/assets/`);
+                if (rewritten !== source) {
+                    const requestPath = BASE_PATH + '/' + path.relative(settings.httpStatic, fullPath).split(path.sep).join('/');
+                    rewrittenAssets.set(requestPath, {
+                        content: rewritten,
+                        type: entry.name.endsWith('.css') ? 'text/css' : 'application/javascript'
+                    });
+                }
+            }
+        }
+    };
+    try {
+        collectAssets(settings.httpStatic);
+    } catch (err) {
+        logger.warn('asset base-path rewrite failed: ' + err);
+    }
+}
+
+// External customization override directory (EXE-level customization/)
+var externalCustomizationDir = path.join(execDir, 'customization');
 
 if (parsedArgs.port !== undefined) {
     settings.uiPort = parsedArgs.port;
@@ -353,11 +385,6 @@ try {
 }
 
 // Http Server for client UI
-// Stardust APM 中间件
-if (stardustTracker) {
-    app.use(stardustMiddleware(stardustTracker));
-}
-
 const allowCrossDomain = function (req, res, next) {
     const origin = req.headers.origin;
     const allowedOrigins = settings.allowedOrigins || ["*"];
@@ -394,25 +421,74 @@ const allowCrossDomain = function (req, res, next) {
     }
     next();
 };
+
+function getCookieValue(req, name) {
+    const cookieHeader = req.headers.cookie;
+    if (!cookieHeader) {
+        return null;
+    }
+    const cookies = cookieHeader.split(';');
+    for (const cookie of cookies) {
+        const [key, ...rest] = cookie.trim().split('=');
+        if (key === name) {
+            return decodeURIComponent(rest.join('='));
+        }
+    }
+    return null;
+}
+
+function snapshotAuth(req, res, next) {
+    if (!settings.secureEnabled) {
+        return next();
+    }
+
+    const token = req.query?.token || req.headers['x-access-token'] || getCookieValue(req, 'fuxa_access');
+    if (!token || token === 'null') {
+        return res.status(401).end();
+    }
+
+    try {
+        const decoded = jwt.verify(token, authJwt.secretCode);
+        if (!decoded?.id || authJwt.isGuestUser(decoded.id, decoded.groups)) {
+            return res.status(401).end();
+        }
+        res.header('Cache-Control', 'no-store');
+        return next();
+    } catch {
+        return res.status(401).end();
+    }
+}
+
+const SHELL_ROUTES = [
+    '/', '/home', '/home/:viewName', '/lab', '/editor', '/materials',
+    '/materials/:type', '/device', '/plugins', '/rodevice', '/users',
+    '/roles', '/view', '/ar'
+];
+
 app.use(allowCrossDomain);
-app.use('/', express.static(settings.httpStatic));
-app.use('/home', express.static(settings.httpStatic));
-app.use('/home/:viewName', express.static(settings.httpStatic));
-app.use('/lab', express.static(settings.httpStatic));
-app.use('/editor', express.static(settings.httpStatic));
-app.use('/materials', express.static(settings.httpStatic));
-app.use('/materials/:type', express.static(settings.httpStatic));
-app.use('/device', express.static(settings.httpStatic));
-app.use('/plugins', express.static(settings.httpStatic));
-app.use('/rodevice', express.static(settings.httpStatic));
-app.use('/users', express.static(settings.httpStatic));
-app.use('/roles', express.static(settings.httpStatic));
-app.use('/view', express.static(settings.httpStatic));
-app.use('/' + settings.httpUploadFileStatic, express.static(settings.uploadFileDir));
-app.use('/_images', express.static(settings.imagesFileDir));
-app.use('/_resources', express.static(settings.resourcesFileDir));
-app.use('/_widgets', express.static(settings.widgetsFileDir));
-app.use('/snapshots', express.static(settings.webcamSnapShotsDir))
+if (fs.existsSync(externalCustomizationDir)) {
+    app.use(BASE_PATH + '/assets/customization', express.static(externalCustomizationDir));
+}
+if (indexHtmlCache) {
+    const serveShell = (req, res) => res.type('html').send(indexHtmlCache);
+    for (const shellPath of SHELL_ROUTES) {
+        app.get(BASE_PATH + shellPath, serveShell);
+    }
+}
+if (rewrittenAssets.size) {
+    app.use((req, res, next) => {
+        const rewritten = rewrittenAssets.get(req.path);
+        rewritten ? res.type(rewritten.type).send(rewritten.content) : next();
+    });
+}
+for (const shellPath of SHELL_ROUTES) {
+    app.use(BASE_PATH + shellPath, express.static(settings.httpStatic));
+}
+app.use(BASE_PATH + '/' + settings.httpUploadFileStatic, express.static(settings.uploadFileDir));
+app.use(BASE_PATH + '/_images', express.static(settings.imagesFileDir));
+app.use(BASE_PATH + '/_resources', express.static(settings.resourcesFileDir));
+app.use(BASE_PATH + '/_widgets', express.static(settings.widgetsFileDir));
+app.use(BASE_PATH + '/snapshots', snapshotAuth, express.static(settings.webcamSnapShotsDir));
 
 var accessLogStream = fs.createWriteStream(settings.logDir + '/api.log', { flags: 'a' });
 if (runtime.settings.logApiLevel !== 'none') {
@@ -532,7 +608,7 @@ function startFuxa() {
             }
 
             if (settings.disableServer !== false) {
-                app.use('/', FUXA.httpApi);
+                app.use(BASE_PATH + '/', FUXA.httpApi);
             }
 
             server.listen(settings.uiPort, settings.uiHost, function () {
@@ -563,23 +639,6 @@ const initWebcamSnapshotCleanup = () => {
     schedule.scheduleJob('0 1 * * *', cleanupSnapShotsFiles);
     logger.info('Scheduled webcam snapshot cleanup at 01:00 daily.');
 };
-
-// 应用关闭时停止 Stardust 监控
-process.on('SIGINT', () => {
-    if (stardustTracker) {
-        stardustTracker.stop();
-        console.log('[Stardust] APM tracer stopped');
-    }
-    process.exit();
-});
-
-process.on('SIGTERM', () => {
-    if (stardustTracker) {
-        stardustTracker.stop();
-        console.log('[Stardust] APM tracer stopped');
-    }
-    process.exit();
-});
 
 /**
  * Cleanup Snapshots Files
@@ -632,14 +691,20 @@ process.on('uncaughtException', function (err) {
 
 process.on('SIGINT', function () {
     FUXA.stop().then(function () {
+        logger.info(`${settings.appName} end!`);
         process.exit();
     });
-    logger.info(`${settings.appName} end!`);
-    process.exit();
 });
 
 function getCustomization() {
     try {
+        // Priority: EXE-level customization/ directory > built-in assets
+        const execDir = path.dirname(process.execPath);
+        const externalConfig = path.join(execDir, 'customization', 'config.json');
+        if (fs.existsSync(externalConfig)) {
+            const content = fs.readFileSync(externalConfig, 'utf8');
+            return JSON.parse(content);
+        }
         const config = path.join(__dirname, '..', 'client', 'dist', 'assets', 'customization', 'config.json');
         if (!fs.existsSync(config)) {
             return null;

@@ -3,12 +3,15 @@ name: Build FUXA PRO Headless EXE
 on:
   workflow_dispatch:
   push:
-    branches: [main, master, 1.3.2-PRO]
+    branches: [1.3.4-PRO]
     paths-ignore:
       - '**.md'
       - 'docs/**'
       - '.github/ISSUE_TEMPLATE/**'
       - 'wiki/**'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -48,7 +51,7 @@ jobs:
         cat > fuxa-headless/package.json <<'EOF'
         {
           "name": "fuxa-pro-headless",
-          "version": "1.3.2-PRO",
+          "version": "1.3.4-PRO",
           "bin": "main.js",
           "pkg": {
             "assets": [
@@ -56,7 +59,7 @@ jobs:
               "client/dist/**/*",
               "_reports/**/*"
             ],
-            "compression": "Brotli"
+            "compression": "GZip"
           }
         }
         EOF
@@ -64,7 +67,7 @@ jobs:
     - name: Install yao-pkg
       run: npm install -g @yao-pkg/pkg
 
-    - name: Build Standalone EXE (Node.js 18 + Brotli)
+    - name: Build Standalone EXE (Node.js 18 + GZip)
       shell: bash
       run: |
         pkg fuxa-headless/package.json \
@@ -79,6 +82,39 @@ jobs:
     - name: List built files
       shell: bash
       run: ls -la artifacts/
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: fuxa-pro-headless-1.3.4
+        path: artifacts/fuxa-pro-headless.exe
+        retention-days: 30
+
+    - name: Start EXE health check
+      shell: powershell
+      run: |
+        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -ArgumentList '-p 1882' -PassThru
+        try {
+          $ready = $false
+          for ($i = 0; $i -lt 24; $i++) {
+            Start-Sleep -Seconds 5
+            try {
+              $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1882/' -UseBasicParsing -TimeoutSec 5
+              if ($response.StatusCode -eq 200) {
+                $ready = $true
+                Write-Host "FUXA EXE health check passed: HTTP $($response.StatusCode)"
+                break
+              }
+            } catch {
+              Write-Host "Waiting for FUXA EXE startup..."
+            }
+          }
+          if (-not $ready) {
+            throw 'FUXA EXE did not become ready on port 1882.'
+          }
+        } finally {
+          Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        }
 
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2

@@ -49,7 +49,9 @@ function stop() {
         // runtime.logger.info('devices.stop-all (' + Object.keys(activeDevices).length + ')');
         var deviceStopfnc = [];
         for (var id in activeDevices) {
-            deviceStopfnc.push(activeDevices[id].stop());
+            deviceStopfnc.push(Promise.resolve().then(() => activeDevices[id].stop()).catch(err => {
+                runtime.logger.error(`devices.stop '${id}' failed: ${err.message}`);
+            }));
         }
         return Promise.all(deviceStopfnc).then(values => {
             resolve(true);

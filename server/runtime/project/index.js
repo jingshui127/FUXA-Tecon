@@ -58,7 +58,7 @@ function init(_settings, log, _runtime) {
  */
 function load() {
     return new Promise(function (resolve, reject) {
-        data = { devices: {}, hmi: { views: [] }, texts: [], alarms: [] };
+        data = { devices: {}, hmi: { views: [] }, texts: [], alarms: [], ar: { enabled: false, markers: [] } };
         // load general data
         prjstorage.getSection(prjstorage.TableType.GENERAL).then(grows => {
             for (var ig = 0; ig < grows.length; ig++) {
@@ -140,6 +140,20 @@ function load() {
                                 callback();
                             }).catch(function (err) {
                                 logger.error(`project.prjstorage-failed-to-load! '${prjstorage.TableType.LOCATIONS}' ${err}`);
+                                callback(err);
+                            });
+                        },
+                        // step 7 get AR markers
+                        function (callback) {
+                            getArMarkers().then(markers => {
+                                if (!data.ar) {
+                                    data.ar = { enabled: false, markers: [] };
+                                }
+                                data.ar.markers = markers || [];
+                                data.ar.enabled = data.ar.enabled || data.ar.markers.length > 0;
+                                callback();
+                            }).catch(function (err) {
+                                logger.error(`project.prjstorage-failed-to-load! '${prjstorage.TableType.ARMARKERS}' ${err}`);
                                 callback(err);
                             });
                         }
@@ -270,6 +284,14 @@ function setProjectData(cmd, value) {
                 section.table = prjstorage.TableType.LOCATIONS;
                 section.name = value.id;
                 toremove = removeMapsLocation(value);
+            } else if (cmd === ProjectDataCmdType.SetArMarker) {
+                section.table = prjstorage.TableType.ARMARKERS;
+                section.name = value.id;
+                setArMarker(value);
+            } else if (cmd === ProjectDataCmdType.DelArMarker) {
+                section.table = prjstorage.TableType.ARMARKERS;
+                section.name = value.id;
+                toremove = removeArMarker(value);
             } else {
                 logger.error(`prjstorage.setdata failed! '${section.table}'`);
                 reject('prjstorage.failed-to-setdata: Command not found!');
@@ -340,14 +362,11 @@ function removeView(view) {
  * @param {*} merge merge with exist (tags)
  */
 function setDevice(device, merge) {
-    // Deep copy to prevent runtime data pollution from affecting stored project data
-    // This fixes the issue where S7 communication causes exit on save due to non-serializable objects
-    var deviceCopy = JSON.parse(JSON.stringify(device));
     if (merge && data.devices[device.id]) {
-        deviceCopy.enabled = data.devices[device.id].enabled;
-        data.devices[device.id] = {...data.devices[device.id], ...deviceCopy};
+        device.enabled = data.devices[device.id].enabled;
+        data.devices[device.id] = {...data.devices[device.id], ...device};
     } else {
-        data.devices[device.id] = deviceCopy;
+        data.devices[device.id] = device;
     }
 }
 
@@ -631,17 +650,65 @@ function removeMapsLocation(location) {
 }
 
 /**
+ * Set or add if not exist (check with marker.id) the AR marker in Project
+ * @param {*} marker
+ */
+function setArMarker(marker) {
+    if (!data.ar) {
+        data.ar = { enabled: false, markers: [] };
+    }
+    if (!data.ar.markers) {
+        data.ar.markers = [];
+    }
+    data.ar.enabled = true;
+    var pos = -1;
+    for (var i = 0; i < data.ar.markers.length; i++) {
+        if (data.ar.markers[i].id === marker.id) {
+            pos = i;
+        }
+    }
+    if (pos >= 0) {
+        data.ar.markers[pos] = marker;
+    } else {
+        data.ar.markers.push(marker);
+    }
+}
+
+/**
+ * Remove the AR marker from Project
+ * @param {*} marker
+ */
+function removeArMarker(marker) {
+    if (data.ar && data.ar.markers) {
+        for (var i = 0; i < data.ar.markers.length; i++) {
+            if (data.ar.markers[i].id === marker.id) {
+                data.ar.markers.splice(i, 1);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
  * Get the project data in accordance with autorization
  */
-/**
- * Get the current Project with user permission filtering
- * @param {*} userId
- * @param {*} userPermission
- */
-function getProject(userId, userPermission) {
+function getProject(userId, userPermission, options) {
     return new Promise(function (resolve, reject) {
-        const pdata = _filterProjectPermission(userPermission);
+        const pdata = _filterProjectPermission(userPermission, options);
         resolve(pdata);
+    });
+}
+
+function getProjectView(viewId, userPermission) {
+    return new Promise(function (resolve, reject) {
+        const pdata = _filterProjectPermission(userPermission, { viewId: viewId });
+        const view = pdata?.hmi?.views?.[0];
+        if (view) {
+            resolve(view);
+        } else {
+            resolve(null);
+        }
     });
 }
 
@@ -743,6 +810,16 @@ function setProject(prjcontent) {
                         if (locations && locations.length) {
                             for (var i = 0; i < locations.length; i++) {
                                 scs.push({ table: prjstorage.TableType.LOCATIONS, name: locations[i].id, value: locations[i] });
+                            }
+                        }
+                    } else if (key === 'ar') {
+                        var arSettings = Object.assign({}, prjcontent[key]);
+                        var markers = arSettings.markers || [];
+                        delete arSettings.markers;
+                        scs.push({ table: prjstorage.TableType.GENERAL, name: key, value: arSettings });
+                        if (markers && markers.length) {
+                            for (var i = 0; i < markers.length; i++) {
+                                scs.push({ table: prjstorage.TableType.ARMARKERS, name: markers[i].id, value: markers[i] });
                             }
                         }
                     } else {
@@ -942,6 +1019,28 @@ function getMapsLocations() {
 }
 
 /**
+ * Get the AR markers
+ */
+function getArMarkers() {
+    return new Promise(function (resolve, reject) {
+        prjstorage.getSection(prjstorage.TableType.ARMARKERS).then(drows => {
+            if (drows.length > 0) {
+                var markers = [];
+                for (var id = 0; id < drows.length; id++) {
+                    markers.push(JSON.parse(drows[id].value));
+                }
+                resolve(markers);
+            } else {
+                resolve();
+            }
+        }).catch(function (err) {
+            logger.error(`project.prjstorage.get-arMarkers failed! '${prjstorage.TableType.ARMARKERS} ${err}'`);
+            reject(err);
+        });
+    });
+}
+
+/**
  * Set the device property
  */
 function setDeviceProperty(query) {
@@ -968,103 +1067,13 @@ function setDeviceProperty(query) {
  */
 function getProjectDemo() {
     var demoProject = path.join(settings.appDir, 'project.demo.fuxap');
-    return JSON.parse(fs.readFileSync(demoProject, 'utf8'));
+    return JSON.parse(fs.readFileSync(demoProject, 'utf8'));;
 }
 
-/**
- * Safe deep copy for project data that may contain non-serializable runtime objects
- * This is a fallback when JSON.stringify fails due to circular references or special objects
- * @param {*} projectData - The project data object
- * @returns {*} Cleaned project data safe for serialization
- */
-function _safeDeepCopyProject(projectData) {
-    var result = {};
-    try {
-        // Copy basic properties
-        if (projectData.version) result.version = projectData.version;
-        if (projectData.hmi) result.hmi = JSON.parse(JSON.stringify(projectData.hmi));
-        if (projectData.viewtree) result.viewtree = JSON.parse(JSON.stringify(projectData.viewtree));
-        if (projectData.charts) result.charts = JSON.parse(JSON.stringify(projectData.charts));
-        if (projectData.languages) result.languages = JSON.parse(JSON.stringify(projectData.languages));
-        if (projectData.clientAccess) result.clientAccess = JSON.parse(JSON.stringify(projectData.clientAccess));
-        if (projectData.graphs) result.graphs = JSON.parse(JSON.stringify(projectData.graphs));
-
-        // Safely copy devices - clean runtime properties from tags
-        result.devices = {};
-        if (projectData.devices) {
-            for (var deviceId in projectData.devices) {
-                try {
-                    var device = projectData.devices[deviceId];
-                    var cleanDevice = {
-                        id: device.id,
-                        name: device.name,
-                        type: device.type,
-                        enabled: device.enabled,
-                        property: device.property ? JSON.parse(JSON.stringify(device.property)) : {},
-                        tags: {},
-                        polling: device.polling
-                    };
-                    // Clean tags by removing runtime properties (value, rawValue, changed, etc.)
-                    if (device.tags) {
-                        for (var tagId in device.tags) {
-                            var tag = device.tags[tagId];
-                            if (tag && typeof tag === 'object') {
-                                cleanDevice.tags[tagId] = {
-                                    id: tag.id,
-                                    name: tag.name,
-                                    type: tag.type,
-                                    memaddress: tag.memaddress,
-                                    address: tag.address,
-                                    value: tag.value !== undefined ? tag.value : 0,
-                                    write: tag.write,
-                                    daq: tag.daq ? JSON.parse(JSON.stringify(tag.daq)) : {},
-                                    format: tag.format,
-                                    scale: tag.scale ? JSON.parse(JSON.stringify(tag.scale)) : undefined,
-                                    deadband: tag.deadband ? JSON.parse(JSON.stringify(tag.deadband)) : undefined,
-                                    property: tag.property ? JSON.parse(JSON.stringify(tag.property)) : {}
-                                };
-                            }
-                        }
-                    }
-                    result.devices[deviceId] = cleanDevice;
-                } catch (deviceErr) {
-                    logger.error(`project.safe-copy-device-error: '${deviceId}' ${deviceErr.message}`);
-                    // Skip this device if it cannot be cleaned
-                }
-            }
-        }
-
-        // Copy arrays (texts, alarms, notifications, scripts, reports, mapsLocations)
-        var arrayFields = ['texts', 'alarms', 'notifications', 'scripts', 'reports', 'mapsLocations'];
-        arrayFields.forEach(function(field) {
-            if (Array.isArray(projectData[field])) {
-                try {
-                    result[field] = JSON.parse(JSON.stringify(projectData[field]));
-                } catch (e) {
-                    result[field] = [];
-                    logger.error(`project.safe-copy-array-error: '${field}' ${e.message}`);
-                }
-            }
-        });
-
-    } catch (err) {
-        logger.error(`project.safe-copy-error: ${err.message}`);
-        // Return minimal valid structure
-        result = { devices: {}, hmi: { views: [] }, texts: [], alarms: [] };
-    }
-    return result;
-}
-
-function _filterProjectPermission(userPermission) {
-    // Safe deep copy with error handling to prevent crash when S7 or other devices
-    // have non-serializable runtime data (e.g., circular references, functions, Buffer objects)
-    var result;
-    try {
-        result = JSON.parse(JSON.stringify(data));
-    } catch (serializeError) {
-        logger.error(`project.serialize-error: Failed to serialize project data! ${serializeError.message}`);
-        // Fallback: create a clean copy by manually cleaning device data
-        result = _safeDeepCopyProject(data);
+function _filterProjectPermission(userPermission, options = {}) {
+    var result = JSON.parse(JSON.stringify(data));// = { devices: {}, hmi: { views: [] } };
+    if (options.viewId && result.hmi?.views) {
+        result.hmi.views = result.hmi.views.filter(view => view.id === options.viewId || view.name === options.viewId);
     }
     const projectPermission = runtime.checkPermission(userPermission, false);
     if (!projectPermission.show || !projectPermission.enabled) {   // is admin or secure disabled
@@ -1137,7 +1146,20 @@ function _filterProjectPermission(userPermission) {
             }
         }
     }
+    if (options.lazyViews && result.hmi?.views) {
+        result.hmi.views = result.hmi.views.map(view => _toLazyView(view));
+    }
     return result;
+}
+
+function _toLazyView(view) {
+    return {
+        id: view.id,
+        name: view.name,
+        type: view.type,
+        profile: view.profile,
+        lazy: true
+    };
 }
 
 function _mergeDefaultConfig() {
@@ -1217,6 +1239,8 @@ const ProjectDataCmdType = {
     DelReport: 'del-report',
     SetMapsLocation:'set-maps-location',
     DelMapsLocation: 'del-maps-location',
+    SetArMarker: 'set-ar-marker',
+    DelArMarker: 'del-ar-marker',
 }
 
 module.exports = {
@@ -1229,12 +1253,14 @@ module.exports = {
     getNotifications: getNotifications,
     getScripts: getScripts,
     getReports: getReports,
+    getArMarkers: getArMarkers,
     getDeviceProperty: getDeviceProperty,
     setDeviceProperty: setDeviceProperty,
     setProjectData: setProjectData,
     getProject: getProject,
-    setProject: setProject,
+    getProjectView: getProjectView,
     getRawProject: getRawProject,
+    setProject: setProject,
     getProjectDemo: getProjectDemo,
     ProjectDataCmdType, ProjectDataCmdType,
 };

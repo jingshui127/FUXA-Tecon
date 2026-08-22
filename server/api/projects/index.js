@@ -35,7 +35,8 @@ module.exports = {
          */
         prjApp.get("/api/project", secureFnc, function(req, res) {
             const permission = checkGroupsFnc(req);
-            runtime.project.getProject(req.userId, permission).then(result => {
+            const options = { lazyViews: runtime.settings.lazyViewLoading === true && req.query?.views === 'lazy' };
+            runtime.project.getProject(req.userId, permission, options).then(result => {
                 // res.header("Access-Control-Allow-Origin", "*");
                 // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                 if (result) {
@@ -58,6 +59,32 @@ module.exports = {
         });
 
         /**
+         * GET Project view data
+         * Take one full view from project storage and reply
+         */
+        prjApp.get("/api/project/view/:id", secureFnc, function(req, res) {
+            const permission = checkGroupsFnc(req);
+            runtime.project.getProjectView(req.params.id, permission).then(result => {
+                if (result) {
+                    res.json(result);
+                } else {
+                    res.status(404).end();
+                    runtime.logger.error("api get project view: Not Found!");
+                }
+            }).catch(function(err) {
+                if (err && err.code) {
+                    if (err.code !== 'ERR_HTTP_HEADERS_SENT') {
+                        res.status(400).json({error:err.code, message: err.message});
+                        runtime.logger.error("api get project view: " + err.message);
+                    }
+                } else {
+                    res.status(400).json({error:"unexpected_error", message: err});
+                    runtime.logger.error("api get project view: " + err);
+                }
+            });
+        });
+
+        /**
          * POST Project data
          * Set to project storage
          */
@@ -69,11 +96,11 @@ module.exports = {
                 res.status(401).json({error:"unauthorized_error", message: "Unauthorized!"});
                 runtime.logger.error("api post project: Unauthorized");
             } else {
+                const oldProject = runtime.project.getRawProject();
                 runtime.project.setProject(req.body).then(function(data) {
                     // 异步重启：先返回成功响应，再判断是否需要重启
                     res.end();
 
-                    const oldProject = runtime.project.getRawProject();
                     const newProject = req.body;
 
                     // 比较 devices/server/alarms/notifications 四个关键字段

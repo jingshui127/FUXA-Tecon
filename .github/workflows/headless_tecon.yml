@@ -93,13 +93,13 @@ jobs:
     - name: Start EXE health check
       shell: powershell
       run: |
-        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -ArgumentList '-p 1882' -PassThru
+        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -PassThru
         try {
           $ready = $false
           for ($i = 0; $i -lt 24; $i++) {
             Start-Sleep -Seconds 5
             try {
-              $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1882/' -UseBasicParsing -TimeoutSec 5
+              $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1881/' -UseBasicParsing -TimeoutSec 5
               if ($response.StatusCode -eq 200) {
                 $ready = $true
                 Write-Host "FUXA EXE health check passed: HTTP $($response.StatusCode)"
@@ -110,7 +110,7 @@ jobs:
             }
           }
           if (-not $ready) {
-            throw 'FUXA EXE did not become ready on port 1882.'
+            throw 'FUXA EXE did not become ready on the default port 1881.'
           }
         } finally {
           Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue

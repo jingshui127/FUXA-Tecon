@@ -48,9 +48,9 @@ jobs:
     - name: Prepare Headless Dependencies
       shell: bash
       run: |
-        cp server/package.json fuxa-headless/package.json
-        cp server/package-lock.json fuxa-headless/package-lock.json
-        node -e "const fs=require('fs'); const p='fuxa-headless/package.json'; const pkg=JSON.parse(fs.readFileSync(p)); pkg.name='fuxa-pro-headless'; pkg.version='1.3.4-PRO'; pkg.bin='main.js'; pkg.dependencies={...(pkg.dependencies||{}),ip:'^2.0.1'}; pkg.pkg={assets:['server/**/*','client/dist/**/*','_reports/**/*'],publicPackages:['node-snap7','sqlite3','serialport','@serialport/bindings-cpp','@serialport/parser-readline','@serialport/parser-regex'],compression:'GZip'}; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
+        cp ../server/package.json ./package.json
+        cp ../server/package-lock.json ./package-lock.json
+        node -e "const fs=require('fs'); const p='package.json'; const pkg=JSON.parse(fs.readFileSync(p)); pkg.name='fuxa-pro-headless'; pkg.version='1.3.4-PRO'; pkg.bin='main.js'; pkg.dependencies={...(pkg.dependencies||{}),ip:'^2.0.1'}; pkg.pkg={assets:['server/**/*','client/dist/**/*','_reports/**/*'],publicPackages:['node-snap7','sqlite3','serialport','@serialport/bindings-cpp','@serialport/parser-readline','@serialport/parser-regex'],compression:'GZip'}; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
         npm install --omit=dev --no-audit
       working-directory: ./fuxa-headless
 

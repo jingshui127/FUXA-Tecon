@@ -93,11 +93,17 @@ jobs:
     - name: Start EXE health check
       shell: powershell
       run: |
-        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -PassThru
+        $stdout = Join-Path $PWD 'fuxa-exe.stdout.log'
+        $stderr = Join-Path $PWD 'fuxa-exe.stderr.log'
+        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
         try {
           $ready = $false
-          for ($i = 0; $i -lt 24; $i++) {
+          for ($i = 0; $i -lt 36; $i++) {
             Start-Sleep -Seconds 5
+            if ($process.HasExited) {
+              Write-Host "FUXA EXE exited early with code $($process.ExitCode)."
+              break
+            }
             try {
               $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1881/' -UseBasicParsing -TimeoutSec 5
               if ($response.StatusCode -eq 200) {
@@ -110,10 +116,16 @@ jobs:
             }
           }
           if (-not $ready) {
+            Write-Host '===== FUXA EXE stdout ====='
+            if (Test-Path $stdout) { Get-Content $stdout }
+            Write-Host '===== FUXA EXE stderr ====='
+            if (Test-Path $stderr) { Get-Content $stderr }
             throw 'FUXA EXE did not become ready on the default port 1881.'
           }
         } finally {
-          Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          if (-not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          }
         }
 
     - name: Upload to GitHub Release

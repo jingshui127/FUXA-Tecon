@@ -57,8 +57,7 @@ if (process.env.FUXA_SERVER === '1') {
     }
 
     // 启动 FUXA server
-    const serverPath = path.join(__dirname, 'server', 'main.js');
-    require(serverPath);
+    require('./server/main.js');
     return;
 }
 
@@ -95,7 +94,7 @@ function startServer() {
     if (serverArgs.length > 0) {
         childEnv.PORT = serverArgs[1];
     }
-    serverProcess = spawn(process.execPath, [], {
+    serverProcess = spawn(process.execPath, serverArgs, {
         cwd: path.dirname(process.execPath),
         stdio: 'inherit',
         env: childEnv,

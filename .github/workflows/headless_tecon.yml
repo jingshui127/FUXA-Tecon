@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: headless-tecon-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -29,7 +33,7 @@ jobs:
       run: |
         npm config set fetch-retry-maxtimeout 120000
         npm config set fetch-retries 5
-        npm install --prefer-offline --no-audit
+        npm ci --prefer-offline --no-audit
       working-directory: ./server
 
     - name: Setup Headless Package Directory
@@ -51,11 +55,12 @@ jobs:
         cp ../server/package.json ./package.json
         cp ../server/package-lock.json ./package-lock.json
         node -e "const fs=require('fs'); const p='package.json'; const pkg=JSON.parse(fs.readFileSync(p)); pkg.name='fuxa-pro-headless'; pkg.version='1.3.4-PRO'; pkg.bin='main.js'; pkg.dependencies={...(pkg.dependencies||{}),ip:'^2.0.1'}; pkg.pkg={assets:['server/**/*','client/dist/**/*','_reports/**/*'],publicPackages:['node-snap7','sqlite3','serialport','@serialport/bindings-cpp','@serialport/parser-readline','@serialport/parser-regex'],compression:'GZip'}; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\\n');"
-        npm install --omit=dev --no-audit
+        npm ci --omit=dev --no-audit
+        node server/scripts/patch-nodered.js
       working-directory: ./fuxa-headless
 
     - name: Install yao-pkg
-      run: npm install -g @yao-pkg/pkg
+      run: npm install -g @yao-pkg/pkg@6.13.1
 
     - name: Build Standalone EXE (Node.js 18 + GZip)
       shell: bash
@@ -63,11 +68,24 @@ jobs:
         pkg fuxa-headless/package.json \
           --targets node18-win-x64 \
           --out-path artifacts \
-          --public-packages "node-snap7,bindings,nan"
+          --public-packages "node-snap7,bindings,nan,got"
 
-    - name: Rename artifact
-      shell: bash
-      run: mv artifacts/fuxa-pro-headless-win-x64.exe artifacts/fuxa-pro-headless.exe || true
+    - name: Verify and rename EXE artifact
+      shell: powershell
+      run: |
+        $built = Join-Path $PWD 'artifacts\fuxa-pro-headless-win-x64.exe'
+        $exe = Join-Path $PWD 'artifacts\fuxa-pro-headless.exe'
+        if (-not (Test-Path -LiteralPath $built -PathType Leaf)) {
+          Write-Host 'Contents of artifacts directory:'
+          Get-ChildItem -LiteralPath (Join-Path $PWD 'artifacts') -Force | Format-Table -AutoSize
+          throw "Expected pkg output was not found: $built"
+        }
+        Move-Item -LiteralPath $built -Destination $exe -Force
+        $file = Get-Item -LiteralPath $exe
+        if ($file.Length -le 1MB) {
+          throw "Built EXE is unexpectedly small: $($file.Length) bytes"
+        }
+        Write-Host "Verified EXE: $($file.FullName) ($($file.Length) bytes)"
 
     - name: List built files
       shell: bash
@@ -85,7 +103,7 @@ jobs:
       run: |
         $stdout = Join-Path $PWD 'fuxa-exe.stdout.log'
         $stderr = Join-Path $PWD 'fuxa-exe.stderr.log'
-        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -ArgumentList @('-p', '1882') -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
         try {
           $ready = $false
           for ($i = 0; $i -lt 36; $i++) {
@@ -95,7 +113,7 @@ jobs:
               break
             }
             try {
-              $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1881/' -UseBasicParsing -TimeoutSec 5
+              $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1882/' -UseBasicParsing -TimeoutSec 5
               if ($response.StatusCode -eq 200) {
                 $ready = $true
                 Write-Host "FUXA EXE health check passed: HTTP $($response.StatusCode)"
@@ -110,13 +128,24 @@ jobs:
             if (Test-Path $stdout) { Get-Content $stdout }
             Write-Host '===== FUXA EXE stderr ====='
             if (Test-Path $stderr) { Get-Content $stderr }
-            throw 'FUXA EXE did not become ready on the default port 1881.'
+            throw 'FUXA EXE did not become ready on port 1882.'
           }
         } finally {
           if (-not $process.HasExited) {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
           }
         }
+
+    - name: Upload health-check logs on failure
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: fuxa-pro-headless-health-logs-${{ github.run_id }}
+        path: |
+          fuxa-exe.stdout.log
+          fuxa-exe.stderr.log
+        if-no-files-found: warn
+        retention-days: 14
 
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2
@@ -133,7 +162,7 @@ jobs:
           ### 使用方法
           1. 下载 `fuxa-pro-headless.exe`
           2. 放到任意目录，双击运行
-          3. 浏览器打开 http://127.0.0.1:1881/
+          3. 浏览器打开 http://127.0.0.1:1882/
           4. 数据自动保存在 exe 同目录的 `data\` 文件夹下
 
           ### 特性

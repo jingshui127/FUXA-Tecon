@@ -9,20 +9,16 @@ const deviceUtils = require('../device-utils');
 
 const MAX_MIX_ITEM = 20;
 
-// S7 Area 常量（模块级定义，不依赖 s7client 实例）
-// 修复：load() 时 s7client 尚未连接为 null，访问其属性会抛异常导致标签解析失败
-const S7AreaMK = 0x83;  // Merkers / 标志区 M
-const S7AreaPE = 0x81;  // Inputs / 输入区 E/I
-const S7AreaPA = 0x82;  // Outputs / 输出区 A/Q
-const S7AreaDB = 0x84;  // DB / 数据块
-
 function S7client(_data, _logger, _events, _runtime) {
 
     var runtime = _runtime;
     var db = {};                        // Loaded Signal in DB format { DB index, start, size, ... }
     var data = JSON.parse(JSON.stringify(_data));                   // Current Device data { id, name, tags, enabled, ... }
     var logger = _logger;               // Logger
-    var s7client = null;                // Client node-S7 (lazy init on connect)
+    var s7client = new snap7.S7Client();// Client node-S7
+    if (!datatypes) {
+        datatypes = require('./datatypes')(s7client);
+    }
     var working = false;                // Working flag to manage overloading polling and connection
     var events = _events;               // Events to commit change to runtime
     var lastStatus = '';                // Last Device status
@@ -40,12 +36,6 @@ function S7client(_data, _logger, _events, _runtime) {
         return new Promise(function (resolve, reject) {
             if (data.property && data.property.rack >= 0 && data.property.slot >= 0) {
                 try {
-                    // Lazy init S7Client only when actually connecting
-                    if (!s7client) {
-                        logger.info(`'${data.name}' creating S7Client...`, true);
-                        s7client = new snap7.S7Client();
-                        logger.info(`'${data.name}' S7Client created`, true);
-                    }
                     if (!s7client.Connected() && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
                         s7client.ConnectTo(data.property.address, data.property.rack, data.property.slot, function (err) {
@@ -85,11 +75,29 @@ function S7client(_data, _logger, _events, _runtime) {
      * Emit connection status to clients, clear all Tags values
      */
     this.disconnect = function () {
-        return new Promise(function (resolve) {
+        return new Promise(function (resolve, reject) {
             _checkWorking(false);
-            _emitStatus('connect-off');
-            _clearVarsValue();
-            resolve(true);
+            var connected = !!s7client && s7client.Connected();
+            if (!connected) {
+                _emitStatus('connect-off');
+                _clearVarsValue();
+                resolve(true);
+            } else {
+                try {
+                    var result = s7client.Disconnect();
+                    if (result) {
+                        logger.info(`'${data.name}' disconnected!`, true);
+                    } else {
+                        logger.error(`'${data.name}' try to disconnect failed!`);
+                    }
+                } catch (err) {
+                    logger.warn(`'${data.name}' disconnect native error: ${err.message}`);
+                }
+                s7client = null;
+                _emitStatus('connect-off');
+                _clearVarsValue();
+                resolve(true);
+            }
         });
     }
 
@@ -248,7 +256,7 @@ function S7client(_data, _logger, _events, _runtime) {
      * Don't work if PLC will disconnect
      */
     this.isConnected = function () {
-        return s7client && s7client.Connected();
+        return !!s7client && s7client.Connected();
     }
 
     /**
@@ -417,12 +425,7 @@ function S7client(_data, _logger, _events, _runtime) {
         if (check && working) {
             overloading++;
             logger.warn(`'${data.name}' working (connection || polling) overload! ${overloading}`);
-            if (overloading >= 3 && s7client) {
-                // 重置 client 引用强制全新重连（不调用 Disconnect 防止 native 崩溃）
-                s7client = null;
-            } else {
-                return false;
-            }
+            return false;
         }
         working = check;
         overloading = 0;
@@ -440,8 +443,8 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _readDB = function (DBNr, vars) {
         return new Promise((resolve, reject) => {
-            if (!s7client) return resolve(vars);
             if (vars.length === 0) return resolve([]);
+            if (!s7client) return reject(new Error('S7 client disconnected'));
 
             let end = 0;
             let offset = Number.MAX_SAFE_INTEGER;
@@ -451,25 +454,28 @@ function S7client(_data, _logger, _events, _runtime) {
                     end = v.Start + datatypes[v.type].bytes;
                 }
             });
-            s7client.DBRead(DBNr, offset, end - offset, (err, res) => {
-                if (err) {
-                    logger.error(`'${data.name}' ${err}: ${_getErr(err)}`, false);
-                } else {
-                    vars.map(v => {
-                        let value = null;
-                        if (v.type === 'BOOL') {
-                            // check the full byte and send all bit if there is a change
-                            value = datatypes['BYTE'].parser(res, v.Start - offset, -1);
-                        } else {
-                            value = datatypes[v.type].parser(res, v.Start - offset, v.bit);
-                        }
-                        v.changed = value !== v.value;
-                        v.value = value;
-                        return v;
-                    });
-                }
-                resolve(vars);
-            });
+            try {
+                s7client.DBRead(DBNr, offset, end - offset, (err, res) => {
+                    if (err) {
+                        logger.error(`'${data.name}' ${err}: ${_getErr(err)}`, false);
+                    } else {
+                        vars.map(v => {
+                            let value = null;
+                            if (v.type === 'BOOL') {
+                                value = datatypes['BYTE'].parser(res, v.Start - offset, -1);
+                            } else {
+                                value = datatypes[v.type].parser(res, v.Start - offset, v.bit);
+                            }
+                            v.changed = value !== v.value;
+                            v.value = value;
+                            return v;
+                        });
+                    }
+                    resolve(vars);
+                });
+            } catch (err) {
+                reject(new Error('S7 DBRead failed: ' + err.message));
+            }
         });
     }
 
@@ -479,31 +485,34 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _readVars = function (vars) {
         return new Promise((resolve, reject) => {
-            if (!s7client) return resolve(vars);
-            s7client.ReadMultiVars(vars, (err, res) => {
-                if (err) return _getErr(err);
-                let errs = [];
-                res = vars.map((v, i) => {
-                    let value = null;
-                    if (res[i].Result !== 0) {
-                        errs.push(`${v.name} - ${s7client.ErrorText(res[i].Result)}`);
-                    } else {
-                        try {
-                            if (v.type === 'BOOL') {
-                                // check the full byte and send all bit if there is a change
-                                value = datatypes['BYTE'].parser(res[i].Data);//, v.Start, -1);
-                            } else {
-                                value = datatypes[v.type].parser(res[i].Data);
-                            }
-                            v.changed = value !== v.value;
-                            v.value = value;
-                            return v;
-                        } catch { }
-                    }
+            if (!s7client) return reject(new Error('S7 client disconnected'));
+            try {
+                s7client.ReadMultiVars(vars, (err, res) => {
+                    if (err) return reject(_getErr(err));
+                    let errs = [];
+                    res = vars.map((v, i) => {
+                        let value = null;
+                        if (res[i].Result !== 0) {
+                            errs.push(`${v.name} - ${s7client.ErrorText(res[i].Result)}`);
+                        } else {
+                            try {
+                                if (v.type === 'BOOL') {
+                                    value = datatypes['BYTE'].parser(res[i].Data);
+                                } else {
+                                    value = datatypes[v.type].parser(res[i].Data);
+                                }
+                                v.changed = value !== v.value;
+                                v.value = value;
+                                return v;
+                            } catch { }
+                        }
+                    });
+                    if (errs.length) return reject(_getErr(errs));
+                    resolve(vars);
                 });
-                if (errs.length) return reject(_getErr(errs));
-                resolve(vars);
-            });
+            } catch (err) {
+                reject(new Error('S7 ReadMultiVars failed: ' + err.message));
+            }
         });
     }
 
@@ -527,10 +536,15 @@ function S7client(_data, _logger, _events, _runtime) {
                 end = v.Start + datatypes[v.type].bytes;
             }
             let buffer = datatypes[v.type].formatter(v.value)
-            s7client.DBWrite(DBNr, offset, end - offset, buffer, (err, res) => {
-                if (err) return _getErr(err);
-                resolve(changed);
-            });
+            if (!s7client) return reject(new Error('S7 client disconnected'));
+            try {
+                s7client.DBWrite(DBNr, offset, end - offset, buffer, (err, res) => {
+                    if (err) return reject(_getErr(err));
+                    resolve(changed);
+                });
+            } catch (err) {
+                reject(new Error('S7 DBWrite failed: ' + err.message));
+            }
         });
     }
 
@@ -555,17 +569,22 @@ function S7client(_data, _logger, _events, _runtime) {
             Data: datatypes[v.type].formatter(parseFloat(v.value))
         }));
         return new Promise((resolve, reject) => {
-            s7client.WriteMultiVars(toWrite, (err, res) => {
-                if (err) return _getErr(err);
-                let errs = [];
+            if (!s7client) return reject(new Error('S7 client disconnected'));
+            try {
+                s7client.WriteMultiVars(toWrite, (err, res) => {
+                    if (err) return reject(_getErr(err));
+                    let errs = [];
 
-                res = vars.map((v, i) => {
-                    if (res[i].Result !== 0) return errs.push(s7client.ErrorText(res[i].Result));
-                    return v;
+                    res = vars.map((v, i) => {
+                        if (res[i].Result !== 0) return errs.push(s7client.ErrorText(res[i].Result));
+                        return v;
+                    });
+                    if (errs.length) return reject(_getErr(errs));
+                    resolve(res);
                 });
-                if (errs.length) return reject(_getErr(errs));
-                resolve(res);
-            });
+            } catch (err) {
+                reject(new Error('S7 WriteMultiVars failed: ' + err.message));
+            }
         });
     }
 
@@ -588,7 +607,7 @@ function S7client(_data, _logger, _events, _runtime) {
                         var dbStart = variable.substring(startpos + 4);
                         var result = new DbItem(dbNum);
                         result.type = tag.type.toUpperCase();
-                        result.Area = S7AreaDB;
+                        result.Area = s7client['S7AreaDB'];
                         if (dbType === 'DBB') {
                             result.Start = parseInt(dbStart);
                             if (result.Start >= 0) {
@@ -625,18 +644,18 @@ function S7client(_data, _logger, _events, _runtime) {
                         case 'IW':
                         case 'ED':
                         case 'ID':
-                            return { Area: S7AreaPE, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: s7client['S7AreaPE'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         case 'AB':
                         case 'QB':
                         case 'AW':
                         case 'QW':
                         case 'AD':
                         case 'QD':
-                            return { Area: S7AreaPA, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: s7client['S7AreaPA'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         case 'MB':
                         case 'MW':
                         case 'MD':
-                            return { Area: S7AreaMK, WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
+                            return { Area: s7client['S7AreaMK'], WordLen: len, Start: parseInt(variable.substring(2)), Amount: 1, type: type };
                         default:
                             len = datatypes['BYTE'].S7WordLen;
                             var start = parseInt(variable.substring(1, variable.indexOf('.')));
@@ -644,12 +663,12 @@ function S7client(_data, _logger, _events, _runtime) {
                             switch (prefix.substring(0, 1)) {
                                 case 'E':
                                 case 'I':
-                                    return { Area: S7AreaPE, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: s7client['S7AreaPE'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'A':
                                 case 'Q':
-                                    return { Area: S7AreaPA, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: s7client['S7AreaPA'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'M':
-                                    return { Area: S7AreaMK, WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
+                                    return { Area: s7client['S7AreaMK'], WordLen: len, Start: start, Amount: 1, type: type, bit: bit };
                                 case 'O':
                                 case 'T':
                                 case 'Z':
@@ -673,14 +692,8 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _getErr = function (s7err) {
         if (Array.isArray(s7err)) return new Error('Errors: ' + s7err.join('; '));
-        if (s7client) { return new Error(s7client.ErrorText(s7err)); }
-        return new Error('S7 error code: ' + s7err);
+        return new Error(s7client.ErrorText(s7err));
     }
-
-    // 降低进程退出时 native 清理冲突概率
-    process.on('exit', function () {
-        if (s7client) s7client = null;
-    });
 }
 
 module.exports = {
@@ -689,7 +702,6 @@ module.exports = {
     },
     create: function (data, logger, events, manager, runtime) {
         if (!loadSnap7Lib(manager)) return null;
-        datatypes = require('./datatypes')(snap7.S7Client ? snap7.S7Client() : snap7);
         return new S7client(data, logger, events, runtime);
     }
 }

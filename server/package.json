@@ -1,12 +1,13 @@
 {
   "name": "fuxa-server",
-  "version": "1.3.4-PRO",
+  "version": "1.3.4-2890",
   "description": "Web-based Process Visualization (SCADA/HMI/Dashboard) software",
   "main": "main.js",
   "scripts": {
     "test": "mocha --recursive --timeout 10000",
     "start": "node main.js",
-    "build": "tsc"
+    "build": "tsc",
+    "postinstall": "node scripts/patch-nodered.js"
   },
   "author": "frangoteam <info@frangoteam.org>",
   "license": "Customized MIT",
@@ -31,6 +32,7 @@
     "express-rate-limit": "5.5.1",
     "fontkit": "^2.0.2",
     "fs-extra": "7.0.1",
+    "got": "11.8.6",
     "influx": "5.9.3",
     "jsonwebtoken": "^9.0.3",
     "morgan": "1.10.1",

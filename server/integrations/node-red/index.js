@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const serverDir = path.join(__dirname, '..', '..');
 
 const BLOCKED_DEVICE_PROPERTY_KEYS = new Set([
     '__proto__',

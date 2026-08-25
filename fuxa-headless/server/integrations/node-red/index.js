@@ -3,47 +3,97 @@
 
 const fs = require('fs');
 const path = require('path');
+const serverDir = path.join(__dirname, '..', '..');
 
-const BLOCKED_DEVICE_PROPERTY_KEYS = new Set(['__proto__', 'prototype', 'constructor', 'password', 'pass', 'secret', 'token', 'apikey', 'api_key', 'privatekey', 'private_key', 'certificate', 'cert', 'key']);
-const READABLE_DEVICE_PROPERTY_KEYS = new Set(['address', 'baudRate', 'broker', 'clientId', 'cycle', 'dataBits', 'endpoint', 'namespace', 'parity', 'polling', 'port', 'rack', 'slot', 'station', 'stopBits', 'timeout', 'topic', 'unitId']);
-const WRITABLE_DEVICE_PROPERTY_KEYS = new Set(['cycle', 'polling', 'timeout']);
+const BLOCKED_DEVICE_PROPERTY_KEYS = new Set([
+    '__proto__',
+    'prototype',
+    'constructor',
+    'password',
+    'pass',
+    'secret',
+    'token',
+    'apikey',
+    'api_key',
+    'privatekey',
+    'private_key',
+    'certificate',
+    'cert',
+    'key',
+]);
 
-function createDevicePropertyHelpers(devices) {
-    const validate = (property, allowed, action) => {
-        if (typeof property !== 'string') throw new Error(`Device property '${property}' is not ${action}`);
-        const key = property.trim();
-        if (!key || key.includes('.') || key.includes('[') || key.includes(']') || BLOCKED_DEVICE_PROPERTY_KEYS.has(key.toLowerCase()) || !allowed.has(key)) throw new Error(`Device property '${property}' is not ${action}`);
-        return key;
-    };
-    return {
-        getDeviceProperty(deviceName, property) {
-            const key = validate(property, READABLE_DEVICE_PROPERTY_KEYS, 'readable');
-            const value = devices.getDeviceProperty(deviceName);
-            return value && Object.prototype.hasOwnProperty.call(value, key) ? value[key] : undefined;
-        },
-        setDeviceProperty(deviceName, property, value) {
-            const key = validate(property, WRITABLE_DEVICE_PROPERTY_KEYS, 'writable');
-            if (value !== null && !['string', 'number', 'boolean'].includes(typeof value)) throw new Error(`Device property '${property}' value must be a scalar`);
-            const current = devices.getDeviceProperty(deviceName);
-            if (!current) return null;
-            current[key] = value;
-            return devices.setDeviceProperty(deviceName, current);
-        },
-    };
+const READABLE_DEVICE_PROPERTY_KEYS = new Set([
+    'address',
+    'baudRate',
+    'broker',
+    'clientId',
+    'cycle',
+    'dataBits',
+    'endpoint',
+    'namespace',
+    'parity',
+    'polling',
+    'port',
+    'rack',
+    'slot',
+    'station',
+    'stopBits',
+    'timeout',
+    'topic',
+    'unitId',
+]);
+
+const WRITABLE_DEVICE_PROPERTY_KEYS = new Set([
+    'cycle',
+    'polling',
+    'timeout',
+]);
+
+function normalizeDevicePropertyKey(property) {
+    if (typeof property !== 'string') {
+        return null;
+    }
+    const key = property.trim();
+    if (!key || key.includes('.') || key.includes('[') || key.includes(']')) {
+        return null;
+    }
+    return key;
 }
 
-function createNodeRedAuthMiddleware({ settings, runtime, authJwt }) {
-    return (req, res, next) => {
-        if (req.baseUrl === '/dashboard') return next();
-        if (!settings.secureEnabled || settings.nodeRedAuthMode === 'legacy-open') return next();
-        const apiKey = req.headers['x-api-key'];
-        if (apiKey) return runtime.apiKeys.getApiKeys().then(keys => keys.some(k => k && k.key === apiKey && k.enabled !== false && (!k.expires || new Date(k.expires).getTime() > Date.now())) ? next() : res.status(401).json({ error: 'unauthorized_error', message: 'Invalid API Key' })).catch(() => res.status(500).json({ error: 'unexpected_error', message: 'ApiKey validation failed' }));
-        const token = req.headers['x-access-token'] || req.query?.token;
-        if (!token) return res.status(401).json({ error: 'unauthorized_error', message: 'Authentication required!' });
-        return authJwt.verifyAndDecode(token).then(decoded => {
-            if (!decoded?.id || decoded.type === 'refresh' || authJwt.isGuestUser(decoded.id, decoded.groups)) return res.status(403).json({ error: 'forbidden_error', message: 'Authenticated user required!' });
-            return next();
-        }).catch(() => res.status(401).json({ error: 'unauthorized_error', message: 'Invalid token!' }));
+function assertAllowedDeviceProperty(property, allowedKeys, action) {
+    const key = normalizeDevicePropertyKey(property);
+    if (!key || BLOCKED_DEVICE_PROPERTY_KEYS.has(key.toLowerCase()) || !allowedKeys.has(key)) {
+        throw new Error(`Device property '${property}' is not ${action}`);
+    }
+    return key;
+}
+
+function isSafeDevicePropertyValue(value) {
+    return value === null || ['string', 'number', 'boolean'].includes(typeof value);
+}
+
+function createDevicePropertyHelpers(devices) {
+    return {
+        getDeviceProperty(deviceName, property) {
+            const key = assertAllowedDeviceProperty(property, READABLE_DEVICE_PROPERTY_KEYS, 'readable');
+            const deviceProperty = devices.getDeviceProperty(deviceName);
+            if (!deviceProperty || !Object.prototype.hasOwnProperty.call(deviceProperty, key)) {
+                return undefined;
+            }
+            return deviceProperty[key];
+        },
+        setDeviceProperty(deviceName, property, value) {
+            const key = assertAllowedDeviceProperty(property, WRITABLE_DEVICE_PROPERTY_KEYS, 'writable');
+            if (!isSafeDevicePropertyValue(value)) {
+                throw new Error(`Device property '${property}' value must be a scalar`);
+            }
+
+            const deviceProperty = devices.getDeviceProperty(deviceName);
+            if (!deviceProperty) return null;
+
+            deviceProperty[key] = value;
+            return devices.setDeviceProperty(deviceName, deviceProperty);
+        },
     };
 }
 
@@ -64,6 +114,98 @@ function tryRequireNodeRed(runtime) {
     }
 }
 
+const getCookieValue = (req, name) => {
+    const cookieHeader = req.headers.cookie;
+    if (!cookieHeader) return null;
+    const cookies = cookieHeader.split(';');
+    for (const cookie of cookies) {
+        const [key, ...rest] = cookie.trim().split('=');
+        if (key === name) {
+            return rest.join('=');
+        }
+    }
+    return null;
+};
+
+const verifyApiKey = (runtime, apiKey) => {
+    return runtime.apiKeys.getApiKeys().then(stored => {
+        const now = Date.now();
+        return stored.find(k => {
+            if (!k || k.key !== apiKey || k.enabled === false) {
+                return false;
+            }
+            if (!k.expires) {
+                return true;
+            }
+            const expiresAt = new Date(k.expires).getTime();
+            return !isNaN(expiresAt) && expiresAt > now;
+        });
+    });
+};
+
+function createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt }) {
+    // Allow only dashboard routes as public; require an authenticated user or API key for the editor.
+    return (req, res, next) => {
+        // Public dashboard UI and its HTTP APIs (served from httpNodeRoot/ui.path).
+        // baseUrl comes from Express mount point and is not affected by query/path tricks.
+        if (req.baseUrl === '/dashboard') return next();
+
+        if (!settings.secureEnabled || settings.nodeRedAuthMode === 'legacy-open') {
+            return next();
+        }
+
+        const apiKey = req.headers['x-api-key'];
+        if (apiKey) {
+            return verifyApiKey(runtime, apiKey)
+                .then(validKey => {
+                    if (!validKey) {
+                        return res.status(401).json({ error: "unauthorized_error", message: "Invalid API Key" });
+                    }
+                    return next();
+                })
+                .catch(err => {
+                    logger.error(`api-key validation failed: ${err}`);
+                    return res.status(500).json({ error: "unexpected_error", message: "ApiKey validation failed" });
+                });
+        }
+
+        const headerToken = req.headers['x-access-token'];
+        const queryToken = req.query?.token;
+        const cookieToken = getCookieValue(req, 'nodered_auth');
+        // Prefer explicit tokens over cookie to avoid stale cookie blocking valid logins
+        const token = headerToken || queryToken || cookieToken;
+        if (!token) {
+            return res.status(401).json({ error: "unauthorized_error", message: "Authentication required!" });
+        }
+
+        return authJwt.verifyAndDecode(token)
+            .then(decoded => {
+                if (!decoded?.id || decoded.type === 'refresh' || authJwt.isGuestUser(decoded.id, decoded.groups)) {
+                    return res.status(403).json({ error: "forbidden_error", message: "Authenticated user required!" });
+                }
+                if (queryToken) {
+                    res.cookie('nodered_auth', token, {
+                        httpOnly: true,
+                        sameSite: 'lax',
+                        secure: !!settings.https,
+                    });
+                    if (req.method === 'GET') {
+                        const cleanUrl = new URL(req.originalUrl, `http://${req.headers.host}`);
+                        cleanUrl.searchParams.delete('token');
+                        return res.redirect(cleanUrl.pathname + cleanUrl.search);
+                    }
+                }
+                return next();
+            })
+            .catch(() => {
+                if (cookieToken) {
+                    res.clearCookie('nodered_auth');
+                }
+                return res.status(401).json({ error: "unauthorized_error", message: "Invalid token!" });
+            });
+    };
+}
+
 async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events }) {
     const RED = tryRequireNodeRed(runtime);
     if (!RED) {
@@ -78,9 +220,7 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
         fs.mkdirSync(userDir, { recursive: true });
     }
 
-    // Server code root in pkg snapshot (use __dirname to work in both dev and EXE)
-    const serverDir = path.join(__dirname, '..', '..');
-    const devices = require(path.join(settings.appDir, 'runtime/devices'));
+    const devices = require(path.join(serverDir, 'runtime/devices'));
     const devicePropertyHelpers = createDevicePropertyHelpers(devices);
 
     // Minimal Node-RED settings; extend only what is really needed
@@ -177,92 +317,7 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
     // Initialize Node-RED on the existing HTTP server (must be done before server.listen)
     RED.init(server, redSettings);
 
-    const getCookieValue = (req, name) => {
-        const cookieHeader = req.headers.cookie;
-        if (!cookieHeader) return null;
-        const cookies = cookieHeader.split(';');
-        for (const cookie of cookies) {
-            const [key, ...rest] = cookie.trim().split('=');
-            if (key === name) {
-                return rest.join('=');
-            }
-        }
-        return null;
-    };
-
-    const verifyApiKey = (runtimeRef, apiKey) => {
-        return runtimeRef.apiKeys.getApiKeys().then(stored => {
-            const now = Date.now();
-            return stored.find(k => {
-                if (!k || k.key !== apiKey || k.enabled === false) {
-                    return false;
-                }
-                if (!k.expires) {
-                    return true;
-                }
-                const expiresAt = new Date(k.expires).getTime();
-                return !isNaN(expiresAt) && expiresAt > now;
-            });
-        });
-    };
-
-    // Allow only dashboard routes as public; require JWT or API key for admin/editor/flows when security is enabled
-    const allowDashboard = (req, res, next) => {
-        // Public dashboard UI and its HTTP APIs (served from httpNodeRoot/ui.path).
-        // baseUrl comes from Express mount point and is not affected by query/path tricks.
-        if (req.baseUrl === '/dashboard') return next();
-
-        if (!settings.secureEnabled || settings.nodeRedAuthMode === 'legacy-open') {
-            return next();
-        }
-
-        const apiKey = req.headers['x-api-key'];
-        if (apiKey) {
-            return verifyApiKey(runtime, apiKey)
-                .then(validKey => {
-                    if (!validKey) {
-                        return res.status(401).json({ error: "unauthorized_error", message: "Invalid API Key" });
-                    }
-                    return next();
-                })
-                .catch(err => {
-                    logger.error(`api-key validation failed: ${err}`);
-                    return res.status(500).json({ error: "unexpected_error", message: "ApiKey validation failed" });
-                });
-        }
-
-        const headerToken = req.headers['x-access-token'];
-        const queryToken = req.query?.token;
-        const cookieToken = getCookieValue(req, 'nodered_auth');
-        // Prefer explicit tokens over cookie to avoid stale cookie blocking valid logins
-        const token = headerToken || queryToken || cookieToken;
-        if (!token) {
-            return res.status(401).json({ error: "unauthorized_error", message: "Authentication required!" });
-        }
-
-        return authJwt.verify(token)
-            .then(() => {
-                if (queryToken) {
-                    res.cookie('nodered_auth', token, {
-                        httpOnly: true,
-                        sameSite: 'lax',
-                        secure: !!settings.https,
-                    });
-                    if (req.method === 'GET') {
-                        const cleanUrl = new URL(req.originalUrl, `http://${req.headers.host}`);
-                        cleanUrl.searchParams.delete('token');
-                        return res.redirect(cleanUrl.pathname + cleanUrl.search);
-                    }
-                }
-                return next();
-            })
-            .catch(() => {
-                if (cookieToken) {
-                    res.clearCookie('nodered_auth');
-                }
-                return res.status(401).json({ error: "unauthorized_error", message: "Invalid token!" });
-            });
-    };
+    const allowDashboard = createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt });
 
     // Mount Node-RED admin/editor under /nodered; HTTP nodes (including dashboard)
     // are served from httpNodeRoot ('/dashboard') so they appear at /dashboard/... etc.
@@ -336,4 +391,4 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
     logger.info('[Node-RED] Started at /nodered');
 }
 
-module.exports = { mountNodeRedIfInstalled };
+module.exports = { mountNodeRedIfInstalled, createNodeRedAuthMiddleware, createDevicePropertyHelpers };

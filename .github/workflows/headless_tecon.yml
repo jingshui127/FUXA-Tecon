@@ -68,14 +68,14 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.pkg-cache
-        key: ${{ runner.os }}-pkg-node18-${{ hashFiles('fuxa-headless/package.json') }}
+        key: ${{ runner.os }}-pkg-node18-${{ hashFiles('server/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-pkg-node18-
 
     - name: Install yao-pkg
       run: npm install -g @yao-pkg/pkg@6.13.1
 
-    - name: Build Standalone EXE (Node.js 18 + GZip)
+    - name: Build Standalone EXE (Node.js 18, no compression)
       shell: pwsh
       run: |
         $ErrorActionPreference = 'Stop'

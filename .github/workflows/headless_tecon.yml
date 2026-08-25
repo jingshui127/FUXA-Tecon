@@ -49,9 +49,12 @@ jobs:
         New-Item -ItemType Directory -Force -Path fuxa-headless/server, fuxa-headless/client/dist | Out-Null
         robocopy server fuxa-headless/server /E /NFL /NDL /NJH /NJS /NP /XD node_modules .git
         if ($LASTEXITCODE -gt 7) { throw "robocopy server failed with exit code $LASTEXITCODE" }
+        $global:LASTEXITCODE = 0
         robocopy client/dist fuxa-headless/client/dist /E /NFL /NDL /NJH /NJS /NP
         if ($LASTEXITCODE -gt 7) { throw "robocopy client failed with exit code $LASTEXITCODE" }
+        $global:LASTEXITCODE = 0
         Copy-Item app/headless/headless-guardian.js fuxa-headless/main.js -Force
+        $global:LASTEXITCODE = 0
 
     - name: Prepare Headless Dependencies
       shell: pwsh

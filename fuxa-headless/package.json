@@ -2,16 +2,60 @@
   "name": "fuxa-pro-headless",
   "version": "1.3.4-PRO",
   "bin": "main.js",
+  "scripts": {
+    "postinstall": "node server/scripts/patch-nodered.js"
+  },
+  "dependencies": {
+    "@influxdata/influxdb-client": "1.25.0",
+    "@questdb/nodejs-client": "^3.0.0",
+    "@tdengine/rest": "3.0.2",
+    "app-root-path": "2.2.1",
+    "async": "3.2.3",
+    "async-mutex": "0.5.0",
+    "axios": "^1.16.1",
+    "bcryptjs": "2.4.3",
+    "bluebird": "3.7.2",
+    "body-parser": "^1.20.5",
+    "csv-parser": "3.0.0",
+    "dayjs": "1.11.9",
+    "express": "^4.22.2",
+    "express-rate-limit": "5.5.1",
+    "fontkit": "^2.0.2",
+    "fs-extra": "7.0.1",
+    "got": "11.8.6",
+    "influx": "5.9.3",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "1.10.1",
+    "mqtt": "4.3.7",
+    "node-red": "^4.1.10",
+    "node-schedule": "2.1.1",
+    "nodemailer": "^8.0.8",
+    "nopt": "5.0.0",
+    "pdfmake": "0.2.5",
+    "pg": "^8.18.0",
+    "serialport": "12.0.0",
+    "socket.io": "^4.8.3",
+    "sqlite3": "^5.1.7",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "3.7.2",
+    "ws": "^8.21.0",
+    "yamljs": "^0.3.0"
+  },
+  "overrides": {
+    "body-parser": "$body-parser",
+    "brace-expansion": "2.0.3",
+    "express": "$express",
+    "ip-address": "10.1.1",
+    "picomatch": "4.0.4",
+    "qs": "6.15.2",
+    "tar": "^7.5.15"
+  },
   "pkg": {
-    "assets": ["server/**/*", "client/dist/**/*", "_reports/**/*"],
+    "assets": ["server/**/*", "node_modules/**/*", "client/dist/**/*", "_reports/**/*"],
     "publicPackages": [
-      "node-snap7",
-      "sqlite3",
-      "serialport",
-      "@serialport/bindings-cpp",
-      "@serialport/parser-readline",
-      "@serialport/parser-regex"
+      "bindings",
+      "@serialport/bindings-cpp"
     ],
-    "compression": "GZip"
+    "compression": "None"
   }
 }

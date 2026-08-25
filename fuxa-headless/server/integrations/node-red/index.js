@@ -225,7 +225,7 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
 
     // Minimal Node-RED settings; extend only what is really needed
     const redSettings = {
-        httpAdminRoot: '/nodered/',
+        httpAdminRoot: '/flows/',
         // Serve Node-RED HTTP nodes under /dashboard to avoid intercepting FUXA routes
         httpNodeRoot: '/dashboard',
         userDir,
@@ -319,8 +319,9 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
 
     const allowDashboard = createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt });
 
-    // Mount Node-RED admin/editor under /nodered; HTTP nodes (including dashboard)
-    // are served from httpNodeRoot ('/dashboard') so they appear at /dashboard/... etc.
+    // Mount Node-RED admin/editor under /flows; keep /nodered as a compatibility alias.
+    // HTTP nodes (including dashboard) are served from httpNodeRoot ('/dashboard').
+    app.use('/flows', allowDashboard, RED.httpAdmin);
     app.use('/nodered', allowDashboard, RED.httpAdmin);
     app.use('/dashboard', allowDashboard, RED.httpNode);
 
@@ -388,7 +389,7 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
         });
     }
 
-    logger.info('[Node-RED] Started at /nodered');
+    logger.info('[Node-RED] Started at /flows (dashboard: /dashboard)');
 }
 
 module.exports = { mountNodeRedIfInstalled, createNodeRedAuthMiddleware, createDevicePropertyHelpers };

@@ -201,29 +201,10 @@ function _checkPluginsSupported() {
         pg.current = '';
         pg.canRemove = false;
     });
-    
-    // First try to detect plugins using require.resolve
-    Object.values(registry).forEach((pg) => {
-        try {
-            const pkgPath = require.resolve(pg.name);
-            const pkgDir = path.dirname(pkgPath);
-            const pkgJsonPath = path.join(pkgDir, 'package.json');
-            if (fs.existsSync(pkgJsonPath)) {
-                const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));
-                pg.current = pkgJson.version;
-            } else {
-                pg.current = 'installed';
-            }
-        } catch (e) {
-            // Plugin not found
-        }
-    });
-    
-    // Then try the traditional method
     const installed = _scanInstalledPlugins();
     const rootPackages = installed.rootPackages;
     Object.entries(rootPackages).forEach(([name, version]) => {
-        if (registry[name] && !registry[name].current) {
+        if (registry[name]) {
             registry[name].current = version;
         }
     });
@@ -262,9 +243,6 @@ function _getRootNodeModules() {
     let modulePath = path.resolve(__dirname, '../../node_modules');
     if (!fs.existsSync(modulePath)) {
         modulePath = path.resolve(__dirname, '../../../node_modules');
-    }
-    if (!fs.existsSync(modulePath)) {
-        modulePath = path.resolve(__dirname, '../node_modules');
     }
     return modulePath;
 }
@@ -318,6 +296,7 @@ function createDefaultPlugins() {
     registry['node-snap7'] = new Plugin('node-snap7', './s7', 'SiemensS7', '1.0.9', PluginGroupType.connectionDevice, true);
     registry['ads-client'] = new Plugin('ads-client', './adsclient', 'ADSclient', '2.1.0', PluginGroupType.connectionDevice, true);
     registry['nodepccc'] = new Plugin('nodepccc', './ethernetip', 'EthernetIP', '0.1.17', PluginGroupType.connectionDevice, true);
+    registry['omron-ethernet-ip'] = new Plugin('omron-ethernet-ip', './omron-ethernetip', 'OmronEthernetIP', '0.0.2', PluginGroupType.connectionDevice, true);
     registry['odbc'] = new Plugin('odbc', './odbc', 'ODBC', '2.4.9', PluginGroupType.connectionDatabase, true);
     registry['chart.js'] = new Plugin('chart.js', './chartjs', 'Chart', '2.9.4', PluginGroupType.chartReport, true);
     registry['chartjs-node-canvas'] = new Plugin('chartjs-node-canvas', 'chartjs-canvas', 'Chart', '3.2.0', PluginGroupType.chartReport, true);

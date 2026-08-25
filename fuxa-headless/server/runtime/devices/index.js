@@ -29,11 +29,7 @@ function start() {
     return new Promise(function (resolve, reject) {
         // runtime.logger.info('devices.start-all (' + Object.keys(activeDevices).length + ')', true);
         for (var id in activeDevices) {
-            try {
-                activeDevices[id].start();
-            } catch (err) {
-                runtime.logger.error(`devices.start '${id}' failed: ${err.message}`);
-            }
+            activeDevices[id].start();
         }
         resolve();
         wokingStatus = null;
@@ -46,17 +42,25 @@ function start() {
 function stop() {
     wokingStatus = 'stopping';
     return new Promise(function (resolve, reject) {
-        // runtime.logger.info('devices.stop-all (' + Object.keys(activeDevices).length + ')');
         var deviceStopfnc = [];
         for (var id in activeDevices) {
-            deviceStopfnc.push(Promise.resolve().then(() => activeDevices[id].stop()).catch(err => {
-                runtime.logger.error(`devices.stop '${id}' failed: ${err.message}`);
-            }));
+            var dev = activeDevices[id];
+            try {
+                var p = dev.stop();
+                if (p && typeof p.catch === 'function') {
+                    p.catch(function (err) {
+                        runtime.logger.error('devices.stop: ' + dev.name + ' - ' + err.message);
+                    });
+                }
+                deviceStopfnc.push(p);
+            } catch (err) {
+                runtime.logger.error('devices.stop: ' + dev.name + ' - ' + err.message);
+            }
         }
-        return Promise.all(deviceStopfnc).then(values => {
+        return Promise.all(deviceStopfnc).then(function (values) {
             resolve(true);
             wokingStatus = null;
-        }, reason => {
+        }, function (reason) {
             runtime.logger.error('devices.stop-all: ' + reason);
             resolve(reason);
             wokingStatus = null;

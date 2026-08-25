@@ -1,7 +1,6 @@
-# FUXA Pro 通讯插件部署指南
+# FUXA PRO 1.3.4-PRO 插件与 Node-RED 部署指南
 
-## 概述
-本文档记录了 FUXA Pro 通讯插件的安装、打包流程及常见问题修复方案，旨在帮助开发人员快速部署和维护通讯插件。
+本文档适用于当前 `fuxa-pro-headless.exe`。网页安装的插件、Node-RED 流程和 FUXA 数据均保存在 EXE 同目录的 `data\` 中。
 
 ## 通讯插件列表
 
@@ -13,99 +12,73 @@
 | BACnet | node-bacnet | ^0.2.4 | Pure JS | ✅ 正常 |
 | ADS | ads-client | ^2.1.0 | Native | ✅ 正常 |
 
-## 安装步骤
+## 安装方式
 
-### 1. 安装依赖
+### 当前推荐：网页插件管理
+
+启动 `fuxa-pro-headless.exe` 后，在 FUXA 中打开：
+
+```text
+http://127.0.0.1:1881/plugins
+```
+
+在此页面安装或更新通讯插件。插件运行时目录为：
+
+```text
+<EXE目录>\data\_pkg\runtime\node_modules\
+```
+
+复制 EXE 到其他 Windows x64 电脑时，同时复制完整的 `data\` 文件夹即可保留已安装的插件和配置，通常无需重新安装。
+
+### 历史方案：手工 npm 安装
+
+以下命令仅用于旧版本、离线构建或明确要求将插件内置到 EXE 的场景，不是当前运行时安装方式：
+
 ```bash
 cd server
 npm install modbus-serial@8.0.19 node-snap7@1.0.9 node-opcua@2.149.0 node-bacnet@0.2.4 ads-client@2.1.0
 ```
 
-### 2. 同步依赖到 fuxa-headless
-```bash
-cd ../fuxa-headless
-npm install modbus-serial@8.0.19 node-snap7@1.0.9 node-opcua@2.149.0 node-bacnet@0.2.4 ads-client@2.1.0
-```
-
-### 3. 更新 package.json
-确保 `server/package.json` 和 `fuxa-headless/package.json` 中包含所有通讯插件依赖。
+Node-RED 本体是 FUXA 的内置服务依赖，不等同于网页通讯插件。它的管理编辑器入口是 `/flows`，兼容入口是 `/nodered`，Dashboard/HTTP 节点入口是 `/dashboard`。
 
 ## pkg 打包配置
 
-### package.json 配置（关键）
+### 当前 EXE 打包配置
 ```json
 {
-  "name": "FuxaPro-Single",
-  "version": "1.3.2-PRO",
-  "bin": "server/headless-start.js",
+  "name": "fuxa-pro-headless",
+  "version": "1.3.4-PRO",
+  "bin": "main.js",
   "pkg": {
-    "assets": [
-      "server/**/*",
-      "client/dist/**/*",
-      "_reports/**/*",
-      "node_modules/@serialport/**/*"
-    ],
-    "compression": "Brotli"
+    "assets": ["server/**/*", "node_modules/**/*", "client/dist/**/*", "_reports/**/*"],
+    "publicPackages": ["bindings", "@serialport/bindings-cpp"],
+    "compression": "None"
   }
 }
 ```
 
-**重要**: `"bin"` 必须设置为 `"server/headless-start.js"`，而不是 `"main.js"`。
-
-### 打包命令
+### 当前打包命令
 ```powershell
 cd fuxa-headless
-pkg package.json --targets node18-win-x64 --out-path ../artifacts --public-packages "node-snap7,bindings,nan,@serialport/bindings-cpp"
+pkg package.json --targets node18-win-x64 --output ../artifacts/fuxa-pro-headless.exe --public-packages "bindings,@serialport/bindings-cpp"
 ```
 
-**注意**: 打包前必须确保没有正在运行的 FuxaPro-Single.exe 进程。
+不再使用旧的 `FuxaPro-Single.exe`、`_appdata` 或 GZip 配置。
 
-### 默认数据目录配置
-默认数据目录已修改为 exe 文件的同目录下的 `_appdata` 文件夹。
+### 当前数据目录配置
+数据目录是 EXE 同目录下的 `data` 文件夹，由 `headless-guardian.js` 自动创建。
 
-**修改文件**: 
-- `server/headless-start.js`
-- `fuxa-headless/server/headless-start.js`
-
-```javascript
-// headless-start.js 关键代码
-const exePath = process.execPath;
-const exeDir = path.dirname(exePath);
-const fuxaDataDir = path.join(exeDir, '_appdata');
-
-// 创建数据目录
-if (!fs.existsSync(fuxaDataDir)) {
-    fs.mkdirSync(fuxaDataDir, { recursive: true });
-}
-
-// 启动服务器 - 注意：传递 execDir 而不是 fuxaDataDir
-const serverProcess = fork(serverPath, [], {
-    env: { ...process.env, userDir: execDir },
-    stdio: 'inherit'
-});
+```text
+fuxa-pro-headless.exe
+└─ data\
+   ├─ _pkg\runtime\node_modules\   # 网页安装的 npm 插件
+   ├─ node-red\flows.json          # Node-RED 流程
+   ├─ _db\                         # SQLite 数据
+   ├─ _logs\                       # 日志
+   └─ 其他运行目录
 ```
 
-**关键配置说明**:
-| 配置项 | 值 | 说明 |
-|--------|-----|------|
-| `"bin"` | `server/headless-start.js` | pkg 入口文件 |
-| `process.execPath` | exe 所在路径 | 获取运行位置 |
-| `userDir` | `execDir` | 传递给 main.js 的根目录 |
-
-这样配置后，数据目录结构如下：
-```
-D:\FUXA\FUXApro1.3.1已部署版\artifacts\
-├── FuxaPro-Single.exe          # 可执行文件
-└── _appdata/                    # 数据目录（自动创建）
-    ├── _db/                     # 数据库文件
-    ├── _logs/                   # 日志文件
-    ├── _upload_files/           # 上传文件目录
-    ├── _images/                 # 图片资源
-    ├── _widgets/                # 小部件资源
-    ├── _reports/                # 报告文件
-    ├── settings.js              # 配置文件
-    └── fuxa.db                  # SQLite 数据库
-```
+迁移到其他电脑时，必须复制整个 `data\` 文件夹。
 
 ## 核心代码修改清单
 

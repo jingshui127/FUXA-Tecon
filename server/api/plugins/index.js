@@ -39,7 +39,7 @@ module.exports = {
                     // res.header("Access-Control-Allow-Origin", "*");
                     // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                     if (result) {
-                        res.json(result);
+                        res.json(filterHiddenPlugins(result));
                     } else {
                         res.end();
                     }
@@ -106,4 +106,11 @@ module.exports = {
         });
         return pluginsApp;
     }
+}
+
+function filterHiddenPlugins(plugins) {
+    if (!runtime.settings.hideNodeRedOptions) {
+        return plugins;
+    }
+    return plugins.filter(plugin => (plugin.name || '').toLowerCase() !== 'node-red');
 }

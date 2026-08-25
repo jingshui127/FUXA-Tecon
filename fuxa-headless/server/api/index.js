@@ -80,15 +80,6 @@ function init(_server, _runtime) {
             apiKeysApi.init(runtime, authMiddleware, verifyGroups);
             apiApp.use(apiKeysApi.app());
 
-            const limiter = rateLimit({
-                windowMs: 5 * 60 * 1000, // 5 minutes
-                max: 100, // limit each IP to 100 requests per windowMs
-                // Keep lightweight health/version checks unthrottled
-                skip: (req) => req.path === '/api/version'
-            });
-
-            //  apply to all requests
-            apiApp.use(limiter);
 
             apiApp.use((err, req, res, next) => {
                 if (err?.type === 'entity.too.large') {
@@ -109,16 +100,12 @@ function init(_server, _runtime) {
             /**
              * GET Server setting data
              */
-            apiApp.get('/api/settings', function (req, res) {
+            apiApp.get('/api/settings', authMiddleware, function (req, res) {
                 if (runtime.settings) {
-                    let tosend = JSON.parse(JSON.stringify(runtime.settings));
-                    delete tosend.secretCode;
-                    if (tosend.smtp) {
-                        delete tosend.smtp.password;
-                    }
-                    if (tosend.daqstore?.credentials) {
-                        delete tosend.daqstore.credentials;
-                    }
+                    const permission = verifyGroups(req);
+                    const tosend = authJwt.haveAdminPermission(permission)
+                        ? getSanitizedSettings(runtime.settings)
+                        : getPublicSettings(runtime.settings);
                     // res.header("Access-Control-Allow-Origin", "*");
                     // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
                     res.json(tosend);
@@ -165,8 +152,10 @@ function init(_server, _runtime) {
                             runtime.settings.nodeRedEnabled === false) {
                             req.body.nodeRedAuthMode = 'secure';
                         }
-                        fs.writeFileSync(runtime.settings.userSettingsFile, JSON.stringify(req.body, null, 4));
-                        mergeUserSettings(req.body);
+                        const settingsToSave = Object.assign({}, req.body);
+                        delete settingsToSave.hideNodeRedOptions;
+                        fs.writeFileSync(runtime.settings.userSettingsFile, JSON.stringify(settingsToSave, null, 4));
+                        mergeUserSettings(settingsToSave);
                         if (prevAuth.secureEnabled !== runtime.settings.secureEnabled ||
                             prevAuth.tokenExpiresIn !== runtime.settings.tokenExpiresIn ||
                             prevAuth.enableRefreshCookieAuth !== runtime.settings.enableRefreshCookieAuth ||
@@ -188,7 +177,7 @@ function init(_server, _runtime) {
             /**
              * GET Heartbeat to check token
              */
-            apiApp.post('/api/heartbeat', authMiddleware, function (req, res) {
+            apiApp.post('/api/heartbeat', authMiddleware, async function (req, res) {
 
                 if (!runtime.settings.secureEnabled) {
                     return res.end();
@@ -203,10 +192,17 @@ function init(_server, _runtime) {
                         });
                     }
 
+                    const currentUser = await getCurrentTokenUser(req);
+                    if (!currentUser) {
+                        return res.status(401).json({ error: 'unauthorized_error', message: 'Unauthorized!' });
+                    }
+
+                    req.userGroups = currentUser.groups;
                     const token = authJwt.getNewTokenFromRequest(req);
                     return res.status(200).json({
                         message: 'tokenRefresh',
-                        token
+                        token,
+                        data: currentUser
                     });
                 }
 
@@ -228,6 +224,32 @@ function init(_server, _runtime) {
     });
 }
 
+function getPublicSettings(settings) {
+    const tosend = getSanitizedSettings(settings);
+    if (tosend.smtp) {
+        delete tosend.smtp.host;
+        delete tosend.smtp.port;
+        delete tosend.smtp.username;
+    }
+    if (tosend.daqstore) {
+        delete tosend.daqstore.url;
+        delete tosend.daqstore.host;
+    }
+    return tosend;
+}
+
+function getSanitizedSettings(settings) {
+    const tosend = JSON.parse(JSON.stringify(settings));
+    delete tosend.secretCode;
+    if (tosend.smtp) {
+        delete tosend.smtp.password;
+    }
+    if (tosend.daqstore?.credentials) {
+        delete tosend.daqstore.credentials;
+    }
+    return tosend;
+}
+
 function mergeUserSettings(settings) {
     if (settings.language) {
         runtime.settings.language = settings.language;
@@ -243,6 +265,21 @@ function mergeUserSettings(settings) {
         );
     }
     runtime.settings.broadcastAll = settings.broadcastAll;
+    if (!utils.isNullOrUndefined(settings.lazyViewLoading)) {
+        runtime.settings.lazyViewLoading = settings.lazyViewLoading;
+    }
+    if (!utils.isNullOrUndefined(settings.apiRateLimitWindowMs)) {
+        runtime.settings.apiRateLimitWindowMs = settings.apiRateLimitWindowMs;
+    }
+    if (!utils.isNullOrUndefined(settings.apiRateLimitMax)) {
+        runtime.settings.apiRateLimitMax = settings.apiRateLimitMax;
+    }
+    if (!utils.isNullOrUndefined(settings.authRateLimitWindowMs)) {
+        runtime.settings.authRateLimitWindowMs = settings.authRateLimitWindowMs;
+    }
+    if (!utils.isNullOrUndefined(settings.authRateLimitMax)) {
+        runtime.settings.authRateLimitMax = settings.authRateLimitMax;
+    }
     runtime.settings.secureEnabled = settings.secureEnabled;
     runtime.settings.logFull = settings.logFull;
     runtime.settings.userRole = settings.userRole;
@@ -282,6 +319,28 @@ function mergeUserSettings(settings) {
     }
 }
 
+async function getCurrentTokenUser(req) {
+    if (!req.isAuthenticated || authJwt.isGuestUser(req.userId, req.userGroups)) {
+        return null;
+    }
+
+    try {
+        const users = await runtime.users.getUsers({ username: req.userId });
+        if (users && users.length && !utils.isNullOrUndefined(users[0].groups)) {
+            return {
+                username: users[0].username,
+                fullname: users[0].fullname,
+                groups: users[0].groups,
+                info: users[0].info
+            };
+        }
+    } catch (err) {
+        runtime.logger.error(`api heartbeat: user lookup failed ${err}`);
+    }
+
+    return null;
+}
+
 function verifyGroups(req) {
     if (runtime.settings && runtime.settings.secureEnabled) {
         if (req.apiKey) {
@@ -291,6 +350,9 @@ function verifyGroups(req) {
             return (runtime.settings.userRole) ? null : 0;
         }
         const userInfo = runtime.users.getUserCache(req.userId);
+        if (req.isAuthenticated && !authJwt.isGuestUser(req.userId, req.userGroups) && !userInfo) {
+            return null;
+        }
         return (runtime.settings.userRole && req.userId !== 'admin') ? userInfo : userInfo ? userInfo.groups : req.userGroups;
     } else {
         return authJwt.adminGroups[0];
@@ -310,5 +372,7 @@ module.exports = {
 
     get apiApp() { return apiApp; },
     get server() { return server; },
-    get authJwt() { return authJwt; }
+    get authJwt() { return authJwt; },
+    _getPublicSettings: getPublicSettings,
+    _getSanitizedSettings: getSanitizedSettings
 };

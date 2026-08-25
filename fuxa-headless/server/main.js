@@ -58,9 +58,7 @@ if (parsedArgs.help) {
 
 // Define directory
 var rootDir = __dirname;
-// Use the directory where the executable is located as the default working directory
-var execDir = path.dirname(process.execPath);
-var workDir = path.join(execDir, '_appdata');
+var workDir = path.resolve(process.cwd(), '_appdata');
 
 if (process.env.userDir) {
     rootDir = process.env.userDir;
@@ -108,7 +106,7 @@ try {
     }
 
     settings.workDir = workDir;
-    settings.appDir = rootDir;
+    settings.appDir = __dirname;
     settings.packageDir = path.resolve(rootDir, '_pkg');
     settings.settingsFile = settingsFile;
     settings.environment = process.env.NODE_ENV || 'prod';
@@ -286,13 +284,13 @@ server.setMaxListeners(0);
 const io = socketIO(server, {
     pingInterval: 60000,    // send ping interval
     pingTimeout: 120000,    // close connection if pong is not received
-    allowEIO3: true,        //Whether to enable compatibility with Socket.IO v2 clients.
+    allowEIO3: true,        // Whether to enable compatibility with Socket.IO v2 clients.
     cors: {
         origin: "*",
         methods: ["GET", "POST"],
         credentials: false
     },
-    path: BASE_PATH + '/socket.io'
+    path: BASE_PATH + '/socket.io',
 });
 
 // Check settings value
@@ -303,53 +301,45 @@ if (!fs.existsSync(www)) {      // compatibility with docker/npm/electron
 
 settings.httpStatic = settings.httpStatic || www;
 
+// In-memory BASE_PATH, rewrites the in-memory copy to work with read-only deployments
 let indexHtmlCache = null;
-const rewrittenAssets = new Map();
+const rewrittenAssets = new Map(); // request path -> { content, type }
 
 if (BASE_PATH) {
+    // here, if a BASE_PATH is set, I push it in the base html, at runtime
     try {
         const indexHtmlPath = path.join(settings.httpStatic, 'index.html');
-        const desiredBase = BASE_PATH + '/';
+        const desiredBase = (BASE_PATH || '') + '/';
         const withBase = fs.readFileSync(indexHtmlPath, 'utf8')
-            .replace(/<base href="[^"]*"\s*\/?\s*>/, `<base href="${desiredBase}" />`);
+            .replace(/<base href="[^"]*"\s*\/?>/, `<base href="${desiredBase}" />`);
+        // hook for any runtime code that wants BASE_PATH without parsing <base>
         const bootstrap = `<script>window.__BASE_PATH__=${JSON.stringify(BASE_PATH)};</script>`;
         indexHtmlCache = withBase.replace('</head>', `${bootstrap}</head>`);
     } catch (err) {
-        logger.warn('Could not prepare <base href> from BASE_PATH: ' + err);
+        logger.warn('Could not prepare <base href> from BASE_PATH, if working under a reverse proxy check your BASE_PATH env var: ' + err);
     }
-
+    // and edit the references in .css/.js files, in memory only
     const collectAssets = (dir) => {
-        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-            const fullPath = path.join(dir, entry.name);
-            if (entry.isDirectory()) {
-                collectAssets(fullPath);
-            } else if (/\.(js|css)$/.test(entry.name)) {
-                const source = fs.readFileSync(fullPath, 'utf8');
-                const rewritten = source.replace(/(["'(])\/assets\//g, `$1${BASE_PATH}/assets/`);
-                if (rewritten !== source) {
-                    const requestPath = BASE_PATH + '/' + path.relative(settings.httpStatic, fullPath).split(path.sep).join('/');
-                    rewrittenAssets.set(requestPath, {
-                        content: rewritten,
-                        type: entry.name.endsWith('.css') ? 'text/css' : 'application/javascript'
-                    });
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, e.name);
+            if (e.isDirectory()) { collectAssets(full); }
+            else if (/\.(js|css)$/.test(e.name)) {
+                const src = fs.readFileSync(full, 'utf8');
+                const out = src.replace(/(["'(])\/assets\//g, `$1${BASE_PATH}/assets/`);
+                if (out !== src) {
+                    const reqPath = BASE_PATH + '/' + path.relative(settings.httpStatic, full).split(path.sep).join('/');
+                    rewrittenAssets.set(reqPath, { content: out, type: e.name.endsWith('.css') ? 'text/css' : 'application/javascript' });
                 }
             }
         }
     };
-    try {
-        collectAssets(settings.httpStatic);
-    } catch (err) {
-        logger.warn('asset base-path rewrite failed: ' + err);
-    }
+    try { collectAssets(settings.httpStatic); }
+    catch (err) { logger.warn('asset base-path rewrite (in-memory) failed: ' + err); }
+    // the favicon is handled directly in the index.html that angular uses
 }
-
-// External customization override directory (EXE-level customization/)
-var externalCustomizationDir = path.join(execDir, 'customization');
 
 if (parsedArgs.port !== undefined) {
     settings.uiPort = parsedArgs.port;
-} else if (process.env.PORT) {
-    settings.uiPort = parseInt(process.env.PORT, 10);
 } else {
     if (settings.uiPort === undefined) {
         settings.uiPort = 1881;
@@ -459,16 +449,26 @@ function snapshotAuth(req, res, next) {
     }
 }
 
+// All the calls that are directly parsed as static http are mapped here
 const SHELL_ROUTES = [
-    '/', '/home', '/home/:viewName', '/lab', '/editor', '/materials',
-    '/materials/:type', '/device', '/plugins', '/rodevice', '/users',
-    '/roles', '/view', '/ar'
+    '/',
+    '/home',
+    '/home/:viewName',
+    '/lab',
+    '/editor',
+    '/materials',
+    '/materials/:type',
+    '/device',
+    '/plugins',
+    '/rodevice',
+    '/users',
+    '/roles',
+    '/view',
+    '/ar'
 ];
 
 app.use(allowCrossDomain);
-if (fs.existsSync(externalCustomizationDir)) {
-    app.use(BASE_PATH + '/assets/customization', express.static(externalCustomizationDir));
-}
+
 if (indexHtmlCache) {
     const serveShell = (req, res) => res.type('html').send(indexHtmlCache);
     for (const shellPath of SHELL_ROUTES) {
@@ -481,9 +481,11 @@ if (rewrittenAssets.size) {
         rewritten ? res.type(rewritten.type).send(rewritten.content) : next();
     });
 }
+
 for (const shellPath of SHELL_ROUTES) {
     app.use(BASE_PATH + shellPath, express.static(settings.httpStatic));
 }
+// while paths that have to serve non-angular paths are here
 app.use(BASE_PATH + '/' + settings.httpUploadFileStatic, express.static(settings.uploadFileDir));
 app.use(BASE_PATH + '/_images', express.static(settings.imagesFileDir));
 app.use(BASE_PATH + '/_resources', express.static(settings.resourcesFileDir));
@@ -559,9 +561,10 @@ function getListenPath() {
         port = settings.uiPort;
     }
 
+    var listenBasePath = BASE_PATH || '';
     var listenPath = 'http' + (settings.https ? 's' : '') + '://' +
         (settings.uiHost == '::' ? 'localhost' : (settings.uiHost == '0.0.0.0' ? '127.0.0.1' : settings.uiHost)) +
-        ':' + port;
+        ':' + port + listenBasePath;
     if (settings.httpStatic) {
         listenPath += '/';
     }
@@ -596,12 +599,7 @@ function startFuxa() {
                 try {
                     await mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events });
                 } catch (e) {
-                    logger.warn('[Node-RED] Failed to initialize, continuing without it.', true);
-                    if (e && e.stack) {
-                        logger.error('[Node-RED] ' + e.stack);
-                    } else {
-                        logger.error('[Node-RED] ' + (e?.message || e));
-                    }
+                    logger.warn('[Node-RED] Failed to initialize, continuing without it.', e);
                 }
             } else if (settings.nodeRedEnabled) {
                 logger.warn('[Node-RED] Enabled but integration not available; continuing without it.');
@@ -690,21 +688,18 @@ process.on('uncaughtException', function (err) {
 });
 
 process.on('SIGINT', function () {
+    logger.info(`${settings.appName} stopping...`);
     FUXA.stop().then(function () {
         logger.info(`${settings.appName} end!`);
-        process.exit();
+        process.exit(0);
+    }).catch(function (err) {
+        logger.error('Failed to stop: ' + err.message);
+        process.exit(1);
     });
 });
 
 function getCustomization() {
     try {
-        // Priority: EXE-level customization/ directory > built-in assets
-        const execDir = path.dirname(process.execPath);
-        const externalConfig = path.join(execDir, 'customization', 'config.json');
-        if (fs.existsSync(externalConfig)) {
-            const content = fs.readFileSync(externalConfig, 'utf8');
-            return JSON.parse(content);
-        }
         const config = path.join(__dirname, '..', 'client', 'dist', 'assets', 'customization', 'config.json');
         if (!fs.existsSync(config)) {
             return null;

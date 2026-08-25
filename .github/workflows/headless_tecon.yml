@@ -61,11 +61,11 @@ jobs:
       working-directory: ./fuxa-headless
       run: |
         $ErrorActionPreference = 'Stop'
-        Copy-Item ../server/package.json ./package.json -Force
-        Copy-Item ../server/package-lock.json ./package-lock.json -Force
-        node -e "const fs=require('fs'); const p='package.json'; const pkg=JSON.parse(fs.readFileSync(p)); pkg.name='fuxa-pro-headless'; pkg.version='1.3.4-PRO'; pkg.bin='main.js'; pkg.dependencies={...(pkg.dependencies||{}),ip:'^2.0.1'}; pkg.pkg={assets:['server/**/*','node_modules/**/*','client/dist/**/*','_reports/**/*'],publicPackages:['bindings','@serialport/bindings-cpp'],compression:'None'}; fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\n');"
+        if (-not (Test-Path package.json)) { throw 'fuxa-headless/package.json is missing' }
+        if (-not (Test-Path package-lock.json)) { throw 'fuxa-headless/package-lock.json is missing' }
         npm ci --omit=dev --no-audit --no-fund
         node server/scripts/patch-nodered.js
+        if ($LASTEXITCODE -ne 0) { throw "Node-RED patch failed: $LASTEXITCODE" }
 
     - name: Cache pkg runtime
       uses: actions/cache@v4
@@ -88,7 +88,7 @@ jobs:
         Write-Host "pkg build elapsed: $([math]::Round($sw.Elapsed.TotalMinutes, 2)) minutes"
 
     - name: Verify EXE artifact
-      shell: powershell
+      shell: pwsh
       run: |
         $exe = Join-Path $PWD 'artifacts\fuxa-pro-headless.exe'
         if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) { throw "Expected pkg output was not found: $exe" }
@@ -112,7 +112,7 @@ jobs:
       run: |
         $stdout = Join-Path $PWD 'fuxa-exe.stdout.log'
         $stderr = Join-Path $PWD 'fuxa-exe.stderr.log'
-        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -ArgumentList @() -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -WorkingDirectory $PWD -ArgumentList @() -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
         try {
           $ready = $false
           for ($i = 0; $i -lt 36; $i++) {
@@ -122,12 +122,15 @@ jobs:
               break
             }
             try {
-              $response = Invoke-WebRequest -Uri 'http://127.0.0.1:1881/' -UseBasicParsing -TimeoutSec 5
-              if ($response.StatusCode -eq 200) {
-                $ready = $true
-                Write-Host "FUXA EXE health check passed: HTTP $($response.StatusCode)"
-                break
+              $checks = '/', '/flows', '/nodered', '/dashboard'
+              foreach ($path in $checks) {
+                $response = Invoke-WebRequest -Uri "http://127.0.0.1:1881$path" -UseBasicParsing -TimeoutSec 5
+                if ($response.StatusCode -lt 200 -or $response.StatusCode -ge 400) { throw "Health check failed: $path" }
+                Write-Host "FUXA EXE health check passed: $path HTTP $($response.StatusCode)"
               }
+              $ready = $true
+              break
+
             } catch {
               Write-Host "Waiting for FUXA EXE startup..."
             }

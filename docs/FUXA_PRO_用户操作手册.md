@@ -4,7 +4,7 @@
 
 FUXA PRO 是基于 FUXA 开源 SCADA 系统的科控物联定制版，支持西门子 S7 PLC 通讯，适用于工业自动化监控场景。
 
-**版本信息：** 1.3.1-PRO  
+**版本信息：** 1.3.4-PRO  
 **技术支持：** QQ 2492123056
 
 ---
@@ -20,16 +20,9 @@ https://github.com/jingshui127/FUXA-Tecon/actions
 
 | 产物名称 | 说明 |
 |---------|------|
-| `FuxaPro-Single-xxxxxx` | Windows 独立可执行文件 |
-| `fuxa-pro-latest-amd64` | Docker 镜像文件（Linux amd64） |
-| `fuxa-pro-snap7-1.3.1-amd64` | Docker 镜像文件（含 S7 通讯支持） |
+| `fuxa-pro-headless.exe` | Windows 独立可执行文件 |
 
-### 2.2 产物类型说明
-
-| 类型 | 文件格式 | 适用场景 |
-|------|---------|---------|
-| Windows 可执行文件 | `.exe` | Windows 服务器/工控机直接运行 |
-| Docker 镜像 | `.tar` | Linux 环境通过 Docker 运行 |
+当前版本仅发布 `fuxa-pro-headless.exe` 这一种 Windows 独立可执行文件。
 
 ---
 
@@ -39,17 +32,16 @@ https://github.com/jingshui127/FUXA-Tecon/actions
 
 **方式一：双击运行**
 
-直接双击 `FuxaPro-Single-windows-x64.exe` 启动，默认使用 1881 端口。
+直接双击 `fuxa-pro-headless.exe` 启动，默认使用 1881 端口。
 
 **方式二：命令行运行**
 
 ```bash
 # 使用默认端口 1881
-.\FuxaPro-Single-windows-x64.exe
+.\fuxa-pro-headless.exe
 
-# 指定端口（大写 -P 或小写 -p 均可）
-.\FuxaPro-Single-windows-x64.exe -P 1882
-.\FuxaPro-Single-windows-x64.exe -p 1882
+# 指定端口
+.\fuxa-pro-headless.exe -p 1882
 ```
 
 ### 3.2 启动信息
@@ -60,12 +52,10 @@ https://github.com/jingshui127/FUXA-Tecon/actions
 FUXA PRO starting...
 技术支持QQ：2492123056
 FUXA PRO 科控物联定制版
-版本：1.3.1-PRO
+版本：1.3.4-PRO
 
-Using existing data directory: C:\Users\<用户名>\fuxa-headless-data
-Launching FUXA server with userDir: C:\Users\<用户名>\fuxa-headless-data
-FUXA V.1.3.1-2789
-FUXA started!
+Using existing data directory: <EXE目录>\data
+Launching FUXA server with userDir: <EXE目录>\data
 ```
 
 ### 3.3 访问界面
@@ -73,13 +63,11 @@ FUXA started!
 启动成功后，在浏览器中访问：
 
 - 默认地址：http://localhost:1881
-- 自定义端口：http://localhost:1882（如果使用了 -P 1882）
+- 自定义端口：http://localhost:1882（如果使用了 `-p 1882`）
 
 ### 3.4 数据存储位置
 
-所有项目数据存储在：`C:\Users\<用户名>\fuxa-headless-data`
-
-首次运行会自动创建该目录。
+所有项目数据存储在 EXE 同级的 `data\` 目录中，首次运行会自动创建该目录。Node-RED 流程位于 `data\_appdata\node-red\flows.json`，网页安装插件位于 `data\_pkg\runtime\node_modules\`。
 
 ### 3.5 停止服务
 
@@ -87,82 +75,14 @@ FUXA started!
 
 ---
 
-## 四、Docker 版本使用
+## 四、版本边界说明
 
-### 4.1 导入镜像
-
-将下载的 `.tar` 文件传输到 Linux 服务器后，执行以下命令导入：
-
-```bash
-# 导入镜像
-docker load -i fuxa-pro-latest-amd64.tar
-
-# 验证镜像是否导入成功
-docker images | grep fuxa-pro
-```
-
-### 4.2 运行容器
-
-```bash
-# 基本运行
-docker run -d -p 1881:1881 --name fuxa-pro jingshui127/fuxa-pro:latest
-
-# 带数据持久化
-docker run -d -p 1881:1881 \
-  -v /data/fuxa:/usr/src/app/FUXA/server/_appdata \
-  --name fuxa-pro \
-  jingshui127/fuxa-pro:latest
-
-# 使用自定义端口
-docker run -d -p 1882:1881 \
-  -v /data/fuxa:/usr/src/app/FUXA/server/_appdata \
-  --name fuxa-pro \
-  jingshui127/fuxa-pro:latest
-```
-
-### 4.3 访问界面
-
-- 本机访问：http://localhost:1881
-- 局域网访问：http://<服务器IP>:1881
-
-### 4.4 常用命令
-
-```bash
-# 查看运行状态
-docker ps
-
-# 查看日志
-docker logs fuxa-pro
-
-# 停止容器
-docker stop fuxa-pro
-
-# 启动容器
-docker start fuxa-pro
-
-# 删除容器
-docker rm -f fuxa-pro
-
-# 删除镜像
-docker rmi jingshui127/fuxa-pro:latest
-```
-
-### 4.5 开机自启动
-
-```bash
-# 运行时添加重启策略
-docker run -d -p 1881:1881 \
-  --restart=always \
-  --name fuxa-pro \
-  jingshui127/fuxa-pro:latest
-
-# 为已存在的容器设置重启策略
-docker update --restart=always fuxa-pro
-```
+当前 `1.3.4-PRO` 的正式 Windows 运行方式是 `fuxa-pro-headless.exe`。本手册不再提供旧 Docker 镜像、旧版 `FuxaPro-Single` 或旧数据目录的操作步骤；历史客户补丁和旧版本资料请勿作为当前版本的安装依据。
 
 ---
 
 ## 五、功能说明
+
 
 ### 5.1 S7 通讯
 
@@ -197,7 +117,7 @@ docker update --restart=always fuxa-pro
 **解决方法：**
 ```bash
 # 方法一：更换端口
-.\FuxaPro-Single-windows-x64.exe -P 1882
+.\fuxa-pro-headless.exe -p 1882
 
 # 方法二：查找并关闭占用端口的程序
 netstat -ano | findstr :1881
@@ -208,28 +128,14 @@ taskkill /PID <进程ID> /F
 
 **解决方法：** 重新启动应用，控件会在启动时加载。
 
-### 6.3 Docker 容器无法启动
-
-**检查步骤：**
-```bash
-# 查看容器日志
-docker logs fuxa-pro
-
-# 检查端口是否被占用
-netstat -tlnp | grep 1881
-
-# 检查数据目录权限
-ls -la /data/fuxa
-```
-
-### 6.4 Windows 防火墙阻止访问
+### 6.3 Windows 防火墙阻止访问
 
 **解决方法：**
 1. 打开 Windows 防火墙设置
 2. 添加入站规则，允许 TCP 端口 1881
 3. 或临时关闭防火墙测试
 
-### 6.5 浏览器无法访问
+### 6.4 浏览器无法访问
 
 **检查清单：**
 - 确认服务已启动（控制台显示 "FUXA started!"）
@@ -251,12 +157,10 @@ ls -la /data/fuxa
 | 磁盘 | 最低 200MB 可用空间 |
 | 浏览器 | Chrome、Edge、Firefox 最新版 |
 
-### 7.2 Docker 版本
+### 7.2 运行环境
 
 | 项目 | 要求 |
 |------|------|
-| 操作系统 | Linux（推荐 Ubuntu 20.04+） |
-| 架构 | amd64 |
-| Docker | 20.10+ |
-| 内存 | 最低 512MB，推荐 1GB+ |
-| 磁盘 | 最低 500MB 可用空间 |
+| 运行时 | 已包含于 `fuxa-pro-headless.exe`，无需单独安装 Node.js 或 Docker |
+| 网络 | 浏览器访问服务端口；跨设备访问时放行 TCP 1881 |
+| 数据迁移 | 复制 EXE 与同级 `data\` 目录 |

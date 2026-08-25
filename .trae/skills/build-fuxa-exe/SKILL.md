@@ -5,7 +5,15 @@ description: "Builds FUXA Headless EXE in one step. Invoke when user asks to 'pa
 
 # Build FUXA Headless EXE
 
-一键打包 FUXA Headless EXE，自动完成：文件同步 → pkg 打包。
+一键打包 FUXA Headless EXE，自动完成：源码同步 → `npm ci` → Node-RED patch 与验证 → pkg 打包 → 健康检查。
+
+当前唯一入口和产物：
+
+- 入口：项目根目录 `build-and-push.ps1`
+- 入口脚本：`app/headless/headless-guardian.js`
+- 目标：`node18-win-x64`
+- 产物：`artifacts\fuxa-pro-headless.exe`
+- 数据：`<EXE目录>\data\`
 
 ## 前提条件
 
@@ -16,68 +24,73 @@ description: "Builds FUXA Headless EXE in one step. Invoke when user asks to 'pa
 
 ## 打包流程
 
-### 1. 同步 server 代码到打包目录
+### 1. 单实例前置检查
+
+- 停止正在运行的 FUXA EXE、`npm ci` 和 `pkg` 进程。
+- 不允许多个任务同时操作 `fuxa-headless\node_modules`。
+- 不要把 `artifacts\`、`data\` 或异常嵌套的 `fuxa-headless\fuxa-headless\` 目录作为构建输入。
+
+### 2. 同步源码
 
 ```powershell
-Write-Host "[1/3] Syncing server to fuxa-headless..."
-robocopy "server" "fuxa-headless\server" /E /NFL /NDL /XD .git
-```
-
-### 2. 同步 client/dist 到打包目录
-
-```powershell
-Write-Host "[2/3] Syncing client dist to fuxa-headless..."
+robocopy "server" "fuxa-headless\server" /E /NFL /NDL /XD .git node_modules _pkg _appdata data
 robocopy "client\dist" "fuxa-headless\client\dist" /E /NFL /NDL
+Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
 ```
 
-### 3. 更新入口文件
+### 3. 安装依赖并应用 Node-RED patch
 
 ```powershell
-Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
-Write-Host "[3/3] main.js updated from headless-guardian.js"
+Push-Location "fuxa-headless"
+npm ci --omit=dev --no-audit --no-fund
+if ($LASTEXITCODE -ne 0) { throw "npm ci failed: $LASTEXITCODE" }
+Pop-Location
+node "fuxa-headless/server/scripts/patch-nodered.js"
+if ($LASTEXITCODE -ne 0) { throw "Node-RED patch failed: $LASTEXITCODE" }
 ```
+
+必须看到 `[patch-nodered] verification passed`。当前 Node-RED 4.1.10 的 `got` 动态导入位于 `@node-red/runtime/lib/telemetry/index.js`；旧版本可能存在的 `@node-red/nodes/core/network/21-httprequest.js` 不是当前固定目标。目标不存在、依赖缺失、模式不匹配或验证失败时必须停止构建。
 
 ### 4. pkg 打包
 
 ```powershell
-Write-Host "Packaging EXE (this takes a few minutes)..."
-pkg fuxa-headless/package.json --targets node18-win-x64 --output fuxa-headless/fuxa-headless.exe
+pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/fuxa-pro-headless.exe
 ```
 
 ### 5. 输出结果
 
-```powershell
-$exe = Get-Item "fuxa-headless\fuxa-headless.exe"
-Write-Host ""
-Write-Host "=========================================="
-Write-Host "  Build Complete!"
-Write-Host "  File: $($exe.FullName)"
-Write-Host "  Size: $([math]::Round($exe.Length/1MB,1)) MB"
-Write-Host "  Time: $($exe.LastWriteTime)"
-Write-Host "=========================================="
+必须确认构建日志包含：
+
+```text
+[patch-nodered] verification passed
+[BUILD] SUCCESS
 ```
+
+构建完成后才可以运行 EXE；仅看到 `npm ci` 完成，不能视为打包成功。
+
 
 ## 快速测试
 
-打包完成后测试:
+打包完成后测试：
 
 ```powershell
-# 先杀掉可能占用的进程
-Get-Process fuxa-headless -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process fuxa-pro-headless, fuxa-headless -ErrorAction SilentlyContinue | Stop-Process -Force
+Start-Process ".\artifacts\fuxa-pro-headless.exe"
+Start-Sleep 10
 
-# 启动（默认端口 1881）
-Start-Process ".\fuxa-headless\fuxa-headless.exe"
-
-# 等待 8 秒后测试
-Start-Sleep 8
-try { $r = Invoke-WebRequest -Uri "http://127.0.0.1:1881/" -UseBasicParsing -TimeoutSec 10; "HTTP $($r.StatusCode) - OK" } catch { "Failed: $_" }
+$paths = '/', '/flows', '/nodered', '/dashboard'
+foreach ($path in $paths) {
+    $r = Invoke-WebRequest -Uri "http://127.0.0.1:1881$path" -UseBasicParsing -TimeoutSec 10
+    if ($r.StatusCode -lt 200 -or $r.StatusCode -ge 400) { throw "Health check failed: $path" }
+}
 ```
+
+
+
 
 ## 注意事项
 
-- 打包耗时约 5-10 分钟（取决于机器性能）
-- 最终 EXE 约 385 MB
-- 使用 `compression: "None"` 避免 GZip 压缩阶段长时间占用 CPU；如需减小体积，可在发布前单独启用 GZip。
+- 使用 `compression: "None"` 避免 GZip 压缩阶段长时间占用 CPU；实际耗时和文件大小以构建日志为准。
 - Node.js 版本必须是 18.x（node-snap7 兼容性）
 - 工作目录必须是项目根目录 `d:\FUXA\FUXApro最新版`
 - `client/dist` 已预编译，不需要前端构建步骤

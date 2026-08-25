@@ -5,10 +5,22 @@ app/node_modules/
 client/node_modules/
 
 # Build outputs
+artifacts/
 dist/
 build/
 *.exe
 *.zip
+
+# Build staging and extracted archives
+fuxa-headless/fuxa-headless/
+fuxa-headless/server/_pkg/
+fuxa-headless/data/
+Data/_pkg/
+v1.3.3-extract/
+v1.3.4-extract/
+custom-backup/
+*_parallel.log
+*_parallel-error.log
 
 # Logs
 logs/

@@ -1,11 +1,4 @@
-# FUXA PRO 定制化补丁包 - 客户操作手册
-
-## 📖 手册说明
-
-本手册详细介绍了如何使用 FUXA PRO 定制化补丁包，为您的 FUXA SCADA/HMI PRO 系统添加专属的定制化功能。
-
----
-
+本手册是历史客户补丁包模板，适用于需要单独制作客户定制补丁的场景，不是当前 `1.3.4-PRO` Headless EXE 的运行和构建指南。当前 EXE、插件目录、Node-RED 入口和构建流程请以 [PLUGIN_DEPLOYMENT_GUIDE.md](./PLUGIN_DEPLOYMENT_GUIDE.md) 为准。
 ## 🎯 补丁包功能概述
 
 本补丁包包含以下定制化功能：

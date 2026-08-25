@@ -1,272 +1,125 @@
 # FUXA PRO 1.3.4-PRO 插件与 Node-RED 部署指南
 
-本文档适用于当前 `fuxa-pro-headless.exe`。网页安装的插件、Node-RED 流程和 FUXA 数据均保存在 EXE 同目录的 `data\` 中。
+本文档是当前 `fuxa-pro-headless.exe` 的运行、迁移和回归验证指南。当前版本固定约定：
 
-## 通讯插件列表
+| 项目 | 当前值 |
+|---|---|
+| 版本 | `1.3.4-PRO` |
+| 产物 | `artifacts\fuxa-pro-headless.exe` |
+| Node.js | 18.x |
+| pkg target | `node18-win-x64` |
+| pkg compression | `None` |
 
-| 插件名称 | 依赖包 | 版本 | 类型 | 状态 |
-|---------|--------|------|------|------|
-| MODBUS-TCP/RTU | modbus-serial | ^8.0.19 | Native | ✅ 正常 |
-| S7-1200/1500 | node-snap7 | ^1.0.9 | Native | ✅ 正常 |
-| OPC UA | node-opcua | ^2.149.0 | Pure JS | ✅ 正常 |
-| BACnet | node-bacnet | ^0.2.4 | Pure JS | ✅ 正常 |
-| ADS | ads-client | ^2.1.0 | Native | ✅ 正常 |
+## 一、运行时安装插件
 
-## 安装方式
-
-### 当前推荐：网页插件管理
-
-启动 `fuxa-pro-headless.exe` 后，在 FUXA 中打开：
+启动 `fuxa-pro-headless.exe` 后访问：
 
 ```text
 http://127.0.0.1:1881/plugins
 ```
 
-在此页面安装或更新通讯插件。插件运行时目录为：
+网页安装的通讯插件保存于：
 
 ```text
 <EXE目录>\data\_pkg\runtime\node_modules\
 ```
 
-复制 EXE 到其他 Windows x64 电脑时，同时复制完整的 `data\` 文件夹即可保留已安装的插件和配置，通常无需重新安装。
+迁移到其他 Windows x64 电脑时，必须同时复制 EXE 和完整的 `data\` 文件夹，已安装插件、项目数据和配置才会保留。Node-RED 内置依赖不属于网页通讯插件，不要混用两套安装方式。
 
-### 历史方案：手工 npm 安装
+## 二、Node-RED 入口
 
-以下命令仅用于旧版本、离线构建或明确要求将插件内置到 EXE 的场景，不是当前运行时安装方式：
+- 管理编辑器：`http://127.0.0.1:1881/flows`
+- 兼容入口：`http://127.0.0.1:1881/nodered`
+- Dashboard/HTTP 节点：`http://127.0.0.1:1881/dashboard`
 
-```bash
-cd server
-npm install modbus-serial@8.0.19 node-snap7@1.0.9 node-opcua@2.149.0 node-bacnet@0.2.4 ads-client@2.1.0
-```
+FUXA 默认配置弹窗中的 “Node-RED Flows” 图标仍然跳转到 `/flows`，不应通过修改前端跳转来规避后端路由问题。
 
-Node-RED 本体是 FUXA 的内置服务依赖，不等同于网页通讯插件。它的管理编辑器入口是 `/flows`，兼容入口是 `/nodered`，Dashboard/HTTP 节点入口是 `/dashboard`。
-
-## pkg 打包配置
-
-### 当前 EXE 打包配置
-```json
-{
-  "name": "fuxa-pro-headless",
-  "version": "1.3.4-PRO",
-  "bin": "main.js",
-  "pkg": {
-    "assets": ["server/**/*", "node_modules/**/*", "client/dist/**/*", "_reports/**/*"],
-    "publicPackages": ["bindings", "@serialport/bindings-cpp"],
-    "compression": "None"
-  }
-}
-```
-
-### 当前打包命令
-```powershell
-cd fuxa-headless
-pkg package.json --targets node18-win-x64 --output ../artifacts/fuxa-pro-headless.exe --public-packages "bindings,@serialport/bindings-cpp"
-```
-
-不再使用旧的 `FuxaPro-Single.exe`、`_appdata` 或 GZip 配置。
-
-### 当前数据目录配置
-数据目录是 EXE 同目录下的 `data` 文件夹，由 `headless-guardian.js` 自动创建。
+流程文件位置：
 
 ```text
-fuxa-pro-headless.exe
-└─ data\
-   ├─ _pkg\runtime\node_modules\   # 网页安装的 npm 插件
-   ├─ node-red\flows.json          # Node-RED 流程
-   ├─ _db\                         # SQLite 数据
-   ├─ _logs\                       # 日志
-   └─ 其他运行目录
+<EXE目录>\data\_appdata\node-red\flows.json
 ```
 
-迁移到其他电脑时，必须复制整个 `data\` 文件夹。
+启动日志必须包含：
 
-## 核心代码修改清单
-
-### 1. server/main.js (第 114 行)
-```javascript
-// 修改前
-settings.appDir = __dirname;
-
-// 修改后
-settings.appDir = rootDir;
-```
-**原因**: pkg 打包后 `__dirname` 指向快照内部，导致上传功能失败。
-
-### 2. server/main.js (Stardust 部分)
-```javascript
-// 修改前
-stardustTracker = new StardustTracker({
-    enabled: true
-});
-
-// 修改后
-stardustTracker = new StardustTracker({
-    enabled: false
-});
-```
-**原因**: 避免连接失败产生大量错误日志。
-
-### 3. server/runtime/plugins/index.js
-在 `_checkPluginsSupported` 函数中增加多重路径检测逻辑。
-
-### 4. fontkit 编码修复
-修改 `node_modules/fontkit/dist/main.cjs` 第 5424 行，将 `ascii` 改为 `utf-8`。
-
-## 已知问题及修复方案
-
-### 问题1: MODBUS-TCP 插件加载失败
-**错误信息**: `try to create MODBUS-TCP but plugin is missing!`
-
-**原因分析**: `modbus-serial` 依赖于 native module `@serialport/bindings-cpp`，pkg 打包时需要特殊处理。
-
-**修复方案**:
-1. 在 `package.json` 的 `pkg.assets` 中添加 `"node_modules/@serialport/**/*"`
-2. 在打包命令中添加 `--public-packages "@serialport/bindings-cpp"`
-
-### 问题2: fontkit 编码错误
-**错误信息**: `"windows-1252" encoding not supported`
-
-**原因分析**: fontkit 模块使用不支持的编码初始化 TextDecoder。
-
-**修复方案**:
-修改 `fontkit/dist/main.cjs` 第 5424 行：`new TextDecoder('ascii')` → `new TextDecoder('utf-8')`
-
-### 问题3: 插件检测失败
-**原因分析**: 打包环境下路径解析失败。
-
-**修复方案**:
-修改 `server/runtime/plugins/index.js` 中的 `_checkPluginsSupported` 函数，增加多重路径检测和 `require.resolve()` 逻辑。
-
-### 问题4: pkg 打包失败（文件被占用）
-**错误信息**: `EPERM: operation not permitted, unlink 'xxx.exe'`
-
-**修复方案**:
-```powershell
-Get-Process -Name FuxaPro-Single -ErrorAction SilentlyContinue | Stop-Process -Force
+```text
+[Node-RED] Started at /flows (dashboard: /dashboard)
 ```
 
-### 问题5: Stardust APM 遥测报错
-**错误信息**: `[Stardust] Track event failed: Request failed with status code 404`
+如果 `/flows` 返回 404 或 `Cannot GET /flows`，按以下顺序排查：
 
-**修复方案**:
-修改 `server/main.js`，设置 `enabled: false`。
+1. 确认日志中 FUXA 和 Node-RED 均已启动；
+2. 确认 `<EXE目录>\data\_appdata\mysettings.json` 中 `nodeRedEnabled` 未被关闭；
+3. 分别检查 `/flows`、`/nodered`、`/dashboard`；
+4. 不要先修改默认配置弹窗的前端地址。
 
-### 问题6: 文件上传/下载小部件失败
-**错误信息**: `Cannot mkdir in a snapshot. Try mountpoints instead.`
+## 三、当前唯一构建流程
 
-**根本原因分析**:
-1. **headless-start.js 传递错误的 userDir**: 如果传递 `fuxaDataDir`（已包含 `_appdata`），main.js 会再加一层变成 `_appdata/_appdata`
-2. **settings.appDir 指向快照内部**: `__dirname` 在 pkg 中指向 `C:\snapshot\...`，导致上传时尝试在快照内创建目录
-
-**完整修复方案**:
-
-**Step 1**: 修改 `headless-start.js`，传递 `execDir` 而不是 `fuxaDataDir`:
-```javascript
-// 修改前
-env: { ...process.env, userDir: fuxaDataDir }
-
-// 修改后  
-env: { ...process.env, userDir: execDir }
-```
-
-**Step 2**: 修改 `main.js`，使用 `rootDir` 而不是 `__dirname`:
-```javascript
-// 修改前
-settings.appDir = __dirname;
-
-// 修改后
-settings.appDir = rootDir;
-```
-
-### 问题7: 默认数据目录不在 exe 同目录
-**现象**: 数据目录创建在 `C:\Users\<用户名>\fuxa-headless-data`
-
-**修复方案**:
-修改 `main.js` 中的默认 workDir 计算：
-```javascript
-// 修改前
-var workDir = path.resolve(process.cwd(), '_appdata');
-
-// 修改后
-var execDir = path.dirname(process.execPath);
-var workDir = path.join(execDir, '_appdata');
-```
-
-## 测试验证
-
-### 启动验证
-运行 exe 后检查日志是否包含以下关键信息：
-
-```
-✅ FUXA Headless starting...
-✅ Using existing data directory: D:\...\artifacts\_appdata   ← 必须是 exe 同目录
-✅ Launching FUXA server with userDir: D:\...\artifacts         ← 不带 _appdata
-✅ [Stardust] APM tracer disabled                                 ← Stardust 已禁用
-✅ 'MODBUS-TCP' created                                          ← 插件创建成功
-✅ 'S7-1200' created                                             ← 插件创建成功
-✅ FUXA started!                                                 ← 服务启动成功
-✅ WebServer is running http://127.0.0.1:1881/                   ← Web 服务正常
-```
-
-### 功能测试清单
-- [ ] MODBUS-TCP 通讯正常
-- [ ] S7-1200 通讯正常
-- [ ] OPC UA 插件可加载
-- [ ] BACnet 插件可加载
-- [ ] ADS 插件可加载
-- [ ] 上传图片/文件正常
-- [ ] 下载小部件正常
-- [ ] 无 Stardust 错误日志
-- [ ] 数据目录在 exe 同目录下
-
-### 完整启动日志示例
-```
-FUXA Headless starting...
-Using existing data directory: D:\FUXA\FUXApro1.3.1已部署版\artifacts\_appdata
-Launching FUXA server with userDir: D:\FUXA\FUXApro1.3.1已部署版\artifacts
-[Stardust] APM tracer disabled
-2026-05-29T03:38:09.510Z [INF]  FUXA V.1.3.2-2827
-2026-05-29T03:38:09.667Z [INF]  FUXA init in 170 ms.
-2026-05-29T03:38:09.679Z [INF]  'FUXA Server' created
-2026-05-29T03:38:09.683Z [INF]  'FUXA Server' start
-2026-05-29T03:38:09.687Z [INF]  FUXA started!
-2026-05-29T03:38:09.692Z [INF]  WebServer is running http://127.0.0.1:1881/
-2026-05-29T03:38:10.794Z [INF]  socket.io client connected xxx
-```
-
-## 快速打包流程
+项目根目录唯一推荐入口：
 
 ```powershell
-# 1. 停止可能运行的进程
-Get-Process -Name FuxaPro-Single -ErrorAction SilentlyContinue | Stop-Process -Force
-
-# 2. 进入 fuxa-headless 目录
-Set-Location "D:\FUXA\FUXApro1.3.1已部署版\fuxa-headless"
-
-# 3. 执行打包（约需 10-15 分钟）
-pkg package.json --targets node18-win-x64 --out-path ../artifacts --public-packages "node-snap7,bindings,nan,@serialport/bindings-cpp"
-
-# 4. 测试
-Set-Location ..\artifacts
-.\FuxaPro-Single.exe
+.\build-and-push.ps1 -SkipCommit -SkipPush
 ```
 
-## 版本历史
+构建脚本必须按以下顺序执行：
 
-| 日期 | 版本 | 变更说明 |
-|------|------|----------|
-| 2026-05-29 | 2.0 | 全面重构文档；新增 appDir 修复方案；完善测试验证流程 |
-| 2026-05-28 | 1.5 | 修复 appDir 导致的文件上传失败问题（settings.appDir = rootDir） |
-| 2026-05-28 | 1.4 | 修复文件上传失败问题（传递 execDir） |
-| 2026-05-28 | 1.3 | 修复默认数据目录配置 |
-| 2026-05-27 | 1.2 | 添加 Stardust 配置解决方案 |
-| 2026-05-26 | 1.1 | 初始版本 |
+1. 同步 `server`、`client\dist` 和 Headless 入口；
+2. 在 `fuxa-headless` 目录执行：
+   ```powershell
+   npm ci --omit=dev --no-audit --no-fund
+   ```
+3. 执行：
+   ```powershell
+   node fuxa-headless/server/scripts/patch-nodered.js
+   ```
+4. 确认出现：
+   ```text
+   [patch-nodered] verification passed
+   ```
+5. 使用 Node.js 18、`node18-win-x64` 和 `compression: "None"` 执行 pkg；
+6. 确认出现：
+   ```text
+   [BUILD] SUCCESS
+   ```
 
-## 注意事项
+当前 Node-RED 4.1.10 的 `got` 动态导入位于：
 
-1. **Native Module 处理**: 所有包含 native module 的依赖都需要在 `--public-packages` 中声明
-2. **路径问题**: pkg 打包后 `__dirname` 指向快照内部，应使用 `rootDir` 或 `process.execPath`
-3. **权限问题**: 打包和运行时确保无进程占用目标文件
-4. **依赖版本**: 确保所有依赖版本与 Node.js 18 兼容
-5. **端口冲突**: 确保 1881 和 8080 端口未被占用
-6. **数据迁移**: 如需保留旧数据，手动复制旧 `_appdata` 目录到新位置
+```text
+fuxa-headless\node_modules\@node-red\runtime\lib\telemetry\index.js
+```
+
+`patch-nodered.js` 还会修复 Node-RED registry 的 pkg 元数据读取。旧版本可能存在的 `@node-red\nodes\core\network\21-httprequest.js` 只能作为兼容性目标，不能假设它必然存在。patch 目标缺失、依赖缺失、模式不匹配或验证失败时，构建必须停止。
+
+## 四、构建后健康检查
+
+新 EXE 必须使用独立的 `data\` 目录启动，然后检查：
+
+```text
+/
+/flows
+/nodered
+/dashboard
+```
+
+同时确认启动日志：
+
+- 包含 `[Node-RED] Started at /flows (dashboard: /dashboard)`；
+- 不包含 `Cannot find package 'got'`；
+- 不把数据写入 `C:\snapshot\...`。
+
+如果 EXE 的修改时间和构建日志中的 `[BUILD] SUCCESS` 对不上，说明运行的不是本次构建产物，不能据此判断修复是否生效。
+
+## 五、构建输入与迁移边界
+
+不得将以下内容作为构建输入或提交内容：
+
+```text
+artifacts\
+data\
+fuxa-headless\fuxa-headless\
+临时构建日志
+```
+
+不要同时运行多个 `npm ci`、pkg 或完整构建脚本；Windows 文件锁会导致 `EPERM`，并可能生成未经过 patch 的旧 EXE。
+
+旧版本的 `FuxaPro-Single.exe`、用户目录数据、手工 pkg 命令和旧 patch 路径仅保留在 [科控物联优化.MD](./科控物联优化.MD) 中作为历史记录，不是当前操作步骤。

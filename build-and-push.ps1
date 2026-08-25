@@ -10,6 +10,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $Root
+$BuildMutex = New-Object System.Threading.Mutex($false, 'Global\FuxaProHeadlessBuild')
+if (-not $BuildMutex.WaitOne(0)) {
+    throw 'Another FUXA build is already running. Stop it before starting a new build.'
+}
 
 $BuildLog = Join-Path $Root 'artifacts\build-parallel.log'
 $BuildErrorLog = Join-Path $Root 'artifacts\build-parallel-error.log'
@@ -92,6 +96,8 @@ $push = Start-ParallelProcess -Name 'GIT' -Command $pushCommand -LogPath $PushLo
 
 $build.WaitForExit()
 $push.WaitForExit()
+$build.Refresh()
+$push.Refresh()
 
 Write-Host "`n===== BUILD RESULT ====="
 Get-Content $BuildLog -ErrorAction SilentlyContinue | Write-Host
@@ -106,13 +112,5 @@ if ($build.ExitCode -ne 0 -or $push.ExitCode -ne 0) {
     Write-Error 'Parallel build/push finished with errors. Check artifacts\build-parallel*.log and artifacts\push-parallel*.log.'
     exit 1
 }
-Write-Host "`nParallel build and Git push completed successfully."
-Get-Content $PushLog -ErrorAction SilentlyContinue | Write-Host
-Write-Host "ExitCode=$($push.ExitCode)"
-Get-Content $PushErrorLog -ErrorAction SilentlyContinue | Write-Host
 
-if ($build.ExitCode -ne 0 -or $push.ExitCode -ne 0) {
-    Write-Error 'Parallel build/push finished with errors. Check artifacts\build-parallel*.log and artifacts\push-parallel*.log.'
-    exit 1
-}
 Write-Host "`nParallel build and Git push completed successfully."

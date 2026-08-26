@@ -9,6 +9,9 @@
 
 - 不允许多个 `npm ci`、pkg 或构建脚本同时操作 `fuxa-headless\node_modules`。
 - 不得把 `artifacts\`、运行时 `data\` 或异常嵌套的 `fuxa-headless\fuxa-headless\` 目录作为构建输入或提交内容。
+- 重新打包只覆盖 `artifacts\fuxa-pro-headless.exe`；不得删除、清空或重新初始化已有的 `artifacts\data\`。该目录保存数据库、Node-RED flows、插件和业务资源。
+- `odbc@2.4.9` 与 `chartjs-node-canvas@3.2.0`（依赖 `canvas@2.11.2`）属于原生插件，必须在目标 Node.js 18 / Windows x64 环境中预置并验证后再交付；不能只验证 npm 包下载成功。
+- 原生插件验证必须至少通过 `require('odbc')` 和 `chartjs-node-canvas` 实际图表渲染；缺少 `canvas.node` 或其 DLL 时不得宣称插件可用。
 
 ## Node-RED 验证
 

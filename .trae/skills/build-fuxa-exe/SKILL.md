@@ -51,7 +51,34 @@ if ($LASTEXITCODE -ne 0) { throw "Node-RED patch failed: $LASTEXITCODE" }
 
 必须看到 `[patch-nodered] verification passed`。当前 Node-RED 4.1.10 的 `got` 动态导入位于 `@node-red/runtime/lib/telemetry/index.js`；旧版本可能存在的 `@node-red/nodes/core/network/21-httprequest.js` 不是当前固定目标。目标不存在、依赖缺失、模式不匹配或验证失败时必须停止构建。
 
-### 4. pkg 打包
+### 4. 保留运行时 data 并验证原生插件
+
+打包前和打包后都必须保留已有的 `artifacts\data\`。该目录不是构建临时目录，不能删除或用空目录覆盖。它包含：
+
+```text
+artifacts\data\_db\
+artifacts\data\_appdata\
+artifacts\data\_pkg\runtime\node_modules\
+artifacts\data\_resources\
+```
+
+当前必须预置并验证的原生插件：
+
+```text
+odbc@2.4.9
+chartjs-node-canvas@3.2.0
+canvas@2.11.2
+```
+
+至少执行以下验证：
+
+```powershell
+node -e "require('odbc'); const {ChartJSNodeCanvas}=require('chartjs-node-canvas'); new ChartJSNodeCanvas({width:320,height:180}).renderToBuffer({type:'bar',data:{labels:['A'],datasets:[{data:[1]}]}}).then(()=>console.log('native plugins verified'))"
+```
+
+必须确认 `canvas\build\Release\canvas.node` 及其 Windows DLL 存在。若验证失败，不能继续交付。
+
+### 5. pkg 打包
 
 ```powershell
 pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/fuxa-pro-headless.exe

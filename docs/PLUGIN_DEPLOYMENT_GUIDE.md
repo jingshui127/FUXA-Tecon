@@ -109,7 +109,45 @@ fuxa-headless\node_modules\@node-red\runtime\lib\telemetry\index.js
 
 如果 EXE 的修改时间和构建日志中的 `[BUILD] SUCCESS` 对不上，说明运行的不是本次构建产物，不能据此判断修复是否生效。
 
-## 五、构建输入与迁移边界
+## 五、原生插件预置规则
+
+以下两个插件不能只依赖网页安装阶段下载，因为它们包含原生模块：
+
+```text
+odbc@2.4.9
+chartjs-node-canvas@3.2.0
+canvas@2.11.2
+```
+
+当前交付前必须将它们预置到：
+
+```text
+<EXE目录>\data\_pkg\runtime\node_modules\
+```
+
+并在 Node.js 18 / Windows x64 环境中验证：
+
+```powershell
+node -e "require('odbc'); const {ChartJSNodeCanvas}=require('chartjs-node-canvas'); new ChartJSNodeCanvas({width:320,height:180}).renderToBuffer({type:'bar',data:{labels:['A'],datasets:[{data:[1]}]}}).then(()=>console.log('native plugins verified'))"
+```
+
+验证必须实际加载 `odbc` 并完成图表渲染，同时确认 `canvas\build\Release\canvas.node` 及配套 DLL 存在。出现 `Cannot find module`、`node-pre-gyp` 回退编译或渲染失败时，不能作为可交付版本。
+
+重新打包时只替换：
+
+```text
+<EXE目录>\fuxa-pro-headless.exe
+```
+
+不得删除、清空或覆盖已有的：
+
+```text
+<EXE目录>\data\
+```
+
+因此，重新打包后直接启动新 EXE 即可继续使用 `data` 中已有的插件、流程、数据库和业务资源，无需再次下载插件。
+
+## 六、构建输入与迁移边界
 
 不得将以下内容作为构建输入或提交内容：
 

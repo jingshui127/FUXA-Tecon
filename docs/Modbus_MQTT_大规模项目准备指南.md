@@ -2,6 +2,8 @@
 
 ## 项目规模：上千个数据点
 
+**数据模型说明**：Modbus 设备和标签字段必须以 [FUXA 数据模型参考](../.trae/skills/fuxa-automation/references/data-models.md) 为准。`port`、`slaveid` 使用字符串；`memaddress` 使用固定寄存器类型基址，实际 1-based 偏移放在 `address`。报警对象使用 `property`、`highhigh`、`high`、`low`、`info`、`actions` 结构，不使用扁平化的 `device`、`tag`、`limit` 或 `ackMode` 字段。
+
 ## 1. 架构设计
 
 ### 1.1 设备分层
@@ -92,17 +94,19 @@ async function createModbusDevices() {
           id: `t_${deviceId}_temp_${j.toString().padStart(2, '0')}`,
           name: `温度 ${j}`,
           type: 'Float32',
-          memaddress: `400${j.toString().padStart(3, '0')}`,
-          address: j.toString()
+          memaddress: '400000',
+          address: (j * 2 - 1).toString()
         });
     }
 
     devices.push(FUXAClient.createModbusTCP({
       id: deviceId,
       name: `生产设备 ${i}`,
-      address: `192.168.1.${100 + i}`,
-      port: 502,
-      slaveId: 1,
+      property: {
+        address: `192.168.1.${100 + i}`,
+        port: '502',
+        slaveid: '1'
+      },
       polling: 1000,
       tags: tags
     }));
@@ -163,30 +167,39 @@ async function createAlarms() {
     for (let j = 1; j <= 50; j++) {
       const tagId = `t_${deviceId}_temp_${j.toString().padStart(2, '0')}`;
       
-      // 高温报警
       alarms.push({
-        id: `alarm_${tagId}_high`,
-        name: `温度 ${j} 高报警`,
-        device: deviceId,
-        tag: tagId,
-        type: 'high',
-        limit: 80,
-        deadband: 1,
-        text: `温度超过 80°C`,
-        ackMode: 'alarm.ack-float'
-      });
-      
-      // 低温报警
-      alarms.push({
-        id: `alarm_${tagId}_low`,
-        name: `温度 ${j} 低报警`,
-        device: deviceId,
-        tag: tagId,
-        type: 'low',
-        limit: 0,
-        deadband: 1,
-        text: `温度低于 0°C`,
-        ackMode: 'alarm.ack-float'
+        name: `温度 ${j} 报警`,
+        property: {
+          variableId: tagId
+        },
+        high: {
+          enabled: true,
+          min: 80,
+          max: 100,
+          checkdelay: 1,
+          timedelay: 5,
+          ackmode: 'float',
+          text: `温度 ${j} 超过 80°C`,
+          group: '温度报警',
+          bkcolor: '#ff8800',
+          color: '#000000'
+        },
+        low: {
+          enabled: true,
+          min: 0,
+          max: 20,
+          checkdelay: 1,
+          timedelay: 5,
+          ackmode: 'float',
+          text: `温度 ${j} 低于 0°C`,
+          group: '温度报警',
+          bkcolor: '#0088ff',
+          color: '#ffffff'
+        },
+        actions: {
+          enabled: false,
+          values: []
+        }
       });
     }
   }
@@ -330,7 +343,7 @@ function generateModbusDevices(count, pointsPerDevice) {
           id: `t_${deviceId}_point_${j.toString().padStart(3, '0')}`,
           name: `Point ${j}`,
           type: 'Float32',
-          memaddress: `400${j.toString().padStart(3, '0')}`,
+          memaddress: '400000',
           address: j.toString()
         });
     }
@@ -338,9 +351,11 @@ function generateModbusDevices(count, pointsPerDevice) {
     devices.push(FUXAClient.createModbusTCP({
       id: deviceId,
       name: `Modbus Device ${i}`,
-      address: `192.168.1.${100 + i}`,
-      port: 502,
-      slaveId: 1,
+      property: {
+        address: `192.168.1.${100 + i}`,
+        port: '502',
+        slaveid: '1'
+      },
       polling: 1000,
       tags: tags
     }));

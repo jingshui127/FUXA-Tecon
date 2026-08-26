@@ -122,4 +122,4 @@ fuxa-headless\fuxa-headless\
 
 不要同时运行多个 `npm ci`、pkg 或完整构建脚本；Windows 文件锁会导致 `EPERM`，并可能生成未经过 patch 的旧 EXE。
 
-旧版本的 `FuxaPro-Single.exe`、用户目录数据、手工 pkg 命令和旧 patch 路径仅保留在 [科控物联优化.MD](./科控物联优化.MD) 中作为历史记录，不是当前操作步骤。
+旧版本 EXE、旧用户目录数据、手工 pkg 命令和旧 patch 路径均已从项目中移除，不属于当前操作步骤。

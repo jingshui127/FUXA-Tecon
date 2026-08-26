@@ -10,13 +10,13 @@
   "Board": "L1HF07A01B1",
   "DiskID": "8CE3_8E05_0027_2CDE.",
   "Memory": 16918597632,
-  "AvailableMemory": 5065080832,
-  "FreeMemory": 5065080832,
-  "CpuRate": 0.2627,
+  "AvailableMemory": 5362163712,
+  "FreeMemory": 5362163712,
+  "CpuRate": 0.1366,
   "UplinkSpeed": 25990,
   "DownlinkSpeed": 445618,
-  "Temperature": 0,
-  "Battery": 0.949999988079071,
+  "Temperature": 51,
+  "Battery": 0.959999978542328,
   "Ssid": {
     
   },

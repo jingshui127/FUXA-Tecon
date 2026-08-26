@@ -42,7 +42,7 @@ let serverProcess = null;
 
 function log(msg) {
     const ts = new Date().toISOString();
-    console.log(`[TcScada] ${ts} | ${msg}`);
+    console.log(`[FUXA PRO] ${ts} | ${msg}`);
 }
 
 function startServer() {

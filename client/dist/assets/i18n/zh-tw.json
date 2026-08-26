@@ -701,6 +701,8 @@
 
     "editor.tools-zoom-title": "縮放工具[Ctrl+上/下]",
     "editor.tools-grid-title": "顯示/隱藏網格",
+    "editor.tools-movestep-title": "移動步長",
+    "editor.tools-movestep-custom": "自訂",
     "editor.tools-undo-title": "復原 [Z]",
     "editor.tools-redo-title": "重做 [Y]",
     "editor.tools-clone-title": "複製元素 [D]",
@@ -1627,6 +1629,7 @@
     "dlg.app-auth-expiration-1d": "已啟用，權杖將於 1 天內到期,",
     "dlg.app-auth-tooltip": "已啟用：你有一個管理員帳號 'admin/123456'（請不要忘記修改）。需要重新啟動伺服器！",
     "dlg.app-settings-client-broadcast": "廣播至用戶端（前端）所有標籤值",
+    "dlg.app-settings-lazy-view-loading": "Lazy view loading",
 
     "dlg.app-settings-daqstore": "DAQ 儲存",
     "dlg.app-settings-daqstore-type": "資料庫類型",

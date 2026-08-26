@@ -1,3 +1,43 @@
+# Temporary synchronized runtime copy
+fuxa-headless/新建文件夹/
+fuxa-headless/Config/
+fuxa-headless/customization/
+
+# Generated Headless copies; source files remain under server/
+fuxa-headless/server/guard.js
+fuxa-headless/server/api/reports/
+fuxa-headless/server/runtime/devices/
+fuxa-headless/server/scripts/
+fuxa-headless/server/tsconfig.json
+
+# Embedded Node.js distribution helpers copied outside nodejs/
+server/corepack
+server/corepack.cmd
+server/install_tools.bat
+server/node_etw_provider.man
+server/nodevars.bat
+server/npm
+server/npm.cmd
+server/npx
+server/npx.cmd
+fuxa-headless/server/corepack
+fuxa-headless/server/corepack.cmd
+fuxa-headless/server/install_tools.bat
+fuxa-headless/server/node_etw_provider.man
+fuxa-headless/server/nodevars.bat
+fuxa-headless/server/npm
+fuxa-headless/server/npm.cmd
+fuxa-headless/server/npx
+fuxa-headless/server/npx.cmd
+
+# Duplicated Node.js package metadata in synchronized server trees
+server/CHANGELOG.md
+server/LICENSE
+server/README.md
+fuxa-headless/server/CHANGELOG.md
+fuxa-headless/server/LICENSE
+fuxa-headless/server/README.md
+
 # Dependencies
 node_modules/
 server/node_modules/
@@ -19,6 +59,8 @@ Data/_pkg/
 v1.3.3-extract/
 v1.3.4-extract/
 custom-backup/
+archive/build-logs/
+archive/legacy-projects/
 *_parallel.log
 *_parallel-error.log
 
@@ -26,6 +68,7 @@ custom-backup/
 logs/
 *.log
 agent/Log/
+archive/build-logs/
 
 # Runtime data
 _appdata/

@@ -60,10 +60,15 @@ Launching FUXA server with userDir: <EXE目录>\data
 
 ### 3.3 访问界面
 
-启动成功后，在浏览器中访问：
+启动成功后，在浏览器访问：
 
-- 默认地址：http://localhost:1881
-- 自定义端口：http://localhost:1882（如果使用了 `-p 1882`）
+- FUXA 主界面：http://127.0.0.1:1881/
+- Node-RED 管理界面：http://127.0.0.1:1881/flows
+- Node-RED 兼容入口：http://127.0.0.1:1881/nodered
+- Dashboard/HTTP 入口：http://127.0.0.1:1881/dashboard
+- 插件管理：http://127.0.0.1:1881/plugins
+
+使用 `-p 1882` 时，将上述地址中的端口替换为 `1882`。没有配置 Dashboard 流程时，直接访问 `/dashboard` 返回 404 属于正常现象。
 
 ### 3.4 数据存储位置
 
@@ -82,7 +87,6 @@ Launching FUXA server with userDir: <EXE目录>\data
 ---
 
 ## 五、功能说明
-
 
 ### 5.1 S7 通讯
 

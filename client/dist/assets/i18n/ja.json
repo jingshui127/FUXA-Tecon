@@ -428,6 +428,8 @@
     "video.property-data": "データ",
     "video.property-address": "アドレス",
     "video.property-controls": "コントロールを表示",
+
+    "video.property-loop": "ループ",
     "video.property-image": "初期画像",
     "video.property-image-placeholder": "初期画像を選択",
 
@@ -716,6 +718,8 @@
 
     "editor.tools-zoom-title": "ズームツール [Ctrl+Up/Down]",
     "editor.tools-grid-title": "グリッドの表示/非表示",
+    "editor.tools-movestep-title": "移動ステップ",
+    "editor.tools-movestep-custom": "カスタム",
     "editor.tools-undo-title": "元に戻す [Z]" ,
     "editor.tools-redo-title": "やり直し [Y]",
     "editor.tools-clone-title": "要素の複製 [D]",

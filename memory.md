@@ -1,0 +1,27 @@
+# FUXA PRO 项目索引
+
+本文件只作为入口索引，不复制具体实现细节。发生冲突时，以以下当前规范文件为准：
+
+1. **硬性项目规则**：`.trae/rules/fuxa-pro-build.md`
+2. **Headless 构建流程**：`.trae/skills/build-fuxa-exe/SKILL.md`
+3. **运行与迁移说明**：`docs/PLUGIN_DEPLOYMENT_GUIDE.md`
+4. **自动化数据模型**：`.trae/skills/fuxa-automation/references/data-models.md`
+5. **用户操作说明**：`docs/FUXA_PRO_用户操作手册.md`
+
+## 当前基线
+
+- 版本：`1.3.4-PRO`
+- 正式 EXE：`artifacts\\fuxa-pro-headless.exe`
+- 构建目标：`node18-win-x64`
+- 运行数据：`<EXE目录>\\data\\`
+- Node-RED 管理入口：`/flows`
+- 兼容入口：`/nodered`
+- Dashboard/HTTP 入口：`/dashboard`
+
+## 维护原则
+
+- 修改源码后必须按正式构建流程重新打包；仅完成 `npm ci` 不代表构建成功。
+- 只有日志出现 `[BUILD] SUCCESS`，才能确认正式 EXE 已被本次构建覆盖。
+- 旧版本代码、资源、发布包和历史排查文档不保留在项目目录；当前只维护 1.3.4-PRO 的源码、构建输入和必要运行数据。
+- 不创建第二套与 rules、skill、部署指南重复的长期说明。
+- FUXA-Automation 上游参考仓库为 `https://github.com/HugeShao/Fuxa-automation-skill`；截至 2026-08-26，最新提交为 2026-04-23，只有 3 次提交、无 tag/release。当前以本地 `.trae/skills/fuxa-automation` 为维护基线，吸收上游前必须逐项核对 API 和数据模型。

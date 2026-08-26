@@ -1,147 +1,82 @@
 ---
 name: "build-fuxa-exe"
-description: "Builds FUXA Headless EXE in one step. Invoke when user asks to 'pack EXE', 'build EXE', 'package FUXA', '打包EXE', '构建EXE', '一键打包', or after code changes that need a new EXE."
+description: "Builds the ordinary FUXA 1.3.4-2888 Headless Windows EXE. Invoke when asked to package or build the FUXA EXE."
 ---
 
-# Build FUXA Headless EXE
+# 构建普通版 Headless EXE
 
-一键打包 FUXA Headless EXE，自动完成：前端构建 → 文件同步 → pkg 打包。
+普通版当前版本为 `1.3.4-2888`。唯一正式 Windows 产物为 `artifacts/FUXA-1.3.4-2888-win-x64.exe`。
 
-## 前提条件
+## 前提
 
-- 项目根目录: `c:\Users\13971\Downloads\FUXA-master`
-- `@yao-pkg/pkg` 已全局安装 (`npm ls -g @yao-pkg/pkg`)
-- `fuxa-headless-local/package.json` 打包配置已存在
+- 工作目录：`c:\Users\13971\Downloads\FUXA-master`
+- Node.js 18 LTS
+- `@yao-pkg/pkg` 已全局安装
+- 不使用 `fuxa-headless-local/` 作为构建输入
 
-## 打包流程
-
-### 1. 确保 client 依赖已安装
-
-```powershell
-if (-not (Test-Path "client\node_modules\@angular-devkit")) {
-    Write-Host "[1/5] Installing client dependencies..."
-    npm install --no-audit --no-fund --directory=./client
-} else {
-    Write-Host "[1/5] Client dependencies OK"
-}
-```
-
-### 2. 构建前端
+## 固定流程
 
 ```powershell
-Write-Host "[2/5] Building frontend..."
+$ErrorActionPreference = 'Stop'
+$root = (Get-Location).Path
+$inputDir = Join-Path $root 'fuxa-headless'
+$artifact = Join-Path $root 'artifacts\FUXA-1.3.4-2888-win-x64.exe'
+
+npm install --no-audit --no-fund --directory=./server
+npm install --no-audit --no-fund --directory=./client
 npm run build -- --configuration=production --directory=./client
-```
 
-### 3. 同步文件到打包目录
+Remove-Item $inputDir -Recurse -Force -ErrorAction SilentlyContinue
+New-Item $inputDir -ItemType Directory | Out-Null
+New-Item (Join-Path $inputDir 'server') -ItemType Directory | Out-Null
+New-Item (Join-Path $inputDir 'client\dist') -ItemType Directory | Out-Null
+robocopy 'server' (Join-Path $inputDir 'server') /E /NFL /NDL /XD .git node_modules _appdata _db _logs _images _widgets _reports _certificates
+robocopy 'client\dist' (Join-Path $inputDir 'client\dist') /E /NFL /NDL
+Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -Force
 
-```powershell
-Write-Host "[3/5] Syncing files..."
-if (Test-Path "fuxa-headless-local\server") { Remove-Item -Recurse -Force "fuxa-headless-local\server" }
-if (Test-Path "fuxa-headless-local\client\dist") { Remove-Item -Recurse -Force "fuxa-headless-local\client\dist" }
-robocopy "server" "fuxa-headless-local\server" /E /NFL /NDL /XD .git
-robocopy "client\dist" "fuxa-headless-local\client\dist" /E /NFL /NDL
-Copy-Item "app\headless\headless-guardian.js" "fuxa-headless-local\main.js" -Force
-```
-
-### 4. 确保 package.json 存在
-
-```powershell
-Write-Host "[4/5] Checking package config..."
-if (-not (Test-Path "fuxa-headless-local\package.json")) {
-    @"
+@'
 {
   "name": "fuxa-headless",
-  "version": "1.0.0",
+  "version": "1.3.4-2888",
   "bin": "main.js",
   "pkg": {
-    "assets": [
-      "server/**/*",
-      "client/dist/**/*",
-      "_reports/**/*"
-    ],
-    "publicPackages": [
-      "node-snap7",
-      "sqlite3",
-      "serialport",
-      "@serialport/bindings-cpp",
-      "@serialport/parser-readline",
-      "@serialport/parser-regex"
-    ],
+    "assets": ["server/**/*", "client/dist/**/*"],
+    "publicPackages": ["node-snap7", "sqlite3", "serialport", "@serialport/bindings-cpp", "@serialport/parser-readline", "@serialport/parser-regex"],
     "compression": "GZip"
   }
 }
-"@ | Out-File -FilePath "fuxa-headless-local\package.json" -Encoding UTF8
-}
+'@ | Set-Content (Join-Path $inputDir 'package.json') -Encoding UTF8
+
+New-Item (Join-Path $root 'artifacts') -ItemType Directory -Force | Out-Null
+Remove-Item $artifact -Force -ErrorAction SilentlyContinue
+pkg (Join-Path $inputDir 'package.json') --targets node18-win-x64 --output $artifact
+
+$exe = Get-Item $artifact
+Write-Host "Build Complete: $($exe.FullName) ($([math]::Round($exe.Length / 1MB, 1)) MB)"
 ```
 
-### 5. pkg 打包
+`robocopy` 返回 0 到 7 均表示成功或有文件复制；返回值大于 7 时停止流程。构建过程不得读取或复制 `data/` 和现有运行时数据库。
+
+## 启动验证
+
+使用独立测试端口启动，避免影响现有服务：
 
 ```powershell
-Write-Host "[5/5] Packaging EXE (this takes a few minutes)..."
-Remove-Item "fuxa-headless-local\fuxa-headless.exe" -Force -ErrorAction SilentlyContinue
-pkg fuxa-headless-local/package.json --targets node18-win-x64 --output fuxa-headless-local/fuxa-headless.exe
-```
-
-### 6. 输出结果
-
-```powershell
-$exe = Get-Item "fuxa-headless-local\fuxa-headless.exe"
-Write-Host ""
-Write-Host "=========================================="
-Write-Host "  Build Complete!"
-Write-Host "  File: $($exe.FullName)"
-Write-Host "  Size: $([math]::Round($exe.Length/1MB,1)) MB"
-Write-Host "  Time: $($exe.LastWriteTime)"
-Write-Host "=========================================="
-```
-
-## 快速测试
-
-打包完成后必须运行 EXE 验证（检查控制台日志，确认无 httprequest SyntaxError、i18n 正常显示）:
-
-```powershell
-# 先杀掉可能占用的进程
-Get-Process fuxa-headless,node -ErrorAction SilentlyContinue | Stop-Process -Force
-Start-Sleep 2
-
-# 启动 EXE，捕获日志
-$p = Start-Process ".\fuxa-headless-local\fuxa-headless.exe" -WindowStyle Hidden -RedirectStandardOutput "$env:TEMP\fuxa-test-out.log" -RedirectStandardError "$env:TEMP\fuxa-test-err.log" -PassThru
-Write-Host "EXE PID: $($p.Id). Waiting 20s..."
+$p = Start-Process $artifact -ArgumentList '-p','2899' -PassThru
 Start-Sleep 20
-
-# 验证 HTTP 可达
-try { $resp = Invoke-WebRequest -Uri "http://127.0.0.1:2899/" -UseBasicParsing -TimeoutSec 10; Write-Host "HTTP OK: $($resp.StatusCode)" }
-catch { Write-Host "HTTP FAIL: $_" }
-
-# 验证关键日志（httprequest SyntaxError 必须不存在）
-$out = Get-Content "$env:TEMP\fuxa-test-out.log" -ErrorAction SilentlyContinue
-if ($out -match "SyntaxError.*import statement outside a module") {
-    Write-Host "FAIL: httprequest SyntaxError 存在！需要检查 patch-nodered.js 是否已运行"
-} elseif ($out -match "httprequest") {
-    Write-Host "WARN: httprequest 相关日志，请检查"
-} else {
-    Write-Host "PASS: httprequest 无 SyntaxError"
-}
-if ($out -match "Started flows") { Write-Host "PASS: Node-RED 正常启动" }
-else { Write-Host "WARN: Node-RED 未启动" }
-
-# 验证 i18n（检查 HTML 中是否显示翻译文本而非键名）
-$html = $out; # EXE 日志含完整输出
-if ($out -match "plugin-installed") { Write-Host "INFO: 插件已安装" }
-
-# 停止进程
-Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+Invoke-WebRequest 'http://127.0.0.1:2899/api/version' -UseBasicParsing
+Invoke-WebRequest 'http://127.0.0.1:2899/' -UseBasicParsing
+Stop-Process -Id $p.Id -Force
 ```
 
-## 注意事项
+确认日志包含 `FUXA V.1.3.4-2888`、`FUXA started!` 和 `WebServer is running`。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
 
-- 打包耗时约 5-10 分钟（取决于机器性能）
-- 最终 EXE 约 320-330 MB
-- 使用 GZip 压缩（Brotli 会导致 pkg 卡死）
-- Node.js 版本必须是 18.x（node-snap7 兼容性）
-- 工作目录必须是项目根目录
-- 端口传递: 环境变量 PORT > -p CLI 参数 > 默认 1881
-- **Node-RED 4.x 兼容**: `server/scripts/patch-nodered.js` 在 `npm install` 后自动运行，修复 httprequest 节点的 got v12 ESM 嵌套冲突（`@node-red/nodes/node_modules/got` 为 ESM-only，需强制解析到外层 CJS got v11）
-- **i18n 修复**: `client/src/assets/i18n/en.json` 已恢复（1880 键），所有 12 语言已补充 `device.plugins-notice-*` 翻译。修改 i18n 后必须重新 `npm run build` 前端再打包
-- **S7 驱动**: `server/runtime/devices/s7/index.js` 不调用 `Disconnect()`，避免 `STATUS_ACCESS_VIOLATION` 崩溃
+## 原生模块验证
+
+```powershell
+node -e "console.log(require('modbus-serial').name || 'modbus-serial loaded'); console.log(typeof require('node-snap7').S7Client === 'function' ? 'node-snap7 loaded' : 'node-snap7 invalid')"
+```
+
+## 目录边界
+
+不得提交 `node_modules/`、`data/`、运行时 `_appdata/`、`_db/`、`_logs/`、`_images/`、`_widgets/`、`_reports/`、`_certificates/`、`fuxa-headless/`、`fuxa-headless-local/`、`artifacts/`、日志或 EXE。不得删除或清空已有运行数据。

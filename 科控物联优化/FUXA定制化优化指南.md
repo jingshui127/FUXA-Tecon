@@ -1,7 +1,7 @@
 # FUXA Headless EXE 定制化优化指南
 
 > 最后更新: 2026-08-10
-> 当前版本: 1.3.4 (基于上游 v1.3.4-2888)
+> 当前版本: 1.3.4-2888
 > 分支: `1.3.4-2888`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
 
@@ -115,8 +115,8 @@ process.on('exit', function () {
 **命令行**:
 
 ```powershell
-fuxa-headless.exe              # 默认端口 1881
-fuxa-headless.exe -p 1882      # 指定端口
+FUXA-1.3.4-2888-win-x64.exe              # 默认端口 1881
+FUXA-1.3.4-2888-win-x64.exe -p 1882      # 指定端口
 ```
 
 #### 开发调试守护脚本
@@ -223,7 +223,7 @@ const got = require(require.resolve('got', {
 | i18n 翻译键          | 为 12 种语言补充缺失的`device.plugins-notice-*` 按钮翻译键（commit ed6edf19），设备页插件通知对话框显示中文（"插件和驱动程序"/"不再显示此消息"/"打开插件"）而非原始键名                                        |
 | httprequest 嵌套 ESM | 修复 Node-RED 4.x`@node-red/nodes/node_modules/got` v12（ESM-only）与外层 got v11 的嵌套冲突，消除 `SyntaxError: Cannot use import statement outside a module` 警告，确保 HTTP Request 节点在 EXE 中正常工作 |
 
-### 2.9 上游 v1.3.4-2881 合并（2026-08-04）
+### 2.9 上游 v1.3.4-2888 合并（2026-08-04）
 
 从 `frangoteam/FUXA` 同步 37 个提交。
 
@@ -357,12 +357,12 @@ getBrandLogo(): string | null { ... }
 
 ### 3.1 GitHub Actions 自动构建（推荐）
 
-推送代码到 `1.3.4-2881` 分支后自动触发构建，产物上传到 Release。
+推送代码到 `1.3.4-2888` 分支后自动触发构建，产物上传到 Release。
 
 **手动触发**:
 
 ```bash
-gh workflow run "Build FUXA Headless (Latest)" --ref 1.3.4-2881
+gh workflow run "Build FUXA Headless (Latest)" --ref 1.3.4-2888
 ```
 
 或浏览器打开 [Actions 页面](https://github.com/jingshui127/FUXA-Tecon/actions) → 选择 workflow → Run workflow。
@@ -393,19 +393,19 @@ gh release download headless-latest --repo jingshui127/FUXA-Tecon --pattern "*.e
 cd client && npm run build -- --configuration=production
 
 # Step 2: 同步文件
-robocopy "server" "fuxa-headless-local\server" /E /NFL /NDL /XD .git
-robocopy "client\dist" "fuxa-headless-local\client\dist" /E /NFL /NDL
-Copy-Item "app\headless\headless-guardian.js" "fuxa-headless-local\main.js" -Force
+robocopy "server" "fuxa-headless\server" /E /NFL /NDL /XD .git
+robocopy "client\dist" "fuxa-headless\client\dist" /E /NFL /NDL
+Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
 
 # Step 3: 打包
-pkg fuxa-headless-local/package.json --targets node18-win-x64 --output fuxa-headless-local/fuxa-headless.exe
+pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.4-2888-win-x64.exe
 ```
 
 ### 3.3 测试验证
 
 ```powershell
 # 启动
-.\fuxa-headless-local\fuxa-headless.exe -p 1882
+.\artifacts\FUXA-1.3.4-2888-win-x64.exe -p 1882
 
 # 访问 http://127.0.0.1:1882/
 ```

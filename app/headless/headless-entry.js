@@ -1,22 +1,21 @@
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
 const { fork } = require('child_process');
 
 /**
  * FUXA Headless Entry Point
  * 
  * This script is the entry point for standalone binaries.
- * It ensures the project data directory exists in the user's home folder
+ * It ensures the project data directory exists beside the executable
  * and then launches the FUXA server.
  */
 
 async function bootstrap() {
     console.log('FUXA Headless starting...');
 
-    // 1. Determine the user data directory (similar to Electron app)
-    const homeDir = os.homedir();
-    const fuxaDataDir = path.join(homeDir, 'fuxa-headless-data');
+    // 1. Determine the user data directory beside the executable
+    const exeDir = path.dirname(process.execPath);
+    const fuxaDataDir = path.join(exeDir, 'data');
     
     // 2. Ensure the directory exists (Electron-style)
     if (!fs.existsSync(fuxaDataDir)) {

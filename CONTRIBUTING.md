@@ -39,6 +39,14 @@ Please ensure you follow the coding standards used through-out the existing code
 - Indent with 4-spaces, no tabs.
 - Opening brace on same line as if/for/function and so on, closing brace on its own line.
 
+## 普通版维护边界
+
+当前普通版版本为 `1.3.4-2888`，正式发布分支为 `1.3.4-2888`。使用 Node.js 18 LTS；前端生产构建在 `client` 目录执行，Headless EXE 统一由 `.trae/skills/build-fuxa-exe/SKILL.md` 的临时隔离流程生成。
+
+源码构建输入仅允许来自 `server`、`client/dist` 和 `app/headless`。`data/`、`_appdata/`、`_db/`、`_logs/`、`_images/`、`_widgets/`、`_reports/`、`_certificates/` 是运行时数据或资源，不得清空、覆盖或作为构建输入。`node_modules/`、`fuxa-headless/`、`fuxa-headless-local/`、`artifacts/`、日志和 EXE 均不得提交。
+
+健康检查使用 `GET /api/version`，并确认返回版本为 `1.3.4-2888`。使用 S7 或 Modbus 时，必须实际启动服务并验证 `node-snap7`、`modbus-serial` 能被运行时加载。
+
 ## 🚫 Do NOT Commit Build Artifacts
 
 Please do NOT include generated or compiled files in Pull Requests.

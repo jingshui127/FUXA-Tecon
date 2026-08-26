@@ -89,3 +89,9 @@ server/_appdata
 #client/package-lock.json
 
 server/_widgets
+
+# Headless build inputs and generated artifacts
+fuxa-headless/
+fuxa-headless-local/
+artifacts/
+*.exe

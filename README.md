@@ -9,6 +9,8 @@
 
 FUXA is a **web-based SCADA / HMI platform** for industrial automation, IoT and real-time process visualization.
 
+普通版当前版本：`1.3.4-2888`。Headless Windows 正式产物：`artifacts/FUXA-1.3.4-2888-win-x64.exe`。
+
 It allows you to build modern dashboards, connect industrial devices and monitor machines using standard industrial protocols such as **Modbus, OPC-UA, MQTT and Siemens S7**.
 
 ⭐ If you find FUXA useful, please consider giving the project a star.
@@ -195,30 +197,22 @@ In vscode: Debug ‘Server & Client’
 Build the frontend for production
 ```
 cd ./client
-ng build --configuration=production
+npm run build -- --configuration=production
 ```
 
 ## Who uses FUXA
 
 FUXA is used in industrial automation, IoT, monitoring and research environments.
 
-### FUXA Pro
+### 普通版维护入口
 
-If you are using FUXA in production, consider supporting the development of the project by using **FUXA Pro**.**.
-
-FUXA Pro includes additional professional features such as:
-
-- White-label branding (custom logo and labels)
-- Additional resources and templates
-- User and script event logging
-- Unlimited installations
-
-The open-source version of FUXA remains fully available and continues to evolve with community contributions.
-
-**License:** one-time payment – €100
+- 构建规范：`.trae/skills/build-fuxa-exe/SKILL.md`
+- 服务健康检查：`GET /api/version`
+- Node-RED 管理入口：`/nodered`
+- Node-RED HTTP 节点和 Dashboard 入口：`/dashboard`
+- Headless 运行数据：EXE 同目录下的 `data/`
 
 More information:
-https://frangoteam.org
 
 ## 🤝 Contributing
 

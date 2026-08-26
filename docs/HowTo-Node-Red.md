@@ -67,7 +67,7 @@ Once installed, view your Node-RED dashboards:
 
 1. Open your FUXA project in the editor
 2. Add an iframe component to your view
-3. Set the URL to: `/dashboard`
+3. Set the URL to: `/dashboard` (or `${BASE_PATH}/dashboard` behind a reverse proxy)
 4. Configure the iframe size and properties as needed
 5. If you only want to display a single page you can adjust dashboard settings and use `/dashboard/page1` or the name of your page
 

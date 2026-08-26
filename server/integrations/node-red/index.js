@@ -3,6 +3,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const BASE_PATH = (process.env.BASE_PATH || '').replace(/\/+$/, '');
+const NODERED_PATH = `${BASE_PATH}/nodered`;
+const DASHBOARD_PATH = `${BASE_PATH}/dashboard`;
 
 const BLOCKED_DEVICE_PROPERTY_KEYS = new Set([
     '__proto__',
@@ -147,7 +150,7 @@ function createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt }) {
     return (req, res, next) => {
         // Public dashboard UI and its HTTP APIs (served from httpNodeRoot/ui.path).
         // baseUrl comes from Express mount point and is not affected by query/path tricks.
-        if (req.baseUrl === '/dashboard') return next();
+        if (req.baseUrl === DASHBOARD_PATH) return next();
 
         if (!settings.secureEnabled || settings.nodeRedAuthMode === 'legacy-open') {
             return next();
@@ -224,9 +227,9 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
 
     // Minimal Node-RED settings; extend only what is really needed
     const redSettings = {
-        httpAdminRoot: '/nodered/',
+        httpAdminRoot: `${NODERED_PATH}/`,
         // Serve Node-RED HTTP nodes under /dashboard to avoid intercepting FUXA routes
-        httpNodeRoot: '/dashboard',
+        httpNodeRoot: DASHBOARD_PATH,
         userDir,
         nodesDir: [path.join(__dirname, 'node-red-contrib-fuxa')],
         flowFile: 'flows.json',
@@ -320,8 +323,8 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
 
     // Mount Node-RED admin/editor under /nodered; HTTP nodes (including dashboard)
     // are served from httpNodeRoot ('/dashboard') so they appear at /dashboard/... etc.
-    app.use('/nodered', allowDashboard, RED.httpAdmin);
-    app.use('/dashboard', allowDashboard, RED.httpNode);
+    app.use(NODERED_PATH, allowDashboard, RED.httpAdmin);
+    app.use(DASHBOARD_PATH, allowDashboard, RED.httpNode);
 
     await RED.start();
 
@@ -379,15 +382,15 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
             // Skip API routes and static assets
             if (req.path.startsWith('/api/') ||
                 req.path.includes('.') ||
-                req.path.startsWith('/nodered') ||
-                req.path.startsWith('/dashboard')) {
+                req.path.startsWith(NODERED_PATH) ||
+                req.path.startsWith(DASHBOARD_PATH)) {
                 return next();
             }
             res.sendFile(path.join(settings.httpStatic, 'index.html'));
         });
     }
 
-    logger.info('[Node-RED] Started at /nodered');
+    logger.info(`[Node-RED] Started at ${NODERED_PATH}`);
 }
 
 module.exports = { mountNodeRedIfInstalled, createNodeRedAuthMiddleware, createDevicePropertyHelpers };

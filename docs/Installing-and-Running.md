@@ -23,40 +23,31 @@ Headless binaries are available as GitHub Actions artifacts. You need to be logg
 
 Click on the latest workflow run, scroll down to "Artifacts", and download the appropriate file for your platform:
 
-- **Linux**: `fuxa-headless-linux-x64` (or `fuxa-headless-linux-arm64` for ARM devices)
-- **Windows**: `fuxa-headless-win-x64.exe`
-- **macOS**: `fuxa-headless-macos-x64` (or `fuxa-headless-macos-arm64` for Apple Silicon)
+- **Windows x64**: `FUXA-1.3.4-2888-win-x64.exe`
 
 ### Running Headless Binaries
 
-#### Linux
-1. Download the Linux binary (e.g., `fuxa-headless-linux-x64`).
-2. Make it executable: `chmod +x fuxa-headless-linux-x64`
-3. Run: `./fuxa-headless-linux-x64`
-4. Access via web browser at `http://localhost:1881` (or the device's IP:1881)
-
 #### Windows
-1. Download the Windows executable (e.g., `fuxa-headless-win-x64.exe`).
-2. Double-click the `.exe` file to run.
-3. Access via web browser at `http://localhost:1881`
 
-#### macOS
-1. Download the macOS binary (e.g., `fuxa-headless-macos-x64`).
-2. Make it executable: `chmod +x fuxa-headless-macos-x64`
-3. Run: `./fuxa-headless-macos-x64`
+1. Download `FUXA-1.3.4-2888-win-x64.exe`.
+2. Place it in a writable directory and double-click the `.exe` file to run.
+3. The executable creates and uses `data/` beside itself for runtime data.
 4. Access via web browser at `http://localhost:1881`
+
+
 
 ### Headless Features
 - **Self-contained**: No external dependencies or installations required.
-- **Data persistence**: User data is stored in `~/.fuxa-headless-data` on the host system.
-- **Cross-platform**: Runs on Windows, macOS, and Linux (including ARM architectures).
+- **Data persistence**: User data is stored in `data/` beside the executable.
+- **Runtime logs**: Logs are stored in `data/_logs/`.
+- **Platform scope**: The current packaged artifact is Windows x64.
 - **Industrial protocols**: Full support for Modbus, OPC-UA, MQTT, Siemens S7, and more.
 - **Web interface**: Access the full FUXA editor and dashboards via any web browser.
 
 ### Troubleshooting
 - Ensure port 1881 is available and not blocked by firewalls.
 - For embedded devices, check system resources (RAM, CPU) as FUXA uses Node.js runtime.
-- Logs are available in the user data directory (`~/.fuxa-headless-data/logs`).
+- Logs are stored in `data/_logs/`.
 
 **Access with Web browser once installed non Electron Install**
 

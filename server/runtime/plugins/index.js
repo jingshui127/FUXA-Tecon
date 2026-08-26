@@ -291,7 +291,7 @@ function _normalizeAddPluginOptions(options) {
 function createDefaultPlugins() {
     const registry = {};
     registry['node-opcua'] = new Plugin('node-opcua', './opcua', 'OPCUA', '2.149.0', PluginGroupType.connectionDevice, true);
-    registry['modbus-serial'] = new Plugin('modbus-serial', './modbus', 'Modbus', '8.0.19', PluginGroupType.connectionDevice, true);
+    registry['modbus-serial'] = new Plugin('modbus-serial', './modbus', 'Modbus', '8.0.25', PluginGroupType.connectionDevice, true);
     registry['node-bacnet'] = new Plugin('node-bacnet', './bacnet', 'BACnet', '0.2.4', PluginGroupType.connectionDevice, true);
     registry['node-snap7'] = new Plugin('node-snap7', './s7', 'SiemensS7', '1.0.9', PluginGroupType.connectionDevice, true);
     registry['ads-client'] = new Plugin('ads-client', './adsclient', 'ADSclient', '2.1.0', PluginGroupType.connectionDevice, true);

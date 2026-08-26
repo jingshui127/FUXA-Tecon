@@ -127,7 +127,7 @@ foreach ($path in $paths) {
 
 ## EXE 部署说明
 
-- **单文件运行**: `fuxa-headless.exe` 自包含 Node.js 运行时，直接拷贝到任意 Windows 电脑即可运行
+- **单文件运行**: `fuxa-pro-headless.exe` 自包含 Node.js 运行时，直接拷贝到任意 Windows 电脑即可运行
 - **首次启动**: 自动在 EXE 同级创建 `data/` 目录（数据库、日志、设置）
-- **端口修改**: `fuxa-headless.exe -p 8899`
+- **端口修改**: `fuxa-pro-headless.exe -p 8899`
 - **更换 LOGO**: 在 EXE 同级创建 `customization/` 文件夹，放入 `config.json`、`logo.svg`、`favicon.ico` 即可覆盖默认品牌标识（可选，不影响运行）

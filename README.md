@@ -54,15 +54,19 @@ d:\FUXA\FUXApro最新版
 
 ## 项目结构
 
-- `server\`：当前后端源码
-- `client\`：当前前端源码和构建结果
+- `server\`：后端源码
+- `client\`：前端源码和构建结果
 - `app\headless\`：Headless 启动入口源码
 - `fuxa-headless\`：正式 Headless 构建输入目录
-- `artifacts\`：正式构建产物目录
-- `docs\`：当前文档
-- `docs\`：当前 1.3.4-PRO 文档
-- `archive\`：不保留旧版本项目、旧包或历史构建日志
+- `artifacts\`：本地构建产物和运行时 data，不提交到 Git
+- `docs\`：当前运行、迁移和自动化文档
+- `.trae\rules\`：必须遵守的项目规则
+- `.trae\skills\`：可执行技能和 API 参考
 
-## 其他工作流
+## 文档入口
 
-Docker、普通 Node.js 开发运行和 Electron 打包流程仍保留在项目源码中，但不属于当前 Windows Headless 发布流程。进行发布、部署或升级时，以 `1.3.4-PRO` 的 Headless 规则、构建 skill 和部署指南为准；历史方案只用于参考，不要直接套用旧版本命令。
+- 构建和发布：`.trae\rules\fuxa-pro-build.md`、`.trae\skills\build-fuxa-exe\SKILL.md`
+- 运行、迁移和插件：`docs\PLUGIN_DEPLOYMENT_GUIDE.md`
+- 用户操作：`docs\FUXA_PRO_用户操作手册.md`
+- REST API 自动化：`.trae\skills\fuxa-automation\SKILL.md`
+- 自动化数据模型：`.trae\skills\fuxa-automation\references\data-models.md`

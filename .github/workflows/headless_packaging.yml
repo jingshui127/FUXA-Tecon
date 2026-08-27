@@ -81,7 +81,7 @@ jobs:
             compression = "GZip"
           }
         }
-        $pkgJson | ConvertTo-Json -Depth 5 | Out-File -Encoding utf8 fuxa-headless/package.json
+        $pkgJson | ConvertTo-Json -Depth 5 | Set-Content -Path fuxa-headless/package.json -Encoding ASCII
       shell: powershell
 
     - name: Install yao-pkg
@@ -90,9 +90,8 @@ jobs:
 
     - name: Build Standalone Binaries (Headless)
       run: |
-        $target = "node18-win-x64"
         New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-        pkg fuxa-headless/package.json --targets $target --output artifacts/FUXA-1.3.4-2888-win-x64.exe
+        pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.4-2888-win-x64.exe
       shell: powershell
 
     - name: Upload artifact

@@ -53,43 +53,36 @@ jobs:
 
     - name: Setup Headless Package Directory
       run: |
-        rm -rf fuxa-headless
-        mkdir -p fuxa-headless/server
-        mkdir -p fuxa-headless/client/dist
+        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue fuxa-headless
+        New-Item -ItemType Directory -Force -Path fuxa-headless/server | Out-Null
+        New-Item -ItemType Directory -Force -Path fuxa-headless/client/dist | Out-Null
 
-        rsync -a --exclude '.git' --exclude 'node_modules' --exclude '_appdata' --exclude '_db' --exclude '_logs' --exclude '_images' --exclude '_widgets' --exclude '_reports' --exclude '_certificates' server/ fuxa-headless/server/
-        rsync -a client/dist/ fuxa-headless/client/dist/
+        # Copy server files, excluding build/runtime directories
+        Copy-Item -Recurse -Force "server\*" "fuxa-headless\server\" -Exclude 'node_modules', '_appdata', '_db', '_logs', '_images', '_widgets', '_reports', '_certificates' -ErrorAction SilentlyContinue
 
-        cp app/headless/headless-guardian.js fuxa-headless/main.js
-      shell: bash
+        # Copy client/dist files
+        if (Test-Path client/dist) {
+          Copy-Item -Recurse -Force "client\dist\*" "fuxa-headless\client\dist\" -ErrorAction SilentlyContinue
+        }
+
+        # Copy headless main.js
+        Copy-Item -Force "app\headless\headless-guardian.js" "fuxa-headless\main.js"
+      shell: powershell
 
     - name: Create Package Config
       run: |
-        cat > fuxa-headless/package.json <<'EOF'
-        {
-          "name": "fuxa-headless",
-          "version": "1.3.4-2888",
-          "bin": "main.js",
-          "pkg": {
-            "assets": [
-              "server/**/*",
-              "client/dist/**/*",
-              "_reports/**/*"
-            ],
-            "publicPackages": [
-              "node-snap7",
-              "sqlite3",
-              "serialport",
-              "@serialport/bindings-cpp",
-              "@serialport/parser-readline",
-              "@serialport/parser-regex",
-              "@serialstream/bindings-cpp"
-            ],
-            "compression": "GZip"
+        $pkgJson = @{
+          name = "fuxa-headless"
+          version = "1.3.4-2888"
+          bin = "main.js"
+          pkg = @{
+            assets = @("server/**/*", "client/dist/**/*", "_reports/**/*")
+            publicPackages = @("node-snap7", "sqlite3", "serialport", "@serialport/bindings-cpp", "@serialport/parser-readline", "@serialport/parser-regex", "@serialstream/bindings-cpp")
+            compression = "GZip"
           }
         }
-        EOF
-      shell: bash
+        $pkgJson | ConvertTo-Json -Depth 5 | Out-File -Encoding utf8 fuxa-headless/package.json
+      shell: powershell
 
     - name: Install yao-pkg
       run: npm install -g @yao-pkg/pkg
@@ -97,25 +90,10 @@ jobs:
 
     - name: Build Standalone Binaries (Headless)
       run: |
-        if [ "$RUNNER_OS" = "Linux" ]; then
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            TARGET="node18-linux-arm64"
-          else
-            TARGET="node18-linux-x64"
-          fi
-        elif [ "$RUNNER_OS" = "Windows" ]; then
-          TARGET="node18-win-x64"
-        elif [ "$RUNNER_OS" = "macOS" ]; then
-          if [ "${{ matrix.arch }}" = "arm64" ]; then
-            TARGET="node18-macos-arm64"
-          else
-            TARGET="node18-macos-x64"
-          fi
-        fi
-        mkdir -p artifacts
-        pkg fuxa-headless/package.json --targets $TARGET --output artifacts/FUXA-1.3.4-2888-win-x64.exe
-      shell: bash
-      working-directory: .
+        $target = "node18-win-x64"
+        New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+        pkg fuxa-headless/package.json --targets $target --output artifacts/FUXA-1.3.4-2888-win-x64.exe
+      shell: powershell
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4

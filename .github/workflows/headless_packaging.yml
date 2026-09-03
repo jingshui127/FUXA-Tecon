@@ -103,11 +103,11 @@ jobs:
     - name: Upload to Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: headless-latest
-        name: FUXA Headless Latest Build
+        tag_name: headless-latest-${{ github.run_id }}
+        name: headless-latest-${{ github.run_id }}
         body: |
           FUXA Headless (守护进程模式) 自动构建
-          
+
           Branch: ${{ github.ref_name }}
           Commit: ${{ github.sha }}
           Build Date: ${{ github.event.repository.updated_at }}

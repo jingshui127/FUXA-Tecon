@@ -57,8 +57,8 @@ jobs:
         New-Item -ItemType Directory -Force -Path fuxa-headless/server | Out-Null
         New-Item -ItemType Directory -Force -Path fuxa-headless/client/dist | Out-Null
 
-        # Copy server files, excluding build/runtime directories
-        Copy-Item -Recurse -Force "server\*" "fuxa-headless\server\" -Exclude 'node_modules', '_appdata', '_db', '_logs', '_images', '_widgets', '_reports', '_certificates' -ErrorAction SilentlyContinue
+        # Copy ALL server files including node_modules (pkg bundles them into the EXE)
+        Copy-Item -Recurse -Force "server\*" "fuxa-headless\server\" -ErrorAction SilentlyContinue
 
         # Copy client/dist files
         if (Test-Path client/dist) {
@@ -77,8 +77,7 @@ jobs:
           bin = "main.js"
           pkg = @{
             assets = @("server/**/*", "client/dist/**/*", "_reports/**/*")
-            publicPackages = @("node-snap7", "sqlite3", "serialport", "@serialport/bindings-cpp", "@serialport/parser-readline", "@serialport/parser-regex", "@serialstream/bindings-cpp")
-            compression = "GZip"
+            compression = "Brotli"
           }
         }
         $pkgJson | ConvertTo-Json -Depth 5 | Set-Content -Path fuxa-headless/package.json -Encoding ASCII

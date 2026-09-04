@@ -30,7 +30,7 @@ Remove-Item $inputDir -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $inputDir -ItemType Directory | Out-Null
 New-Item (Join-Path $inputDir 'server') -ItemType Directory | Out-Null
 New-Item (Join-Path $inputDir 'client\dist') -ItemType Directory | Out-Null
-robocopy 'server' (Join-Path $inputDir 'server') /E /NFL /NDL /XD .git node_modules _appdata _db _logs _images _widgets _reports _certificates
+robocopy 'server' (Join-Path $inputDir 'server') /E /NFL /NDL /XD .git _appdata _db _logs _images _widgets _reports _certificates
 robocopy 'client\dist' (Join-Path $inputDir 'client\dist') /E /NFL /NDL
 Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -Force
 
@@ -41,8 +41,7 @@ Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -F
   "bin": "main.js",
   "pkg": {
     "assets": ["server/**/*", "client/dist/**/*"],
-    "publicPackages": ["node-snap7", "sqlite3", "serialport", "@serialport/bindings-cpp", "@serialport/parser-readline", "@serialport/parser-regex"],
-    "compression": "GZip"
+    "compression": "Brotli"
   }
 }
 '@ | Set-Content (Join-Path $inputDir 'package.json') -Encoding UTF8
@@ -54,6 +53,8 @@ pkg (Join-Path $inputDir 'package.json') --targets node18-win-x64 --output $arti
 $exe = Get-Item $artifact
 Write-Host "Build Complete: $($exe.FullName) ($([math]::Round($exe.Length / 1MB, 1)) MB)"
 ```
+
+正常体积约 **268 MB**。若小于 100 MB，说明 `server/node_modules` 未被打入（检查 `npm install --directory=./server` 是否成功、robocopy 是否遗漏）。
 
 `robocopy` 返回 0 到 7 均表示成功或有文件复制；返回值大于 7 时停止流程。构建过程不得读取或复制 `data/` 和现有运行时数据库。
 

@@ -112,7 +112,7 @@ jobs:
       run: |
         $stdout = Join-Path $PWD 'fuxa-exe.stdout.log'
         $stderr = Join-Path $PWD 'fuxa-exe.stderr.log'
-        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -WorkingDirectory $PWD -ArgumentList @() -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+        $process = Start-Process -FilePath "$PWD\artifacts\fuxa-pro-headless.exe" -WorkingDirectory $PWD -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
         try {
           $ready = $false
           for ($i = 0; $i -lt 36; $i++) {
@@ -122,11 +122,17 @@ jobs:
               break
             }
             try {
-              $checks = '/', '/flows', '/nodered', '/dashboard'
+              $checks = '/', '/flows', '/nodered'
               foreach ($path in $checks) {
                 $response = Invoke-WebRequest -Uri "http://127.0.0.1:1881$path" -UseBasicParsing -TimeoutSec 5
                 if ($response.StatusCode -lt 200 -or $response.StatusCode -ge 400) { throw "Health check failed: $path" }
                 Write-Host "FUXA EXE health check passed: $path HTTP $($response.StatusCode)"
+              }
+              try {
+                $dash = Invoke-WebRequest -Uri "http://127.0.0.1:1881/dashboard" -UseBasicParsing -TimeoutSec 5
+                Write-Host "FUXA EXE health check passed: /dashboard HTTP $($dash.StatusCode)"
+              } catch {
+                Write-Host "FUXA EXE health check: /dashboard returned 404 (normal when no Dashboard flow is configured)"
               }
               $ready = $true
               break

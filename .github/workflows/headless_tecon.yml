@@ -39,7 +39,7 @@ jobs:
 
     - name: Install server dependencies
       run: |
-        npm ci --prefer-offline --no-audit --no-fund
+        npm ci --prefer-offline --no-audit --no-fund --ignore-scripts
       working-directory: ./server
 
     - name: Setup Headless Package Directory

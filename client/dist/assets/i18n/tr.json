@@ -338,6 +338,7 @@
 	"shapes.action-stop": "Dur",
 	"shapes.action-clockwise": "Saat yönünde dön",
 	"shapes.action-anticlockwise": "Saat yönünün tersine dön",
+	"shapes.action-moveByTags": "Tag ile taşı",
 	"shapes.action-downup": "Yukarı Aşağı",
 
 	"pipe.property-props": "Özellik",
@@ -381,6 +382,9 @@
 	"slider.property-slider-color": "Bağlantı rengi",
 	"slider.property-slider-background": "Zemin rengi",
 	"slider.property-slider-handle": "Çubuk rengi",
+	"slider.property-slider-width": "Bar genişliği",
+	"slider.property-handle-width": "İşaretçi genişliği",
+	"slider.property-handle-height": "İşaretçi yüksekliği",
 
 	"html-switch.property-off-value": "Off Değeri",
 	"html-switch.property-on-value": "On Değeri",
@@ -508,6 +512,14 @@
 	"gauges.property-actions": "Eylemler",
 	"gauges.property-action-type": "Tür",
 	"gauges.property-action-param": "Eylem ID",
+	"gauges.property-action-duration": "Süre",
+	"gauges.property-action-tagX": "Konum X tag",
+	"gauges.property-action-tagY": "Konum Y tag",
+	"gauges.property-action-axis": "Eksen",
+	"gauges.property-action-value-min": "Değer min",
+	"gauges.property-action-value-max": "Değer max",
+	"gauges.property-action-position-min": "Konum min",
+	"gauges.property-action-position-max": "Konum max",
 	"gauges.property-events-mapping-from": "Bağlam değişkeni",
 	"gauges.property-map-variable": "Atama için bağlam değişkeni ekle",
 	"gauges.property-head-remove-mapvariable": "Atamayı sil",
@@ -686,5 +698,6 @@
 	"msg.login-username-required": "Kullanıcı adı girin",
 	"msg.login-password-required": "Şifre girin",
 	"msg.signin-failed": "Yetkisiz giriş.",
-    "device.tag-uns-path": "UNS Path"
+    "device.tag-uns-path": "UNS Path",
+    "gauges.property-icon-none": "Simge yok"
 }

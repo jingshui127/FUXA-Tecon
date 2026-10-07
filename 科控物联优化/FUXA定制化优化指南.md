@@ -26,7 +26,7 @@
 | `app/headless/headless-guardian.js`                                 | 新建 | 双模式 EXE 入口（Guardian + Server）                                              |
 | `server/guard.js`                                                   | 新建 | 开发调试用守护脚本 (`node guard.js -p PORT`)                                    |
 | `.github/workflows/headless_packaging.yml`                          | 修改 | GitHub Actions 自动构建配置                                                       |
-| `server/runtime/devices/s7/index.js`                                | 修改 | 跳过 Disconnect + exit handler（上游 v1.3.4 修复了 Promise reject 等关键 bug）    |
+| `server/runtime/devices/s7/index.js`                                | 修改 | 跳过 Disconnect + exit handler（上游已修复 Promise reject 等关键 bug）    |
 | `server/runtime/devices/index.js`                                   | 修改 | 设备 start/stop try-catch 保护                                                    |
 | `server/runtime/index.js`                                           | 修改 | 异步重启 + 500ms 延迟                                                             |
 | `server/api/projects/index.js`                                      | 修改 | 视图修改免重启 + upload mkdir 修复 + 异步重启                                     |
@@ -65,7 +65,7 @@
 
 **文件**: `server/runtime/devices/s7/index.js`
 
-#### 上游 v1.3.4 修复（已合并）
+#### 上游修复（已合并）
 
 | 修复项                   | 说明                                                                                                                                                |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -383,7 +383,7 @@ getBrandLogo(): string | null { ... }
 
 | 位置 | 内容 |
 | ---- | ---- |
-| 分支名 | 本地 `git branch -m 1.3.4-2888 1.3.5-2918`，推送后删远程旧分支 |
+| 分支名 | 本地 `git branch -m` 重命名分支，推送后删远程旧分支 |
 | `headless_packaging.yml` | `branches`、pkg 版本、EXE 名、Artifact 名 |
 | `docker_release.yml` | `version` |
 | 运行时日志 | 自动读 `package.json`，无需改代码 |
@@ -487,7 +487,7 @@ pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-
 
 **根因**: `_readVars/_writeDB/_writeVars` 错误回调中 `return _getErr(err)` 仅格式化错误字符串，未调用 `reject()`，Promise 永久 pending。
 
-**修复**: 上游 v1.3.4 已修复，改为 `return reject(_getErr(err))`。
+**修复**: 上游已修复，改为 `return reject(_getErr(err))`。
 
 ### 4.3 S7 标签解析失败（旧版）
 
@@ -495,7 +495,7 @@ pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-
 
 **根因**: `_getTagItem()` 访问 `s7client['S7AreaDB']` 时 s7client 未初始化。
 
-**修复**: 上游 v1.3.4 通过懒加载 datatypes 从真实 S7Client 实例解决。旧版方案（模块级 S7Area 常量）已废弃。
+**修复**: 上游通过懒加载 datatypes 从真实 S7Client 实例解决。旧版方案（模块级 S7Area 常量）已废弃。
 
 ### 4.4 pkg 端口参数崩溃
 
@@ -629,7 +629,7 @@ curl.exe -fL --retry 10 -H "Authorization: token $token" -H "Accept: application
 - [X] 修复 `server/package.json` 缺少 `modbus-serial` 和 `node-snap7` 依赖，导致 EXE 中插件未识别
 - [X] 修复 Node-RED httprequest 节点 `got` 包 pkg ESM 导入失败，新增 `postinstall` 自动补丁
 - [X] **品牌化定制**（2026-08-10）— 通过 `data/brand.json` 实现全站品牌替换（名称、Logo、标题、footer），覆盖加载页、侧边栏、关于对话框、用户信息对话框、PDF 报表，详见 2.12 节
-- [X] **官方 1.3.5 全量同步**（2026-10-07）— merge 官方 master（75 提交），版本 `1.3.4-2888` → `1.3.5-2918`，详见 2.13 节
+- [X] **官方 1.3.5 全量同步**（2026-10-07）— merge 官方 master（75 提交），版本升级至 `1.3.5-2918`，详见 2.13 节
 - [X] **版本统一**（2026-10-07）— 分支名/EXE 命名/workflow/docker/文档/skill 全部统一为 `1.3.5-2918`，提交 `641961a1`
 - [X] **配方管理修复**（2026-10-07）— 官方 recipes 下载/上传模板 400 bug，模板优先修复，单元 112 通过 + 端到端 202，提交 `77783dff`，详见 2.14 节
 - [X] **GitHub Actions 构建恢复**（2026-10-07）— `1.3.5-2918` 分支推送自动触发 `headless_packaging.yml` 构建成功，产物 `FUXA-1.3.5-2918-win-x64.exe`（269MB）上传 Release `headless-latest-{run_id}`

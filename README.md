@@ -9,7 +9,7 @@
 
 FUXA is a **web-based SCADA / HMI platform** for industrial automation, IoT and real-time process visualization.
 
-普通版当前版本：`1.3.4-2888`。Headless Windows 正式产物：`artifacts/FUXA-1.3.4-2888-win-x64.exe`。
+普通版当前版本：`1.3.5-2918`。Headless Windows 正式产物：`artifacts/FUXA-1.3.5-2918-win-x64.exe`。
 
 It allows you to build modern dashboards, connect industrial devices and monitor machines using standard industrial protocols such as **Modbus, OPC-UA, MQTT and Siemens S7**.
 

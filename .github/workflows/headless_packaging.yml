@@ -5,7 +5,7 @@ on:
   repository_dispatch:
     types: [build-headless]
   push:
-    branches: [1.3.4-2888]
+    branches: [1.3.5-2918]
     paths:
       - '.github/workflows/headless_packaging.yml'
       - 'server/**'
@@ -73,7 +73,7 @@ jobs:
       run: |
         $pkgJson = @{
           name = "fuxa-headless"
-          version = "1.3.4-2888"
+          version = "1.3.5-2918"
           bin = "main.js"
           pkg = @{
             assets = @("server/**/*", "client/dist/**/*", "_reports/**/*")
@@ -90,13 +90,13 @@ jobs:
     - name: Build Standalone Binaries (Headless)
       run: |
         New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-        pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.4-2888-win-x64.exe
+        pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.5-2918-win-x64.exe
       shell: powershell
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FUXA-1.3.4-2888-win-x64
+        name: FUXA-1.3.5-2918-win-x64
         path: artifacts/*
         if-no-files-found: error
 

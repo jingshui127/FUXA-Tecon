@@ -2,11 +2,11 @@
 
 ## 当前版本
 
-- 普通版版本：`1.3.4-2888`
-- 正式发布分支：`1.3.4-2888`
+- 普通版版本：`1.3.5-2918`
+- 正式发布分支：`1.3.5-2918`
 - Node.js：18 LTS
 - Windows pkg target：`node18-win-x64`
-- 正式产物：`artifacts/FUXA-1.3.4-2888-win-x64.exe`
+- 正式产物：`artifacts/FUXA-1.3.5-2918-win-x64.exe`
 
 ## 唯一构建入口
 
@@ -45,13 +45,13 @@ Invoke-WebRequest http://127.0.0.1:1881/api/version -UseBasicParsing
 Invoke-WebRequest http://127.0.0.1:1881/ -UseBasicParsing
 ```
 
-`/api/version` 应返回 HTTP 200，并包含版本 `1.3.4-2888`。Node-RED 启用时还应检查 `/nodered` 和 `/dashboard` 的实际响应。
+`/api/version` 应返回 HTTP 200，并包含版本 `1.3.5-2918`。Node-RED 启用时还应检查 `/nodered` 和 `/dashboard` 的实际响应。
 
 ## 构建成功标准
 
 日志至少应出现：
 
-- `FUXA V.1.3.4-2888`
+- `FUXA V.1.3.5-2918`
 - `FUXA started!`
 - `WebServer is running`
 - 启用 Node-RED 时出现 `[Node-RED] Started at /nodered`

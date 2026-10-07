@@ -1,8 +1,8 @@
 # FUXA Headless EXE 定制化优化指南
 
 > 最后更新: 2026-08-10
-> 当前版本: 1.3.4-2888
-> 分支: `1.3.4-2888`
+> 当前版本: 1.3.5-2918
+> 分支: `1.3.5-2918`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
 
 ---
@@ -115,8 +115,8 @@ process.on('exit', function () {
 **命令行**:
 
 ```powershell
-FUXA-1.3.4-2888-win-x64.exe              # 默认端口 1881
-FUXA-1.3.4-2888-win-x64.exe -p 1882      # 指定端口
+FUXA-1.3.5-2918-win-x64.exe              # 默认端口 1881
+FUXA-1.3.5-2918-win-x64.exe -p 1882      # 指定端口
 ```
 
 #### 开发调试守护脚本
@@ -185,7 +185,7 @@ if (parsedArgs.port !== undefined) {
 
 Node-RED httprequest 节点在 EXE 环境下存在**两阶段**兼容问题，均由本补丁处理：
 
-#### 阶段一（首次修复，v1.3.4-2888 引入）
+#### 阶段一（首次修复，v1.3.5-2918 引入）
 
 pkg 打包的虚拟文件系统不支持 ESM 的 `import()` 动态导入解析。Node-RED httprequest 使用 `await import('got')` 加载 `got` 包，在 pkg EXE 中报错：
 
@@ -223,11 +223,11 @@ const got = require(require.resolve('got', {
 | i18n 翻译键          | 为 12 种语言补充缺失的`device.plugins-notice-*` 按钮翻译键（commit ed6edf19），设备页插件通知对话框显示中文（"插件和驱动程序"/"不再显示此消息"/"打开插件"）而非原始键名                                        |
 | httprequest 嵌套 ESM | 修复 Node-RED 4.x`@node-red/nodes/node_modules/got` v12（ESM-only）与外层 got v11 的嵌套冲突，消除 `SyntaxError: Cannot use import statement outside a module` 警告，确保 HTTP Request 节点在 EXE 中正常工作 |
 
-### 2.9 上游 v1.3.4-2888 合并（2026-08-04）
+### 2.9 上游 v1.3.5-2918 合并（2026-08-04）
 
 从 `frangoteam/FUXA` 同步 37 个提交。
 
-### 2.10 上游 v1.3.4-2888 合并（2026-08-08）
+### 2.10 上游 v1.3.5-2918 合并（2026-08-08）
 
 从 `jingshui127/FUXA` master 同步 8 个新提交：
 
@@ -357,12 +357,12 @@ getBrandLogo(): string | null { ... }
 
 ### 3.1 GitHub Actions 自动构建（推荐）
 
-推送代码到 `1.3.4-2888` 分支后自动触发构建，产物上传到 Release。
+推送代码到 `1.3.5-2918` 分支后自动触发构建，产物上传到 Release。
 
 **手动触发**:
 
 ```bash
-gh workflow run "Build FUXA Headless (Latest)" --ref 1.3.4-2888
+gh workflow run "Build FUXA Headless (Latest)" --ref 1.3.5-2918
 ```
 
 或浏览器打开 [Actions 页面](https://github.com/jingshui127/FUXA-Tecon/actions) → 选择 workflow → Run workflow。
@@ -398,14 +398,14 @@ robocopy "client\dist" "fuxa-headless\client\dist" /E /NFL /NDL
 Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
 
 # Step 3: 打包
-pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.4-2888-win-x64.exe
+pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.5-2918-win-x64.exe
 ```
 
 ### 3.3 测试验证
 
 ```powershell
 # 启动
-.\artifacts\FUXA-1.3.4-2888-win-x64.exe -p 1882
+.\artifacts\FUXA-1.3.5-2918-win-x64.exe -p 1882
 
 # 访问 http://127.0.0.1:1882/
 ```
@@ -513,7 +513,7 @@ node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 - [X] Git 合并冲突修复
 - [X] upload mkdir pkg 快照修复
 - [X] 视图修改免重启优化
-- [X] 上游 v1.3.4-2888 合并同步（反向代理、报警权限、输入验证）
+- [X] 上游 v1.3.5-2918 合并同步（反向代理、报警权限、输入验证）
 - [X] 修复 `html-image.component.ts` 冲突标记残留，恢复构建
 - [X] 修复 `server/package.json` 缺少 `modbus-serial` 和 `node-snap7` 依赖，导致 EXE 中插件未识别
 - [X] 修复 Node-RED httprequest 节点 `got` 包 pkg ESM 导入失败，新增 `postinstall` 自动补丁

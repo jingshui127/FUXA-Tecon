@@ -1,11 +1,11 @@
 ---
 name: "build-fuxa-exe"
-description: "Builds the ordinary FUXA 1.3.4-2888 Headless Windows EXE. Invoke when asked to package or build the FUXA EXE."
+description: "Builds the ordinary FUXA 1.3.5-2918 Headless Windows EXE. Invoke when asked to package or build the FUXA EXE."
 ---
 
 # 构建普通版 Headless EXE
 
-普通版当前版本为 `1.3.4-2888`。唯一正式 Windows 产物为 `artifacts/FUXA-1.3.4-2888-win-x64.exe`。
+普通版当前版本为 `1.3.5-2918`。唯一正式 Windows 产物为 `artifacts/FUXA-1.3.5-2918-win-x64.exe`。
 
 ## 前提
 
@@ -20,7 +20,7 @@ description: "Builds the ordinary FUXA 1.3.4-2888 Headless Windows EXE. Invoke w
 $ErrorActionPreference = 'Stop'
 $root = (Get-Location).Path
 $inputDir = Join-Path $root 'fuxa-headless'
-$artifact = Join-Path $root 'artifacts\FUXA-1.3.4-2888-win-x64.exe'
+$artifact = Join-Path $root 'artifacts\FUXA-1.3.5-2918-win-x64.exe'
 
 npm install --no-audit --no-fund --directory=./server
 npm install --no-audit --no-fund --directory=./client
@@ -37,7 +37,7 @@ Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -F
 @'
 {
   "name": "fuxa-headless",
-  "version": "1.3.4-2888",
+  "version": "1.3.5-2918",
   "bin": "main.js",
   "pkg": {
     "assets": ["server/**/*", "client/dist/**/*"],
@@ -70,7 +70,7 @@ Invoke-WebRequest 'http://127.0.0.1:2899/' -UseBasicParsing
 Stop-Process -Id $p.Id -Force
 ```
 
-确认日志包含 `FUXA V.1.3.4-2888`、`FUXA started!` 和 `WebServer is running`。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
+确认日志包含 `FUXA V.1.3.5-2918`、`FUXA started!` 和 `WebServer is running`。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
 
 ## 原生模块验证
 

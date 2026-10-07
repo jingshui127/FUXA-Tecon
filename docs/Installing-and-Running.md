@@ -23,13 +23,13 @@ Headless binaries are available as GitHub Actions artifacts. You need to be logg
 
 Click on the latest workflow run, scroll down to "Artifacts", and download the appropriate file for your platform:
 
-- **Windows x64**: `FUXA-1.3.4-2888-win-x64.exe`
+- **Windows x64**: `FUXA-1.3.5-2918-win-x64.exe`
 
 ### Running Headless Binaries
 
 #### Windows
 
-1. Download `FUXA-1.3.4-2888-win-x64.exe`.
+1. Download `FUXA-1.3.5-2918-win-x64.exe`.
 2. Place it in a writable directory and double-click the `.exe` file to run.
 3. The executable creates and uses `data/` beside itself for runtime data.
 4. Access via web browser at `http://localhost:1881`

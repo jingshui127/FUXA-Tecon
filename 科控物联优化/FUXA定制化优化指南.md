@@ -1,6 +1,6 @@
 # FUXA Headless EXE 定制化优化指南
 
-> 最后更新: 2026-08-10
+> 最后更新: 2026-10-07
 > 当前版本: 1.3.5-2918
 > 分支: `1.3.5-2918`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
@@ -50,6 +50,12 @@
 | `client/src/app/home/home.component.ts`                             | 修改 | 用户信息对话框`DialogUserInfo` 注入 AppService 获取品牌信息                     |
 | `client/src/app/home/userinfo.dialog.html`                          | 修改 | 用户信息对话框底部文字替换为品牌 footer                                           |
 | `client/src/app/reports/report-editor/report-editor.component.ts`   | 修改 | PDF 报表 header 文字使用品牌信息                                                  |
+| `server/runtime/plugins/recipes/recipes.ts`                         | 修改 | 配方下载/上传模板优先修复（官方 400 bug，见 2.14）                                |
+| `.gitignore`                                                        | 修改 | 忽略 `client/dist/`（避免官方同步冲突，见 4.14）；官方新增 `.agents/`、`AGENTS.md` |
+| `client/dist/`                                                      | 移除跟踪 | 构建产物不再入库，EXE 由 Actions 现场构建（见 4.14）                     |
+| `server/i18n/*.json`                                                | 修改 | 官方新键与本地 `plugins-notice` 键深合并                                        |
+| `.github/workflows/headless_packaging.yml`                          | 修改 | 版本统一为 `1.3.5-2918`（分支触发、pkg 版本、EXE 名、Artifact 名）              |
+| `.github/workflows/docker_release.yml`                              | 修改 | 版本统一为 `1.3.5-2918`                                                        |
 
 ---
 
@@ -351,6 +357,50 @@ getBrandLogo(): string | null { ... }
 - `logo`/`favicon` 字段为 `null` 或文件不存在 → 使用默认 FUXA Logo/favicon
 - 单个字段缺失 → 该字段回退到默认值
 
+### 2.13 官方 1.3.5 同步与升级（2026-10-07）
+
+**同步流程**（官方 frangoteam/FUXA master → 本地 fork）：
+
+1. **查官方最新**：`https://api.github.com/repos/frangoteam/FUXA/commits?sha=master&per_page=5`（直接看 master，不等发布版）
+2. **版本确认**：`server/package.json` 的 `version` + 构建号（本次官方 master 为 `1.3.5-2918`）
+3. **本地对比**：落后 75 提交 → `git fetch official` + `git merge official/master`
+4. **冲突处理**（本次 28 个冲突文件）：
+
+| 冲突类型 | 策略 |
+| -------- | ---- |
+| `client/dist` | 采用官方版（本地已移除 dist 跟踪，见 4.14，今后不再冲突） |
+| `server/main.js` | 采用本地版（官方版是本地版子集，本地含品牌注入 + BASE_PATH） |
+| node-red 白名单 | 官方版 + 本地 BASE_PATH 补丁合并 |
+| `server/auth` | 采用官方版 |
+| i18n JSON | **深合并**：官方新键 + 本地 `plugins-notice` 键并集 |
+
+5. **品牌化保护清单**（合并后必须确认都在）：`server/brand.js`、`/api/brand`、`/api/brand/logo`、`/api/brand/favicon` 路由、`injectBrandToHtml` 调用
+6. **验证**：全部 server JS `node --check` 语法检查 + node-red/brand 模块可加载
+
+**官方 1.3.5 值得关注的新增**：配方管理（#2492）、MQTT 每主题 retain（#2518）、MQTT/Modbus TimeOut 变量（#2507）、BASE_PATH 修复（#2571 Node-RED 路由 / #2550 上传资源 URL）、安全修复 4 项（#2479/#2480/#2553/#2494）、S7 Linux 稳定性（#2437，Windows 本地方案保留见 2.1）。
+
+**版本统一**（分支/EXE/workflow 全部改为 `1.3.5-2918`，提交 `641961a1`）：
+
+| 位置 | 内容 |
+| ---- | ---- |
+| 分支名 | 本地 `git branch -m 1.3.4-2888 1.3.5-2918`，推送后删远程旧分支 |
+| `headless_packaging.yml` | `branches`、pkg 版本、EXE 名、Artifact 名 |
+| `docker_release.yml` | `version` |
+| 运行时日志 | 自动读 `package.json`，无需改代码 |
+| 文档/skill | README、指南、`fuxa-maintainer`、`build-fuxa-exe` |
+
+### 2.14 配方管理修复（2026-10-07）
+
+**背景**: 官方 1.3.5 新增配方管理（#2492）。UI 配方列表操作的是**模板**（ProjectRecipe type），但官方 `downloadRecipe`/`uploadRecipe` 只查询**实例存储**（SetRecipe）→ 下载模板报 `400 "Recipe not found"`。
+
+**修复**（`server/runtime/plugins/recipes/recipes.ts`，提交 `77783dff`）：
+
+- 取数与 `export` 一致：**模板优先（`getRecipeOrInstance`），实例兜底**
+- 下载：模板 → 从模板取 entries 执行写入；实例 → 按原逻辑
+- 上传：模板 → 写回项目数据；实例 → 写实例存储
+
+**验证**：官方 recipes 单元测试 112 全部通过 + 端到端 API（创建模板 → `POST /api/recipes/download` → `202 {"result":"started","totalEntries":N}`）。
+
 ---
 
 ## 三、构建与部署
@@ -502,6 +552,67 @@ pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-
 
 node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 
+> **补充**：`ng build`（前端构建）对 Node 版本无要求（v22 可用）；但 server 运行与 pkg 打包**必须 Node 18**（S7 原生模块）。EXE 内 pkg target 固定 `node18-win-x64`。
+
+### 4.11 前端白屏 "Server connection failed!"（端口错位）
+
+**症状**: server 跑在非 1881 端口（如 `-p 1886`），浏览器打开 `/editor` 白屏，提示 "Server connection failed!"，控制台 `ERR_CONNECTION_REFUSED` 指向 `127.0.0.1:1881`。
+
+**根因**: 前端 `EndPointApi.getURL()`（`client/src/app/_helpers/endpointapi.ts`）逻辑——只要 `environment.apiPort` 有值，就强制用它拼 API 地址。官方**旧构建的 dist** 里 `apiPort=1881`（构建于同源改造前）；当前 src 的 `environment.prod.ts` 已是 `apiPort: null`（**同源**，任意端口可用）。
+
+**解决**:
+
+- **EXE 场景**：无此问题——EXE 里的 dist 是 Actions 现场 `npm run build` 构建的（同源逻辑），`-p 2999` 等任意端口正常
+- **本地源码模式**（`node guard.js -p XXXX`）：必须**先用当前 src 本地构建 dist**（`ng build`），否则 server 服务的是工作区残留的旧 dist
+
+**品牌化同理**：改 `brand.json` 无需重建前端（server 运行时注入 `__BRAND__`）；但前端读 `__BRAND__` 的代码（`loadBrandConfig`）必须构建进 dist 才生效。
+
+### 4.12 本地构建崩溃 / git 命令失败（虚拟内存不足）
+
+**症状**:
+
+- `ng build` 崩溃，exit `0xC0000409`（Angular 在 setup 阶段）
+- `git push` 报 `os error 1455 页面文件太小，无法完成操作`、`LoadLibraryExW() failed`（连 libcurl DLL 都加载不了）
+
+**根因**: 系统**页面文件（虚拟内存）仅 4GB**，物理内存不足时高峰需求无法满足。
+
+**解决**:
+
+- 增大虚拟内存：系统属性 → 高级 → 性能 → 虚拟内存 → 自定义 **8192/16384MB**（需重启生效）
+- 或构建时加大堆：`$env:NODE_OPTIONS='--max-old-space-size=4096'`
+- 构建命令建议直接用 ng.js（npm.ps1 包装在 PowerShell 下有输出误判）：`node node_modules\@angular\cli\bin\ng.js build --configuration=production`
+
+### 4.13 EXE 下载 404（CDN/认证问题）
+
+**症状**: `curl <browser_download_url>` 返回 404（无 `-f` 时留 0 字节文件）；`gh release download` 报 "release not found"；未认证的 API 资产 URL 也 404。
+
+**解决**（带认证走 API 资产签名 URL）：
+
+```powershell
+$token = gh auth token
+$assetId = gh api "repos/{owner}/{repo}/releases/tags/{tag}" --jq '.assets[0].id'
+curl.exe -fL --retry 10 -H "Authorization: token $token" -H "Accept: application/octet-stream" `
+  -o "target.exe" "https://api.github.com/repos/{owner}/{repo}/releases/assets/$assetId"
+```
+
+> **务必加 `-f`**，否则 404 也返回 exit 0，留下 0 字节文件无法启动。
+
+### 4.14 client/dist 移除跟踪
+
+**原因**: 官方每次更新都提交 dist → merge 官方 master 必然冲突；且本地 dist 常为官方旧构建（与本地 src 不一致，见 4.11）。
+
+**操作**: `git rm -r --cached client/dist` + `.gitignore` 加 `client/dist/`（本地 `.gitignore` 第 100 行）。
+
+**影响**:
+
+- EXE 构建**不受影响**：Actions 现场 `npm run build` 生成 dist 后打包
+- 本地源码模式需自行构建 dist（见 4.11）
+- 仓库不再管理 dist，merge 官方不再有 dist 冲突
+
+### 4.15 官方 "agent" 提交（误解澄清）
+
+**结论**: 官方**没有运行时 agent 功能**。提交 `95f1148 "feat: add skip agents"` 仅修改 `.gitignore`，忽略 `.agents/` 和 `AGENTS.md`（AI 编程工具生成的产物），防止仓库被污染。
+
 ---
 
 ## 五、待办事项
@@ -518,11 +629,14 @@ node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 - [X] 修复 `server/package.json` 缺少 `modbus-serial` 和 `node-snap7` 依赖，导致 EXE 中插件未识别
 - [X] 修复 Node-RED httprequest 节点 `got` 包 pkg ESM 导入失败，新增 `postinstall` 自动补丁
 - [X] **品牌化定制**（2026-08-10）— 通过 `data/brand.json` 实现全站品牌替换（名称、Logo、标题、footer），覆盖加载页、侧边栏、关于对话框、用户信息对话框、PDF 报表，详见 2.12 节
+- [X] **官方 1.3.5 全量同步**（2026-10-07）— merge 官方 master（75 提交），版本 `1.3.4-2888` → `1.3.5-2918`，详见 2.13 节
+- [X] **版本统一**（2026-10-07）— 分支名/EXE 命名/workflow/docker/文档/skill 全部统一为 `1.3.5-2918`，提交 `641961a1`
+- [X] **配方管理修复**（2026-10-07）— 官方 recipes 下载/上传模板 400 bug，模板优先修复，单元 112 通过 + 端到端 202，提交 `77783dff`，详见 2.14 节
+- [X] **GitHub Actions 构建恢复**（2026-10-07）— `1.3.5-2918` 分支推送自动触发 `headless_packaging.yml` 构建成功，产物 `FUXA-1.3.5-2918-win-x64.exe`（269MB）上传 Release `headless-latest-{run_id}`
+- [X] **client/dist 移除跟踪**（2026-10-07）— 避免官方同步 dist 冲突，见 4.14 节
 
 ### 待处理
 
-- [ ] **GitHub Actions 构建恢复**
-  私有仓库 runner 当前不可用，待排查。可考虑迁移到公开仓库或使用自托管 runner。
 - [ ] **main.js SIGINT 处理修复**
   当前 `FUXA.stop().then()` 后立即执行 `process.exit()`，清理逻辑从未执行。修复方案：
 

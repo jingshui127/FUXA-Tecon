@@ -100,3 +100,6 @@ artifacts/
 client/dist/
 .agents/
 AGENTS.md
+
+# Local deliverable docs (articles, reports)
+_article/

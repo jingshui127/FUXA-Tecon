@@ -151,7 +151,7 @@ async function downloadRecipe(recipeId) {
     runningRecipes.set(recipeId, gen);
 
     try {
-        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await runtime.recipeStorage.getRecipeData(recipeId));
+        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await recipeUtils.getRecipeOrInstance(runtime, recipeId));
         if (!data) {
             throw new Error('Recipe not found');
         }
@@ -276,7 +276,7 @@ async function uploadRecipe(recipeId) {
     runningRecipes.set(recipeId, gen);
 
     try {
-        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await runtime.recipeStorage.getRecipeData(recipeId));
+        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await recipeUtils.getRecipeOrInstance(runtime, recipeId));
         if (!data) {
             throw new Error('Recipe not found');
         }
@@ -372,7 +372,12 @@ async function uploadRecipe(recipeId) {
         // (not when it was canceled or superseded) AND at least one entry
         // succeeded — otherwise a cancel would persist a half-mixed recipe.
         if (!canceled && successCount > 0) {
-            await runtime.recipeStorage.setRecipeData(recipeId, updatedData);
+            var isTemplate = runtime.project && runtime.project.getRecipe ? runtime.project.getRecipe(recipeId) : null;
+            if (isTemplate) {
+                await runtime.project.setProjectData(runtime.project.ProjectDataCmdType.SetRecipe, updatedData);
+            } else {
+                await runtime.recipeStorage.setRecipeData(recipeId, updatedData);
+            }
         }
 
         if (!canceled) {

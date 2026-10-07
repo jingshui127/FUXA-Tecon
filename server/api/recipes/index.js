@@ -219,7 +219,7 @@ module.exports = {
                 }
                 var id = req.body.id;
 
-                _handlePromise(runtime.recipeStorage.getRecipeData(id), res, async function(data) {
+                _handlePromise(_getRecipeData(id), res, async function(data) {
                     if (!data) {
                         res.status(400).json({ error: 'Recipe not found' });
                         return;
@@ -289,7 +289,7 @@ module.exports = {
                 }
                 var id = req.body.id;
 
-                _handlePromise(runtime.recipeStorage.getRecipeData(id), res, async function(data) {
+                _handlePromise(_getRecipeData(id), res, async function(data) {
                     if (!data) {
                         res.status(400).json({ error: 'Recipe not found' });
                         return;

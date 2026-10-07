@@ -95,3 +95,5 @@ fuxa-headless/
 fuxa-headless-local/
 artifacts/
 *.exe
+.agents/
+AGENTS.md

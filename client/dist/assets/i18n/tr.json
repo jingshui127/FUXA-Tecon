@@ -703,5 +703,9 @@
 	"msg.login-password-required": "Şifre girin",
 	"msg.signin-failed": "Yetkisiz giriş.",
     "device.tag-uns-path": "UNS Path",
+<<<<<<< HEAD
+=======
+        "device.topic-publish-retain": "Broker'da mesajı sakla",
+>>>>>>> official/master
     "gauges.property-icon-none": "Simge yok"
 }

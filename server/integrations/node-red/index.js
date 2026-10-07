@@ -99,6 +99,25 @@ function createDevicePropertyHelpers(devices) {
     };
 }
 
+function getPathWithoutBasePath(requestPath, basePath = BASE_PATH) {
+    if (!basePath) return requestPath;
+    if (requestPath === basePath) return '/';
+    if (requestPath.startsWith(basePath + '/')) {
+        return requestPath.slice(basePath.length);
+    }
+    return requestPath;
+}
+
+function shouldBypassSpaCatchAll(requestPath, basePath = BASE_PATH) {
+    const routePath = getPathWithoutBasePath(requestPath, basePath);
+    return routePath === '/api' ||
+        routePath.startsWith('/api/') ||
+        routePath.includes('.') ||
+        routePath.startsWith('/nodered') ||
+        routePath.startsWith('/dashboard');
+}
+
+
 function tryRequireNodeRed(runtime) {
     try {
         // Fast check whether the module is resolvable
@@ -127,6 +146,11 @@ const getCookieValue = (req, name) => {
         }
     }
     return null;
+};
+
+const NODE_RED_AUTH_COOKIE_OPTIONS = {
+    path: '/nodered',
+    sameSite: 'lax',
 };
 
 const verifyApiKey = (runtime, apiKey) => {
@@ -187,8 +211,8 @@ function createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt }) {
                 }
                 if (queryToken) {
                     res.cookie('nodered_auth', token, {
+                        ...NODE_RED_AUTH_COOKIE_OPTIONS,
                         httpOnly: true,
-                        sameSite: 'lax',
                         secure: !!settings.https,
                     });
                     if (req.method === 'GET') {
@@ -201,7 +225,7 @@ function createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt }) {
             })
             .catch(() => {
                 if (cookieToken) {
-                    res.clearCookie('nodered_auth');
+                    res.clearCookie('nodered_auth', NODE_RED_AUTH_COOKIE_OPTIONS);
                 }
                 return res.status(401).json({ error: "unauthorized_error", message: "Invalid token!" });
             });
@@ -379,11 +403,8 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
         // Catch-all route for SPA - serve Angular index.html for client routes
         // Exclude API routes and static assets
         app.get('*', (req, res, next) => {
-            // Skip API routes and static assets
-            if (req.path.startsWith('/api/') ||
-                req.path.includes('.') ||
-                req.path.startsWith(NODERED_PATH) ||
-                req.path.startsWith(DASHBOARD_PATH)) {
+            // Skip API routes and static assets, including routes below BASE_PATH.
+            if (shouldBypassSpaCatchAll(req.path)) {
                 return next();
             }
             res.sendFile(path.join(settings.httpStatic, 'index.html'));
@@ -393,4 +414,10 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
     logger.info(`[Node-RED] Started at ${NODERED_PATH}`);
 }
 
-module.exports = { mountNodeRedIfInstalled, createNodeRedAuthMiddleware, createDevicePropertyHelpers };
+module.exports = {
+    mountNodeRedIfInstalled,
+    createNodeRedAuthMiddleware,
+    createDevicePropertyHelpers,
+    getPathWithoutBasePath,
+    shouldBypassSpaCatchAll,
+};

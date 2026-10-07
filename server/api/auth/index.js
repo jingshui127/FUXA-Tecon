@@ -16,6 +16,7 @@ var tokenExpiresIn;
 var enableRefreshCookieAuth = false;
 var refreshTokenExpiresIn = '7d';
 const refreshCookieName = 'fuxa_refresh';
+const nodeRedAuthCookieName = 'nodered_auth';
 
 function parseExpiresToMs(expiresIn) {
     if (expiresIn === undefined || expiresIn === null) {
@@ -78,8 +79,47 @@ function clearRefreshCookie(res) {
     });
 }
 
+function clearNodeRedAuthCookie(res) {
+    res.clearCookie(nodeRedAuthCookieName, {
+        path: BASE_PATH + '/nodered',
+        sameSite: 'lax'
+    });
+    res.clearCookie(nodeRedAuthCookieName, {
+        path: BASE_PATH || '/',
+        sameSite: 'lax'
+    });
+}
+
 function sendInvalidSignInResponse(res) {
     res.status(401).json({ status: 'error', message: 'Invalid email/password!!!', data: null });
+}
+
+function getLogoutUser(req) {
+    const accessToken = req.headers['x-access-token'];
+    if (accessToken) {
+        try {
+            const decoded = jwt.verify(accessToken, secretCode, { ignoreExpiration: true });
+            if (typeof decoded.id === 'string' && decoded.id && decoded.id !== 'guest' && decoded.type !== 'refresh') {
+                return { username: decoded.id };
+            }
+        } catch (err) {
+            // Logout must still clear cookies when the access token is expired or invalid.
+        }
+    }
+
+    const refreshToken = getCookieValue(req, refreshCookieName);
+    if (refreshToken) {
+        try {
+            const decoded = jwt.verify(refreshToken, secretCode);
+            if (decoded.type === 'refresh' && typeof decoded.id === 'string' && decoded.id && decoded.id !== 'guest') {
+                return { username: decoded.id };
+            }
+        } catch (err) {
+            // Do not trust an invalid refresh cookie for user attribution.
+        }
+    }
+
+    return {};
 }
 
 module.exports = {
@@ -127,6 +167,7 @@ module.exports = {
                             }
                         });
                         runtime.logger.info('api-signin: ' + userInfo[0].username + ' ' + userInfo[0].fullname + ' ' + userInfo[0].groups);
+                        runtime.events.emit('access:login', { username: userInfo[0].username, fullname: userInfo[0].fullname });
                     } else {
                         sendInvalidSignInResponse(res);
                         runtime.logger.error('api post signin: Invalid email/password!!!');
@@ -207,6 +248,11 @@ module.exports = {
         authApp.post('/api/signout', function (req, res, next) {
             if (enableRefreshCookieAuth) {
                 clearRefreshCookie(res);
+            }
+            clearNodeRedAuthCookie(res);
+            const logoutUser = getLogoutUser(req);
+            if (logoutUser.username) {
+                runtime.events.emit('access:logout', logoutUser);
             }
             res.status(204).end();
         });

@@ -315,7 +315,7 @@ module.exports = {
                     }
                 }
                 fs.writeFileSync(filePath, basedata, encoding);
-                let result = {'location': '/' + runtime.settings.httpUploadFileStatic + '/' + relativePath };
+                let result = {'location': runtime.settings.httpUploadFileStatic + '/' + relativePath };
                 res.json(result);
             } catch (err) {
                 if (err && err.code) {

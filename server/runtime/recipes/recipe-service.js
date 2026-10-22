@@ -151,7 +151,7 @@ async function downloadRecipe(recipeId) {
     runningRecipes.set(recipeId, gen);
 
     try {
-        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await recipeUtils.getRecipeOrInstance(runtime, recipeId));
+        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await runtime.recipeStorage.getRecipeData(recipeId));
         if (!data) {
             throw new Error('Recipe not found');
         }
@@ -276,7 +276,7 @@ async function uploadRecipe(recipeId) {
     runningRecipes.set(recipeId, gen);
 
     try {
-        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await recipeUtils.getRecipeOrInstance(runtime, recipeId));
+        var data = recipeUtils.mergeInstanceWithTemplate(runtime, await runtime.recipeStorage.getRecipeData(recipeId));
         if (!data) {
             throw new Error('Recipe not found');
         }

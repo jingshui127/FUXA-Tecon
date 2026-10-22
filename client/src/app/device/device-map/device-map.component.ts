@@ -471,6 +471,8 @@ export class DeviceMapComponent implements OnInit, OnDestroy, AfterViewInit {
         let dialogRef = this.dialog.open(DevicePropertyComponent, {
             disableClose: true,
             panelClass: 'dialog-property',
+            width: '450px',
+            maxWidth: 'calc(100vw - 32px)',
             data: {
                 device: tempdevice, remove: toremove, exist: exist, availableType: this.plugins,
                 projectService: this.projectService
@@ -525,6 +527,10 @@ export class DeviceMapComponent implements OnInit, OnDestroy, AfterViewInit {
                         } else {
                             delete device.property.timeout;
                         }
+                    }
+                    if (device.type === DeviceType.GenericEthernetIP) {
+                        device.modules = JSON.parse(JSON.stringify(tempdevice.modules || {}));
+                        device.property.ioport = parseInt(tempdevice.property?.ioport) || 2222;
                     }
                     this.projectService.setDevice(device, olddevice, result.security);
                 }

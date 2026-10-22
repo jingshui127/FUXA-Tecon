@@ -1,0 +1,20 @@
+{
+  "OSName": "Windows 11 企业版多会话",
+  "OSVersion": "10.0.26200.0",
+  "Product": "20S4A001CD",
+  "Vendor": "LENOVO",
+  "Processor": "Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz",
+  "UUID": "9460944C-2EC0-11B2-A85C-DC7670E0738D",
+  "Guid": "bdee697f-8b76-4a66-91d7-1df901053033",
+  "Serial": "PF2DWDJX",
+  "Board": "L1HF07A01B1",
+  "DiskID": "8CE3_8E05_0027_2CDE.",
+  "Memory": 16918597632,
+  "AvailableMemory": 6717169664,
+  "FreeMemory": 6717169664,
+  "CpuRate": 0.2475,
+  "UplinkSpeed": 720294,
+  "DownlinkSpeed": 103275,
+  "Temperature": 59,
+  "Battery": 0.970000028610229
+}

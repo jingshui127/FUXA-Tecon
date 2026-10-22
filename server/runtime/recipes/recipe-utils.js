@@ -1,5 +1,9 @@
 /**
  * Shared helpers for recipe type/instance composition.
+ *
+ * Note: getRecipeOrInstance has been removed — the template-first resolution
+ * logic now lives inside recipeStorage.getRecipeData(), so all callers
+ * (recipe-service, api/recipes, export) share a single entry point.
  */
 
 'use strict';
@@ -38,21 +42,6 @@ function getRecipeTypes(runtime) {
     return (recipes || []).map(recipe => ({ id: recipe.id, data: recipe })).sort(sortByName);
 }
 
-/**
- * Resolve a recipe by id with the same precedence used by export:
- * project recipe types first, runtime instances as fallback. The recipe
- * list UI operates on recipe types, so download/upload must accept
- * type ids; instances carry a typeId reference and are merged with
- * their template when executed.
- */
-async function getRecipeOrInstance(runtime, id) {
-    var type = runtime && runtime.project && runtime.project.getRecipe ? runtime.project.getRecipe(id) : null;
-    if (type) {
-        return type;
-    }
-    return runtime.recipeStorage.getRecipeData(id);
-}
-
 function sortByName(a, b) {
     var nameA = (a.data && a.data.name ? String(a.data.name) : '').toLowerCase();
     var nameB = (b.data && b.data.name ? String(b.data.name) : '').toLowerCase();
@@ -64,6 +53,5 @@ function sortByName(a, b) {
 module.exports = {
     mergeInstanceWithTemplate: mergeInstanceWithTemplate,
     getRecipeTypes: getRecipeTypes,
-    getRecipeOrInstance: getRecipeOrInstance,
     sortByName: sortByName
 };

@@ -76,12 +76,29 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     this.disconnect = function () {
         return new Promise(function (resolve) {
-            // 跳过 s7client.Disconnect() 避免 native 模块崩溃 (STATUS_ACCESS_VIOLATION)
-            // OS 在进程退出时会自动回收 TCP 连接
             _checkWorking(false);
-            _emitStatus('connect-off');
-            _clearVarsValue();
-            resolve(true);
+            if (!s7client.Connected()) {
+                // 未连接状态，直接跳过 Disconnect 调用（避免对未连接设备浪费 native 资源）
+                _emitStatus('connect-off');
+                _clearVarsValue();
+                resolve(true);
+            } else {
+                // 已连接：尝试调用 Disconnect，用 try-catch 保护以免 STATUS_ACCESS_VIOLATION 崩溃
+                // OS 在进程退出时也会自动回收 TCP 连接作为兜底
+                try {
+                    var result = s7client.Disconnect();
+                    if (result) {
+                        logger.info(`'${data.name}' disconnected!`, true);
+                    } else {
+                        logger.warn(`'${data.name}' Disconnect() returned false`);
+                    }
+                } catch (err) {
+                    logger.error(`'${data.name}' Disconnect() crashed: ${err.message || err} — OS will cleanup`);
+                }
+                _emitStatus('connect-off');
+                _clearVarsValue();
+                resolve(true);
+            }
         });
     }
 
@@ -536,7 +553,7 @@ function S7client(_data, _logger, _events, _runtime) {
             DBNumber: v.dbnum,
             Start: v.type === 'BOOL' ? v.Start * 8 + v.bit : v.Start,
             Amount: 1,
-            Data: datatypes[v.type].formatter(parseFloat(v.value))
+            Data: datatypes[v.type].formatter(v.type === 'BOOL' ? toBoolean(v.value) : parseFloat(v.value))
         }));
         return new Promise((resolve, reject) => {
             s7client.WriteMultiVars(toWrite, (err, res) => {
@@ -682,6 +699,28 @@ function loadSnap7Lib(manager) {
         if (!snap7 && manager) { try { snap7 = manager.require('node-snap7'); } catch { } }
     }
     return !!snap7;
+}
+
+/**
+ * Value written to a BOOL tag, as true/false.
+ * parseFloat() cannot be used for BOOL: parseFloat(true) is NaN, which the formatter
+ * writes as 0, so writing `true` cleared the bit. Numbers and numeric strings behave
+ * as before (non-zero is true); 'true'/'on' and 'false'/'off' are also accepted.
+ */
+function toBoolean(value) {
+    if (typeof value === 'string') {
+        const text = value.trim().toLowerCase();
+        if (text === 'true' || text === 'on') {
+            return true;
+        }
+        if (text === 'false' || text === 'off') {
+            return false;
+        }
+        const number = parseFloat(text);
+        return !Number.isNaN(number) && number !== 0;
+    }
+    const number = Number(value);
+    return !Number.isNaN(number) && number !== 0;
 }
 
 function DbItem(dbnum) {

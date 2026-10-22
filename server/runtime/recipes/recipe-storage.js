@@ -65,13 +65,31 @@ function _createDB() {
     });
 }
 
+/**
+ * Resolve a recipe by id with the same precedence used by export:
+ * project recipe TEMPLATE first, runtime SQLite INSTANCE as fallback.
+ * The recipe list UI operates on recipe types, so download/upload must accept
+ * type ids; instances carry a typeId reference and are merged with their
+ * template when executed.
+ */
 function getRecipeData(recipeId) {
     return new Promise((resolve, reject) => {
+        // 1) Check Project Recipe Template first (UI passes template ids)
+        var project = runtime && runtime.project;
+        if (project && typeof project.getRecipe === 'function') {
+            var template = project.getRecipe(recipeId);
+            if (template) {
+                resolve(template);
+                return;
+            }
+        }
+
+        // 2) Fallback to runtime SQLite storage (recipe instances)
         if (!recipeDB) {
-            reject(new Error('Recipe database not initialized'));
+            resolve(null); // DB not initialized → no instance either
             return;
         }
-        
+
         const sql = `SELECT data FROM ${TABLE_RECIPES} WHERE id = ?`;
         recipeDB.get(sql, [recipeId], (err, row) => {
             if (err) {

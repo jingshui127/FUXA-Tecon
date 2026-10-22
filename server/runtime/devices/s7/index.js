@@ -36,7 +36,7 @@ function S7client(_data, _logger, _events, _runtime) {
         return new Promise(function (resolve, reject) {
             if (data.property && data.property.rack >= 0 && data.property.slot >= 0) {
                 try {
-                    if (!s7client.Connected() && _checkWorking(true)) {
+                    if ((!s7client || !s7client.Connected()) && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
                         s7client.ConnectTo(data.property.address, data.property.rack, data.property.slot, function (err) {
                             if (err) {
@@ -93,7 +93,6 @@ function S7client(_data, _logger, _events, _runtime) {
                 } catch (err) {
                     logger.warn(`'${data.name}' disconnect native error: ${err.message}`);
                 }
-                s7client = null;
                 _emitStatus('connect-off');
                 _clearVarsValue();
                 resolve(true);
@@ -139,6 +138,14 @@ function S7client(_data, _logger, _events, _runtime) {
                     logger.error(`'${data.name}' _readVars error! ${reason}`);
                 }
                 _checkWorking(false);
+                // 连接类错误（PLC 主动断开、网络中断等）时，native 库的 Connected() 标志不会自动更新，
+                // 导致上层 device.js checkStatus() 检测不到断连、不触发重连。
+                // 这里主动断开以重置 native 状态，让 checkStatus() 下次轮询时触发重连。
+                const msg = reason ? (reason.message || String(reason)) : '';
+                if (/connection|reset|refused|timeout|broken pipe|peer/i.test(msg)) {
+                    logger.warn(`'${data.name}' connection lost detected, forcing disconnect to allow reconnect`);
+                    this.disconnect().catch(() => {});
+                }
             };
         } else {
             _emitStatus('connect-busy');
@@ -462,6 +469,7 @@ function S7client(_data, _logger, _events, _runtime) {
                         vars.map(v => {
                             let value = null;
                             if (v.type === 'BOOL') {
+                                // check the full byte and send all bit if there is a change
                                 value = datatypes['BYTE'].parser(res, v.Start - offset, -1);
                             } else {
                                 value = datatypes[v.type].parser(res, v.Start - offset, v.bit);
@@ -536,15 +544,10 @@ function S7client(_data, _logger, _events, _runtime) {
                 end = v.Start + datatypes[v.type].bytes;
             }
             let buffer = datatypes[v.type].formatter(v.value)
-            if (!s7client) return reject(new Error('S7 client disconnected'));
-            try {
-                s7client.DBWrite(DBNr, offset, end - offset, buffer, (err, res) => {
-                    if (err) return reject(_getErr(err));
-                    resolve(changed);
-                });
-            } catch (err) {
-                reject(new Error('S7 DBWrite failed: ' + err.message));
-            }
+            s7client.DBWrite(DBNr, offset, end - offset, buffer, (err, res) => {
+                if (err) return reject(_getErr(err));
+                resolve(changed);
+            });
         });
     }
 
@@ -566,25 +569,20 @@ function S7client(_data, _logger, _events, _runtime) {
             DBNumber: v.dbnum,
             Start: v.type === 'BOOL' ? v.Start * 8 + v.bit : v.Start,
             Amount: 1,
-            Data: datatypes[v.type].formatter(parseFloat(v.value))
+            Data: datatypes[v.type].formatter(v.type === 'BOOL' ? toBoolean(v.value) : parseFloat(v.value))
         }));
         return new Promise((resolve, reject) => {
-            if (!s7client) return reject(new Error('S7 client disconnected'));
-            try {
-                s7client.WriteMultiVars(toWrite, (err, res) => {
-                    if (err) return reject(_getErr(err));
-                    let errs = [];
+            s7client.WriteMultiVars(toWrite, (err, res) => {
+                if (err) return reject(_getErr(err));
+                let errs = [];
 
-                    res = vars.map((v, i) => {
-                        if (res[i].Result !== 0) return errs.push(s7client.ErrorText(res[i].Result));
-                        return v;
-                    });
-                    if (errs.length) return reject(_getErr(errs));
-                    resolve(res);
+                res = vars.map((v, i) => {
+                    if (res[i].Result !== 0) return errs.push(s7client.ErrorText(res[i].Result));
+                    return v;
                 });
-            } catch (err) {
-                reject(new Error('S7 WriteMultiVars failed: ' + err.message));
-            }
+                if (errs.length) return reject(_getErr(errs));
+                resolve(res);
+            });
         });
     }
 
@@ -712,6 +710,28 @@ function loadSnap7Lib(manager) {
         if (!snap7 && manager) { try { snap7 = manager.require('node-snap7'); } catch { } }
     }
     return !!snap7;
+}
+
+/**
+ * Value written to a BOOL tag, as true/false.
+ * parseFloat() cannot be used for BOOL: parseFloat(true) is NaN, which the formatter
+ * writes as 0, so writing `true` cleared the bit. Numbers and numeric strings behave
+ * as before (non-zero is true); 'true'/'on' and 'false'/'off' are also accepted.
+ */
+function toBoolean(value) {
+    if (typeof value === 'string') {
+        const text = value.trim().toLowerCase();
+        if (text === 'true' || text === 'on') {
+            return true;
+        }
+        if (text === 'false' || text === 'off') {
+            return false;
+        }
+        const number = parseFloat(text);
+        return !Number.isNaN(number) && number !== 0;
+    }
+    const number = Number(value);
+    return !Number.isNaN(number) && number !== 0;
 }
 
 function DbItem(dbnum) {

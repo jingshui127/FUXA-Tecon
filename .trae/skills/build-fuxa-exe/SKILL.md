@@ -2,7 +2,6 @@
 name: "build-fuxa-exe"
 description: "Builds FUXA Headless EXE in one step. Invoke when user asks to 'pack EXE', 'build EXE', 'package FUXA', '打包EXE', '构建EXE', '一键打包', or after code changes that need a new EXE."
 ---
-
 # Build FUXA Headless EXE
 
 一键打包 FUXA Headless EXE，自动完成：源码同步 → `npm ci` → Node-RED patch 与验证 → pkg 打包 → 健康检查。
@@ -95,7 +94,6 @@ pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/fuxa-
 
 构建完成后才可以运行 EXE；仅看到 `npm ci` 完成，不能视为打包成功。
 
-
 ## 快速测试
 
 打包完成后测试：
@@ -111,9 +109,6 @@ foreach ($path in $paths) {
     if ($r.StatusCode -lt 200 -or $r.StatusCode -ge 400) { throw "Health check failed: $path" }
 }
 ```
-
-
-
 
 ## 注意事项
 

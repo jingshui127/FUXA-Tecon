@@ -89,6 +89,8 @@ module.exports = {
     //apiMaxLength: '100mb',
 
     // API rate limiting.
+    // apiRateLimit* is intentionally generous for HMI/SCADA workloads and clients
+    // behind the same proxy/NAT. authRateLimit* applies only to signin/refresh.
     apiRateLimitWindowMs: 5 * 60 * 1000,
     apiRateLimitMax: 1000,
     authRateLimitWindowMs: 5 * 60 * 1000,

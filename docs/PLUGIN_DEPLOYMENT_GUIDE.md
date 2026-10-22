@@ -1,10 +1,10 @@
-# FUXA PRO 1.3.4-PRO 插件与 Node-RED 部署指南
+# FUXA PRO 1.3.5-PRO 插件与 Node-RED 部署指南
 
 本文档是当前 `fuxa-pro-headless.exe` 的运行、迁移和回归验证指南。当前版本固定约定：
 
 | 项目 | 当前值 |
 |---|---|
-| 版本 | `1.3.4-PRO` |
+| 版本 | `1.3.5-PRO` |
 | 产物 | `artifacts\fuxa-pro-headless.exe` |
 | Node.js | 18.x |
 | pkg target | `node18-win-x64` |

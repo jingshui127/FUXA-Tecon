@@ -23,5 +23,5 @@
 
 - 网页安装插件保存于 `<EXE目录>\data\_pkg\runtime\node_modules\`。
 - Node-RED 流程保存于 `<EXE目录>\data\_appdata\node-red\flows.json`。
-- 当前操作文档只描述 1.3.4-PRO 和 `fuxa-pro-headless.exe`；旧版本方案必须明确标记为历史，不得混入当前命令。
+- 当前操作文档只描述 1.3.5-PRO 和 `fuxa-pro-headless.exe`；旧版本方案必须明确标记为历史，不得混入当前命令。
 - 当前项目不保留旧版本排查文档；可执行规则以本文件和 build skill 为准。

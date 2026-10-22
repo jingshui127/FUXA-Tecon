@@ -1,8 +1,8 @@
-# FUXA PRO 1.3.4-PRO
+# FUXA PRO 1.3.5-PRO
 
 ## 当前标准运行方式
 
-当前 Windows Headless 版本是 **FUXA PRO 1.3.4-PRO**，正式产物为：
+当前 Windows Headless 版本是 **FUXA PRO 1.3.5-PRO**，正式产物为：
 
 ```text
 artifacts\fuxa-pro-headless.exe

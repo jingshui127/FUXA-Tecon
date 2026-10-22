@@ -4,7 +4,7 @@
 
 FUXA PRO 是基于 FUXA 开源 SCADA 系统的科控物联定制版，支持西门子 S7 PLC 通讯，适用于工业自动化监控场景。
 
-**版本信息：** 1.3.4-PRO  
+**版本信息：** 1.3.5-PRO  
 **技术支持：** QQ 2492123056
 
 ---
@@ -52,7 +52,7 @@ https://github.com/jingshui127/FUXA-Tecon/actions
 FUXA PRO starting...
 技术支持QQ：2492123056
 FUXA PRO 科控物联定制版
-版本：1.3.4-PRO
+版本：1.3.5-PRO
 
 Using existing data directory: <EXE目录>\data
 Launching FUXA server with userDir: <EXE目录>\data

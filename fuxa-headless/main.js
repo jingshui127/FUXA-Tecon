@@ -23,11 +23,15 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 // ==================== 命令行参数解析 ====================
-const args = process.argv.slice(2);
-const portIdx = args.indexOf('-p');
-let serverArgs = [];
-if (portIdx !== -1 && args[portIdx + 1]) {
-    serverArgs = ['-p', args[portIdx + 1]];
+// pkg 打包后 process.argv 的首个元素可能是入口脚本路径，直接按固定下标取参会错位，
+// 这里统一扫描所有参数，兼容 `node guardian.js -p 1882` 与 `fuxa-pro-headless.exe -p 1882`。
+const rawArgs = process.argv.slice(1);
+let portValue = null;
+for (let i = 0; i < rawArgs.length; i++) {
+    if ((rawArgs[i] === '-p' || rawArgs[i] === '--port') && rawArgs[i + 1]) {
+        portValue = rawArgs[i + 1];
+        break;
+    }
 }
 
 // ==================== Server 模式 ====================
@@ -44,16 +48,17 @@ if (process.env.FUXA_SERVER === '1') {
     // 设置环境变量，server/main.js 会读取 userDir
     process.env.userDir = fuxaDataDir;
 
-    // 透传端口参数给 main.js（通过环境变量 PORT，pkg EXE 不支持 CLI args 透传）
-    if (serverArgs.length > 0) {
-        process.env.PORT = serverArgs[1];
+    // 端口通过 PORT 环境变量传递给 server/main.js；
+    // 不能把 '-p' 作为 pkg EXE 的首个参数，否则会被 pkg 当成入口脚本。
+    if (portValue) {
+        process.env.PORT = portValue;
     }
 
     console.log('[Server] FUXA PRO Headless Server starting...');
     console.log(`[Server] Data directory: ${fuxaDataDir}`);
     console.log(`[Server] Node.js: ${process.version}`);
-    if (serverArgs.length > 0) {
-        console.log(`[Server] Port override: ${args[portIdx + 1]}`);
+    if (portValue) {
+        console.log(`[Server] Port override: ${portValue}`);
     }
 
     // 启动 FUXA server
@@ -91,10 +96,11 @@ function startServer() {
     }
 
     const childEnv = { ...process.env, FUXA_SERVER: '1' };
-    if (serverArgs.length > 0) {
-        childEnv.PORT = serverArgs[1];
+    if (portValue) {
+        childEnv.PORT = portValue;
     }
-    serverProcess = spawn(process.execPath, serverArgs, {
+    // 子进程不传 CLI 参数，避免 pkg 把 '-p' 误判为入口脚本；端口通过 PORT 环境变量传递
+    serverProcess = spawn(process.execPath, [], {
         cwd: path.dirname(process.execPath),
         stdio: 'inherit',
         env: childEnv,
@@ -131,8 +137,8 @@ log('科控物联提供技术支持 | QQ: 2492123056');
 log(`Working directory: ${path.dirname(process.execPath)}`);
 log(`Max restarts: ${CONFIG.maxRestarts}`);
 log(`Cooldown window: ${CONFIG.cooldownWindow / 1000}s / max ${CONFIG.maxRapidRestarts} rapid`);
-if (serverArgs.length > 0) {
-    log(`Port override: ${args[portIdx + 1]}`);
+if (portValue) {
+    log(`Port override: ${portValue}`);
 }
 log('=====================================');
 

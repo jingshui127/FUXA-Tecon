@@ -340,6 +340,9 @@ if (BASE_PATH) {
 
 if (parsedArgs.port !== undefined) {
     settings.uiPort = parsedArgs.port;
+} else if (process.env.PORT) {
+    // pkg EXE 通过环境变量传递端口，避免 '-p' 被 pkg 误判为入口脚本
+    settings.uiPort = Number(process.env.PORT);
 } else {
     if (settings.uiPort === undefined) {
         settings.uiPort = 1881;
@@ -397,7 +400,8 @@ const allowCrossDomain = function (req, res, next) {
 
     if (isOriginAllowed(origin)) {
         res.header('Access-Control-Allow-Origin', origin || '*');
-        if (settings.enableRefreshCookieAuth) {
+
+        if (settings.enableRefreshCookieAuth || settings.nodeRedEnabled) {
             res.header('Access-Control-Allow-Credentials', 'true');
         }
     }

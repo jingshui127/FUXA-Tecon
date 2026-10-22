@@ -20,6 +20,7 @@ var scriptsApi = require('./scripts');
 var resourcesApi = require('./resources');
 var daqApi = require('./daq');
 var schedulerApi = require('./scheduler');
+var recipesApi = require('./recipes');
 var commandApi = require('./command');
 var eventsHistoryApi = require('./events_history');
 const reports = require('../dist/reports.service');
@@ -51,6 +52,23 @@ function init(_server, _runtime) {
             apiApp.use(bodyParser.urlencoded({limit:maxApiRequestSize, extended: true}));
             authJwt.init(runtime.settings.secureEnabled, runtime.settings.secretCode, runtime.settings.tokenExpiresIn);
             const authMiddleware = verifyApiOrToken(runtime);
+
+            const authLimiter = rateLimit({
+                windowMs: runtime.settings.authRateLimitWindowMs || 5 * 60 * 1000,
+                max: runtime.settings.authRateLimitMax || 100,
+                skip: (req) => req.path !== '/api/signin' && req.path !== '/api/refresh'
+            });
+
+            const limiter = rateLimit({
+                windowMs: runtime.settings.apiRateLimitWindowMs || 5 * 60 * 1000,
+                max: runtime.settings.apiRateLimitMax || 1000,
+                skip: (req) => req.path === '/api/version'
+            });
+
+            // Apply before route handlers so sub-routers are covered too.
+            apiApp.use(authLimiter);
+            apiApp.use(limiter);
+
             prjApi.init(runtime, authMiddleware, verifyGroups);
             apiApp.use(prjApi.app());
             usersApi.init(runtime, authMiddleware, verifyGroups);
@@ -67,6 +85,8 @@ function init(_server, _runtime) {
             apiApp.use(daqApi.app());
             schedulerApi.init(runtime, authMiddleware, verifyGroups);
             apiApp.use(schedulerApi.app());
+            recipesApi.init(runtime, authMiddleware, verifyGroups);
+            apiApp.use(recipesApi.app());
             scriptsApi.init(runtime, authMiddleware, verifyGroups);
             apiApp.use(scriptsApi.app());
             resourcesApi.init(runtime, authMiddleware, verifyGroups);
@@ -79,7 +99,6 @@ function init(_server, _runtime) {
             apiApp.use(reportsApi.app());
             apiKeysApi.init(runtime, authMiddleware, verifyGroups);
             apiApp.use(apiKeysApi.app());
-
 
             apiApp.use((err, req, res, next) => {
                 if (err?.type === 'entity.too.large') {
@@ -234,6 +253,7 @@ function getPublicSettings(settings) {
     if (tosend.daqstore) {
         delete tosend.daqstore.url;
         delete tosend.daqstore.host;
+        delete tosend.daqstore.configurationString;
     }
     return tosend;
 }
@@ -281,6 +301,9 @@ function mergeUserSettings(settings) {
         runtime.settings.authRateLimitMax = settings.authRateLimitMax;
     }
     runtime.settings.secureEnabled = settings.secureEnabled;
+    if (!utils.isNullOrUndefined(settings.secureOnlyEditor)) {
+        runtime.settings.secureOnlyEditor = settings.secureOnlyEditor;
+    }
     runtime.settings.logFull = settings.logFull;
     runtime.settings.userRole = settings.userRole;
     runtime.settings.nodeRedEnabled = settings.nodeRedEnabled;

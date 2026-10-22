@@ -9,6 +9,7 @@ const IoEventTypes = {
     DEVICE_PROPERTY: 'device-property',
     DEVICE_VALUES: 'device-values',
     DEVICE_BROWSE: 'device-browse',
+    DEVICE_BROWSE_FOR_DEVICES: 'device-find-devices',
     DEVICE_NODE_ATTRIBUTE: 'device-node-attribute',
     DEVICE_WEBAPI_REQUEST: 'device-webapi-request',
     DEVICE_TAGS_REQUEST: 'device-tags-request',
@@ -24,7 +25,14 @@ const IoEventTypes = {
     ALIVE: 'heartbeat',
     SCHEDULER_UPDATED: 'scheduler:updated',
     SCHEDULER_ACTIVE: 'scheduler:event-active',
-    SCHEDULER_REMAINING: 'scheduler:remaining-time'
+    SCHEDULER_REMAINING: 'scheduler:remaining-time',
+    RECIPE_DOWNLOAD_PROGRESS: 'recipe:download-progress',
+    RECIPE_DOWNLOAD_COMPLETE: 'recipe:download-complete',
+    RECIPE_DOWNLOAD_ERROR: 'recipe:download-error',
+    RECIPE_UPLOAD_PROGRESS: 'recipe:upload-progress',
+    RECIPE_UPLOAD_COMPLETE: 'recipe:upload-complete',
+    RECIPE_UPLOAD_ERROR: 'recipe:upload-error',
+    RECIPE_CANCELED: 'recipe:cancel-confirmed'
 }
 
 // module.exports = IoEventTypes;

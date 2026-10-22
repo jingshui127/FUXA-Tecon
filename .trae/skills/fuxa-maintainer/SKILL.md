@@ -17,6 +17,51 @@ description: "FUXA 项目维护知识库：版本线、硬约束、GitHub Action
 - 上游原版仓库：`https://github.com/frangoteam/FUXA`（仅参考，不直接同步）
 - 本项目远程仓库：`jingshui127/FUXA-Tecon`（remote 名 `private`）
 
+## 已同步的上游版本
+
+| 上游版本 | 时间 | 合并提交 | 备注 |
+|---|---|---|---|
+| v1.3.5 正式版（tag `cf0a44c7`，50 提交） | 2026-10-22 | `8a111469` | 安全加固 #2598、DAQ 作用域隔离 #2604/#2606、S7 Bool 写入 #2579、中文翻译 #2601 |
+| 官方 master（75 提交） | 2026-10-07 | `d3694928` | 反向代理、报警权限、输入验证 |
+
+## 本地定制（同步上游时必须保留）
+
+| # | 定制 | 位置 | 不可丢失的原因 |
+|---|---|---|---|
+| 1 | S7 **跳过原生 `Disconnect()`** | `server/runtime/devices/s7/index.js` | 调用会触发 `STATUS_ACCESS_VIOLATION`（0xC0000409/3221225477） |
+| 2 | S7 **断连自动重连** | `server/runtime/devices/s7/index.js` `polling()` catch | native `Connected()` 不反映 TCP 断开，不主动断开就永不重连（官方 issue #2626） |
+| 3 | 品牌化注入 | `server/main.js` + `server/api/brand.js` + `data/brand.json` | 全站名称/logo/标题 |
+| 4 | `BASE_PATH` 环境变量 | `server/main.js`、Node-RED 白名单 | 反向代理部署 |
+| 5 | PORT 优先级：CLI `-p` > `PORT` env > mysettings.json > 1881 | `server/main.js` | 部署灵活性 |
+| 6 | `patch-nodered`（got v11 强制路径） | `server/scripts/patch-nodered.js`（postinstall） | pkg 环境下 Node-RED 4.x 的 ESM got 不可用 |
+| 7 | 配方**模板优先** | `server/runtime/recipes/recipeStorage` + `plugins/recipes/recipes.ts` | UI 操作的是模板，官方只查实例 → 400 |
+| 8 | 地图源 `tile-{s}.openstreetmap.fr/hot`，`subdomains:'bc'` | `client/src/app/maps/maps-view/maps-view.component.ts` | OSM 官方/CartoDB 在国内超时 |
+
+## 上游同步流程
+
+1. `gh api repos/frangoteam/FUXA/releases/latest --jq '.tag_name'` 确认正式版 tag
+2. `git fetch official --tags` → `git merge official/vX.Y.Z`
+3. 冲突策略：
+   - `client/dist` → 官方版（本地已移除跟踪，理论上不再冲突）
+   - `server/main.js` → **本地版**（官方是子集）
+   - `server/runtime/devices/s7/index.js` → 官方改动 + 保留本地定制 1、2
+   - `server/runtime/plugins/recipes/recipes.ts` → 保留模板优先
+   - `client/**` i18n JSON → **深合并**（官方新键 + 本地 `plugins-notice` 键并集）
+4. 合并后逐项回归：`/api/brand`、标题、BASE_PATH、PORT 优先级、S7 不调原生 Disconnect、配方下载、patch-nodered、DAQ sids ≤100、signin 空值拒绝
+5. 先本地源码模式验证（见下），通过后 push
+6. 更新本文件与本仓库 `科控物联优化/FUXA定制化优化指南.md`
+
+## 验证策略（避免每次都等 6 分钟构建）
+
+| 改动 | 验证方式 | 需重建 EXE |
+|---|---|---|
+| `server/**` 后端 | `cd server; node guard.js -p 2999` | 交付时 |
+| `client/src/**` | `npm run build`；纯字符串小改可直接改 dist 的 `main.*.js` 快速看效果 | 交付时（Actions 现场构建） |
+| `server/package.json` | `npm install` | 必须 |
+| `data/brand.json` | 重启即可 | 不需要 |
+
+> 直接改 dist 只用于本地验证，必须同时提交 `client/src` 源码；dist 不被 git 跟踪。
+
 ## 硬约束（不可违反）
 
 1. **必须使用 Node 18**。S7 通讯（node-snap7）在 Node 20 上不工作。上游原版用 Node 20，不可照搬其 `setup-node` 版本。
@@ -55,6 +100,9 @@ description: "FUXA 项目维护知识库：版本线、硬约束、GitHub Action
 4. **`gh run view --log` 返回 `log not found`**：说明 job 未真正开始（`startup_failure` 或排队失败），需到 Actions 页面 UI 查原因。
 5. **Node.js 版本警告**：runner 日志出现 Node 20/24 弃用警告属平台演进提示，不改变我们 Node 18 的约束。
 6. **推送失败 `Connection was reset`**：网络瞬时故障，稍等重试；可用 `git -c http.postBuffer=524288000 push` 增加缓冲。
+7. **PowerShell 改写 JSON 带入 BOM**：`Set-Content` 默认写 UTF-8 with BOM，会导致 Actions 的 `Build client` 报 `package.json SyntaxError`。改用 `[System.IO.File]::WriteAllText($p,$s,(New-Object System.Text.UTF8Encoding($false)))`，并用字节检查确认前 3 字节不是 `239 187 191`。
+8. **下载 Release 产物不要用单连接**：国内单连接约 130 KB/s，283MB 会卡死/超 30 分钟。用 8 线程 `curl -r start-end` 并行 + 拼接，并校验最终字节数等于 API `assets[0].size`。
+9. **`browser_use` 子代理访问不到本地 localhost**：会误报 `ERR_CONNECTION_REFUSED`。以 `netstat` + `curl` + `/socket.io/?EIO=4&transport=polling` 交叉验证，UI 渲染让用户在本机浏览器确认。
 
 ## 与上游 frangoteam 的差异（有意为之）
 

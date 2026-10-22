@@ -44,7 +44,7 @@ Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -F
     "compression": "Brotli"
   }
 }
-'@ | Set-Content (Join-Path $inputDir 'package.json') -Encoding UTF8
+'@ | ForEach-Object { [System.IO.File]::WriteAllText((Join-Path $inputDir 'package.json'), $_, (New-Object System.Text.UTF8Encoding($false))) }
 
 New-Item (Join-Path $root 'artifacts') -ItemType Directory -Force | Out-Null
 Remove-Item $artifact -Force -ErrorAction SilentlyContinue
@@ -81,3 +81,49 @@ node -e "console.log(require('modbus-serial').name || 'modbus-serial loaded'); c
 ## 目录边界
 
 不得提交 `node_modules/`、`data/`、运行时 `_appdata/`、`_db/`、`_logs/`、`_images/`、`_widgets/`、`_reports/`、`_certificates/`、`fuxa-headless/`、`fuxa-headless-local/`、`artifacts/`、日志或 EXE。不得删除或清空已有运行数据。
+
+## 首选：GitHub Actions 云端构建
+
+本地打包通常不需要跑——**push 到 `1.3.5-2918` 即自动构建**（`headless_packaging.yml`，约 6 分钟，Actions 现场 `npm run build` 出 dist 再 pkg）。
+
+```powershell
+git push private 1.3.5-2918
+gh run list --repo jingshui127/FUXA-Tecon --branch 1.3.5-2918 --limit 3
+gh run watch <run_id> --repo jingshui127/FUXA-Tecon --interval 15
+```
+
+产物：Release `headless-latest-<run_id>` 下的 `FUXA-1.3.5-2918-win-x64.exe`（约 283 MB，`Brotli` 压缩）。
+
+### 下载产物（国内必须分段并行）
+
+单连接约 130 KB/s，283MB 会卡死。用 8 线程 Range 并行 + 拼接，并**校验最终字节数 == 资产 `size`**：
+
+```powershell
+$tag = 'headless-latest-<run_id>'
+$assetId = gh api "repos/jingshui127/FUXA-Tecon/releases/tags/$tag" --jq '.assets[0].id'
+$total   = gh api "repos/jingshui127/FUXA-Tecon/releases/tags/$tag" --jq '.assets[0].size'
+$token   = gh auth token
+$loc = (curl.exe -sI -H "Authorization: token $token" -H "Accept: application/octet-stream" `
+        "https://api.github.com/repos/jingshui127/FUXA-Tecon/releases/assets/$assetId") |
+        Select-String '^Location:' | ForEach-Object { $_.ToString().Substring(9).Trim() }
+# 8 段：curl.exe -s -f --retry 8 -r "$start-$end" -o partNN $loc，全部完成后按序拼接到目标文件
+```
+
+`gh release download` 或单连接 `curl -fL` 只在体积小或网络好时用。
+
+## 前置判断：真的需要构建 EXE 吗
+
+| 改动 | 建议 |
+|---|---|
+| `server/**` 后端 | 先 `cd server; node guard.js -p 2999` 本地验证，通过后再 push 出 EXE |
+| `client/src/**` 前端 | 必须构建（Actions 现场构建，无需本地 build） |
+| `server/package.json` 依赖 | 必须构建 |
+| `data/brand.json` | **不需要**，运行时读取 |
+
+## 构建陷阱
+
+1. **JSON 不能带 BOM**：本 skill 用 `Set-Content` 写 `package.json` 时必须显式无 BOM；若手工改过 `client/package.json` / `server/package.json`，用
+   `[System.IO.File]::WriteAllText($p,$s,(New-Object System.Text.UTF8Encoding($false)))` 重写，否则 Actions 的 `Build client` 会报 `package.json SyntaxError`。
+2. **产物字节数必须完整**：下载或被截断的 EXE 能启动但会中途崩，务必比对 `size`。
+3. **虚拟内存不足**：`ng build` 崩（`0xC0000409`）或 `git push` 报 `os error 1455` 时，临时设 `$env:NODE_OPTIONS='--max-old-space-size=4096'`，根本解法是把系统虚拟内存调到 8GB/16GB。
+

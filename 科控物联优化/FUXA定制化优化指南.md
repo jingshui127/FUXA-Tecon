@@ -1,7 +1,7 @@
 # FUXA Headless EXE 定制化优化指南
 
-> 最后更新: 2026-10-07
-> 当前版本: 1.3.5-2918
+> 最后更新: 2026-10-22
+> 当前版本: 1.3.5-2918（已同步上游正式版 tag `v1.3.5`）
 > 分支: `1.3.5-2918`
 > 仓库: https://github.com/jingshui127/FUXA-Tecon
 
@@ -26,7 +26,7 @@
 | `app/headless/headless-guardian.js`                                 | 新建 | 双模式 EXE 入口（Guardian + Server）                                              |
 | `server/guard.js`                                                   | 新建 | 开发调试用守护脚本 (`node guard.js -p PORT`)                                    |
 | `.github/workflows/headless_packaging.yml`                          | 修改 | GitHub Actions 自动构建配置                                                       |
-| `server/runtime/devices/s7/index.js`                                | 修改 | 跳过 Disconnect + exit handler（上游已修复 Promise reject 等关键 bug）    |
+| `server/runtime/devices/s7/index.js`                                | 修改 | 跳过 Disconnect + exit handler + **断连自动重连**（见 2.1）    |
 | `server/runtime/devices/index.js`                                   | 修改 | 设备 start/stop try-catch 保护                                                    |
 | `server/runtime/index.js`                                           | 修改 | 异步重启 + 500ms 延迟                                                             |
 | `server/api/projects/index.js`                                      | 修改 | 视图修改免重启 + upload mkdir 修复 + 异步重启                                     |
@@ -36,7 +36,7 @@
 | `server/package.json`                                               | 修改 | 添加`modbus-serial`、`node-snap7` 等驱动包依赖，添加 `postinstall` 补丁脚本 |
 | `server/scripts/patch-nodered.js`                                   | 新建 | pkg ESM 兼容补丁，修复 Node-RED httprequest 节点`got` 导入失败                  |
 | `client/src/app/gauges/controls/html-image/html-image.component.ts` | 修改 | 解决上游合并冲突（BASE_PATH 反向代理）                                            |
-| `client/src/app/maps/maps-view/maps-view.component.ts`              | 修改 | 地图源改为法国 OSM 热区镜像（国内加速）                                           |
+| `client/src/app/maps/maps-view/maps-view.component.ts`              | 修改 | 地图源 `openstreetmap.fr/hot` + 子域轮询 `bc`（国内可用，见 2.6）                 |
 | `server/brand.js`                                                   | 新建 | 品牌配置模块（读取 brand.json、API 端点、index.html 注入）                        |
 | `server/main.js`                                                    | 修改 | 集成品牌模块，注册`/api/brand` 端点，注入 `window.__BRAND__`                  |
 | `data/brand.json`                                                   | 新建 | 品牌配置文件（名称、标题、Logo、footer）                                          |
@@ -97,6 +97,43 @@ process.on('exit', function () {
     if (typeof s7client !== 'undefined' && s7client) s7client = null;
 });
 ```
+
+#### 断连后不自动重连（2026-10-22 修复，commit `e591dd49`）
+
+**现象**（对应官方 issue [#2626](https://github.com/frangoteam/FUXA/issues/2626)）：PLC 侧断电/拔网线后，日志每秒刷一条错误且**永不恢复**：
+
+```
+[ERR] 'S7-1500' _readVars error! Error: ISO : An error occurred during send TCP : Connection reset by peer
+    at _getErr (.../runtime/devices/s7/index.js:677:16)
+```
+
+`runtime.update-project: restart!` 触发重启后才恢复正常。
+
+**根因**：上层 `device.js` 的 `checkStatus()` 靠 `comm.isConnected()`（即 `s7client.Connected()`）判断是否需要重连。但 node-snap7 的 `Connected()` 只返回**原生库内部标志位**，不会探测 TCP 连接存活状态。PLC 主动断开后该标志仍为 true → `checkStatus()` 永不触发重连 → `polling()` 无限报错。
+
+**修复**：在 `polling()` 的 catch 块里识别连接类错误，主动 `disconnect()` 重置原生状态，让下一轮 `checkStatus()` 检测到未连接并触发重连。
+
+```javascript
+} catch (reason) {
+    if (reason && reason.stack) {
+        logger.error(`'${data.name}' _readVars error! ${reason.stack}`);
+    } else {
+        logger.error(`'${data.name}' _readVars error! ${reason}`);
+    }
+    _checkWorking(false);
+    // 连接类错误时主动断开：native 层 Connected() 标志不会自动更新，
+    // 不断开则上层 device.js checkStatus() 永远检测不到断连、不会重连
+    const msg = reason ? (reason.message || String(reason)) : '';
+    if (/connection|reset|refused|timeout|broken pipe|peer/i.test(msg)) {
+        logger.warn(`'${data.name}' connection lost detected, forcing disconnect to allow reconnect`);
+        this.disconnect().catch(() => {});
+    }
+}
+```
+
+**注意**：本修复调用的是我们定制过的 `disconnect()`（只清 JS 状态、不调原生 `Disconnect()`），因此不会触发 2.1 节所述的 `STATUS_ACCESS_VIOLATION` 崩溃；如果哪天把 `disconnect()` 改回调用原生 `Disconnect()`，这个自动重连补丁会带来崩溃风险。
+
+**验证**：拔掉 S7-1500 网线 → 出现 `connection lost detected, forcing disconnect to allow reconnect` → 约 5 秒内自动重连；插回网线后数据自动恢复。
 
 ### 2.2 守护进程（Guardian）
 
@@ -177,7 +214,42 @@ if (parsedArgs.port !== undefined) {
 
 **文件**: `client/src/app/maps/maps-view/maps-view.component.ts`
 
-默认 `tile.openstreetmap.org` 国内访问慢，改用法国 OSM 热区镜像 `tile-c.openstreetmap.fr/hot/`。
+原配置（单节点、无子域轮询）：
+
+```javascript
+L.tileLayer('https://tile-c.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    attribution: '&copy; TC'
+})
+```
+
+**2026-10-22 调整后**（commit `6301cd53`）：
+
+```javascript
+L.tileLayer('https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles courtesy of <a href="https://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>',
+    subdomains: 'bc',
+    maxZoom: 19
+}).addTo(this.map);
+```
+
+调整点：
+
+| 项 | 原 | 现 | 原因 |
+| -- | -- | -- | ---- |
+| 子域轮询 | 固定 `tile-c` | `{s}` 轮询 `b`/`c` | 分散单节点压力、避免限流 |
+| attribution | `© TC` | OSM + HOT 规范署名 | 遵守 OSM 使用条款 |
+| maxZoom | 未设（默认 18） | 19 | 与瓦片服务实际层级一致 |
+
+**国内可用性实测**（2026-10-22，本地网络）：
+
+| 瓦片源 | 结果 |
+| ------ | ---- |
+| `tile.openstreetmap.org`（官方） | ❌ 超时 |
+| `basemaps.cartocdn.com`（CartoDB） | ❌ 超时 |
+| **`tile-{b,c}.openstreetmap.fr/hot`** | ✅ 200，0.8–2.0s |
+
+> `tile-a` 在本网络不可达，因此 `subdomains` 只写 `'bc'`。换网络环境需重新测 a/b/c 三个子域。
+
 
 ### 2.7 设备启动保护
 
@@ -401,6 +473,48 @@ getBrandLogo(): string | null { ... }
 
 **验证**：官方 recipes 单元测试 112 全部通过 + 端到端 API（创建模板 → `POST /api/recipes/download` → `202 {"result":"started","totalEntries":N}`）。
 
+### 2.15 官方 v1.3.5 正式版同步（2026-10-22）
+
+官方打 tag `v1.3.5`（commit `cf0a44c7`），比上次同步的官方 master 多 **50 个提交**，merge 后本地分支提交 `8a111469`（merge commit）。
+
+**官方新增/修复中与本地强相关的项**：
+
+| 项 | PR | 本地影响 |
+| -- | -- | -------- |
+| **安全加固**（认证、Node-RED 授权、DAQ 查询限制、设置泄露） | #2598 | 高危，必合 |
+| DAQ 查询作用域隔离（session 隔离，`socket.emit` 不再广播） | #2604 / #2606 | 安全 |
+| DAQ `sids` 上限 100（超出返回 `invalid_query`） | #2604 | 已验证 |
+| signin 空用户名/密码直接拒绝（不再遍历用户表） | #2598 | 已验证 |
+| **S7 Bool 标签写入**（`toBoolean()`） | #2579 | S7 用户必看 |
+| Node-RED tag-change 改为按值比较 | #2607 | Node-RED 用户 |
+| Node-RED DAQ 时间戳归一化 | #2600 | Node-RED 用户 |
+| Node-RED BASE_PATH 路由修复 | #2571 / #2577 | 反向代理 |
+| 中文翻译术语修正（zh-cn / zh-tw） | #2601 | 本地化改善 |
+| Enter 键防重复提交 | #2584 | 交互改善 |
+| 通用 EtherNet/IP 驱动 | #2586 | 新增驱动，不影响现有设备 |
+| 可配置 MQTT/Modbus 超时、MQTT per-topic retain | #2507 / #2518 | 新能力 |
+
+**冲突处理（本次 4 处需要手工合并，其余自动）**：
+
+| 文件 | 处理 |
+| ---- | ---- |
+| `server/runtime/devices/s7/index.js` | 官方 S7 改动 + 本地"跳过原生 Disconnect"合并，**保留本地定制** |
+| `server/runtime/plugins/recipes/recipes.ts` | 本地"模板优先"逻辑下沉到 `recipeStorage.getRecipeData`，与官方 export 路径对齐 |
+| `server/main.js` | 保留本地版（品牌注入 + BASE_PATH + PORT 环境变量） |
+| i18n JSON | 深合并（官方新键 + 本地 `plugins-notice` 键） |
+
+**合并后必须回归验证的清单**：
+品牌注入（`/api/brand`、标题、favicon）、BASE_PATH 反向代理、PORT 优先级、S7 `disconnect()` 不调原生接口、配方模板下载、patch-nodered、DAQ sids 限制、signin 空值拒绝。
+
+### 2.16 官方同步检查清单（每次同步照做）
+
+1. `gh api repos/frangoteam/FUXA/releases/latest --jq '.tag_name,.target_commitish'` 拿正式版 tag
+2. `git fetch official --tags` → `git merge official/vX.Y.Z`
+3. 冲突按 2.15 的表格处理；**i18n 一律深合并**
+4. 合并后跑：`git diff --stat` 逐个确认本地定制文件是否被覆盖
+5. 本地源码模式验证（见 3.4）→ 通过后再 push 出 EXE
+6. 更新本文档 2.x 与 `fuxa-maintainer` / `build-fuxa-exe` skill 的版本与要点
+
 ---
 
 ## 三、构建与部署
@@ -468,6 +582,53 @@ pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-
 | 视图修改 | 日志输出`views-only change, skip restart` |
 | 地图     | 法国 OSM 镜像正常加载                       |
 | 守护     | 崩溃后 2 秒自动重启                         |
+
+### 3.4 本地源码模式快速验证（推荐优先于 EXE 构建）
+
+**核心原则**：改 `server/` 后端代码（驱动、API、runtime）时，**不必每次等 Actions 构建 6 分钟**，直接跑源码即可验证；只有需要交付、或改了前端/依赖时才构建 EXE。
+
+```powershell
+cd c:\Users\13971\Downloads\FUXA-master\server
+node guard.js -p 2999
+```
+
+本地环境（已具备）：Node.js **18.20.8**、`server/node_modules`、`client/dist`、`server/guard.js`。
+
+| 改动位置 | 本地源码验证 | 需要重建 EXE |
+| -------- | ------------ | ------------ |
+| `server/**/*.js`（驱动/API） | ✅ 直接 `node guard.js` | 交付时 |
+| `client/src/**`（前端） | 需先 `npm run build`；**纯字符串级小改可直接改 dist 对应的 `main.*.js` 快速验证** | 交付时（Actions 会现场构建） |
+| `server/package.json`（依赖） | ⚠️ 需 `npm install` | ✅ 必须 |
+| `data/brand.json` | ✅ 启动时读取，改完重启即可 | ❌ 不用 |
+
+**推荐工作流**：本地源码验证 → 通过后 `git push private 1.3.5-2918` → Actions 出正式 EXE → 只做一次打包回归。
+
+> 直接改 dist 仅用于**本地快速看效果**，不能替代提交 `client/src` 源码；dist 已从 git 移除跟踪，Actions 永远用 src 现场构建。
+
+### 3.5 下载 Release 产物（CDN 慢时用分段并行）
+
+`gh release download` 与单连接 `curl` 在国内常卡在几百 KB。实测单连接 ~130 KB/s（283MB 需 30+ 分钟），改用 **8 线程 Range 并行 + 本地拼接** 约 6 分钟完成。
+
+```powershell
+# 1) 取资产 ID 与字节数
+$assetId = gh api "repos/jingshui127/FUXA-Tecon/releases/tags/headless-latest-<run_id>" --jq '.assets[0].id'
+$total   = gh api "repos/jingshui127/FUXA-Tecon/releases/tags/headless-latest-<run_id>" --jq '.assets[0].size'
+
+# 2) 取带签名的 CDN 跳转地址
+$token = gh auth token
+$loc = (curl.exe -sI -H "Authorization: token $token" -H "Accept: application/octet-stream" `
+        "https://api.github.com/repos/jingshui127/FUXA-Tecon/releases/assets/$assetId") |
+        Select-String '^Location:' | ForEach-Object { $_.ToString().Substring(9).Trim() }
+
+# 3) 8 段并行下载（每段写 partNN），再按顺序拼成一个文件
+# 4) 校验最终字节数 == $total，否则重新下载失败的分段
+```
+
+**要点**：
+- 必须校验**最终字节数与 API 返回的 `size` 完全一致**，否则 EXE 无法启动（截断包通常也能"启动"一会儿才崩）
+- 分段文件大小必须等于 `end - start + 1`，缺一段就整体重下该段
+- 下载完成后删除临时目录，避免残留几百 MB
+
 
 ---
 
@@ -613,6 +774,32 @@ curl.exe -fL --retry 10 -H "Authorization: token $token" -H "Accept: application
 
 **结论**: 官方**没有运行时 agent 功能**。提交 `95f1148 "feat: add skip agents"` 仅修改 `.gitignore`，忽略 `.agents/` 和 `AGENTS.md`（AI 编程工具生成的产物），防止仓库被污染。
 
+### 4.16 PowerShell 写 JSON 带入 BOM 导致 Actions 构建失败
+
+**症状**：push 后 Actions 的 `Build client` 步骤直接失败：`client/package.json SyntaxError`（本地 `npm install` 却正常）。
+
+**根因**：合并冲突时用 `Set-Content` 重写 `package.json`，PowerShell 5 默认写 **UTF-8 with BOM**（文件头 `EF BB BF`）。Node.js 的 `JSON.parse` / npm 在某些环境下不接受带 BOM 的 JSON，Actions 的 Node 环境直接报语法错误。
+
+**修复**（无 BOM 重写）：
+
+```powershell
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$content = [System.IO.File]::ReadAllText($path)
+[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+```
+
+**检查**：`Get-Content $path -Encoding Byte -TotalCount 3` 应是 `123 13 10`（`{` + CRLF），而不是 `239 187 191`（BOM）。
+
+**教训**：任何 `.json` / `.ts` / `.js` 文件经 PowerShell 改写后都要检查 BOM；优先用编辑工具而不是 `Set-Content`。
+
+### 4.17 浏览器自动化子代理无法访问 localhost（误报）
+
+**症状**：`browser_use` 子代理报告 `socket.io net::ERR_CONNECTION_REFUSED`、页面白屏，但同时刻 `netstat` 显示端口 LISTENING、`curl` 返回 200。
+
+**根因**：该子代理的浏览器运行环境与本地主机网络不共享，`localhost` 指向的是它自己的沙箱。
+
+**处理**：用 CLI 交叉验证（`netstat` + `curl http://localhost:PORT/` + `/socket.io/?EIO=4&transport=polling`），不要仅凭子代理结论判断服务异常。涉及 localhost 的 UI 验证，让用户在本机浏览器确认。
+
 ---
 
 ## 五、待办事项
@@ -632,8 +819,13 @@ curl.exe -fL --retry 10 -H "Authorization: token $token" -H "Accept: application
 - [X] **官方 1.3.5 全量同步**（2026-10-07）— merge 官方 master（75 提交），版本升级至 `1.3.5-2918`，详见 2.13 节
 - [X] **版本统一**（2026-10-07）— 分支名/EXE 命名/workflow/docker/文档/skill 全部统一为 `1.3.5-2918`，提交 `641961a1`
 - [X] **配方管理修复**（2026-10-07）— 官方 recipes 下载/上传模板 400 bug，模板优先修复，单元 112 通过 + 端到端 202，提交 `77783dff`，详见 2.14 节
-- [X] **GitHub Actions 构建恢复**（2026-10-07）— `1.3.5-2918` 分支推送自动触发 `headless_packaging.yml` 构建成功，产物 `FUXA-1.3.5-2918-win-x64.exe`（269MB）上传 Release `headless-latest-{run_id}`
+- [X] **GitHub Actions 构建恢复**（2026-10-07）— `1.3.5-2918` 分支推送自动触发 `headless_packaging.yml` 构建成功，产物 `FUXA-1.3.5-2918-win-x64.exe` 上传 Release `headless-latest-{run_id}`
 - [X] **client/dist 移除跟踪**（2026-10-07）— 避免官方同步 dist 冲突，见 4.14 节
+- [X] **官方 v1.3.5 正式版同步**（2026-10-22）— merge tag `v1.3.5`（`cf0a44c7`，50 提交），合并 `8a111469`，含安全加固 #2598、DAQ 作用域隔离 #2604/#2606、S7 Bool 写入 #2579、中文翻译 #2601，详见 2.15 节
+- [X] **S7 断连自动重连**（2026-10-22）— 对应官方 issue #2626，`polling()` 检测连接类错误主动 `disconnect()`，提交 `e591dd49`，详见 2.1 节
+- [X] **地图源改为子域轮询**（2026-10-22）— `openstreetmap.fr/hot` + `subdomains:'bc'` + 规范 attribution，提交 `6301cd53`，详见 2.6 节
+- [X] **EXE 下载手段升级**（2026-10-22）— CDN 单连接过慢时用 8 线程 Range 分段并行下载，见 3.5 节
+- [X] **本地源码快速验证流程**（2026-10-22）— 后端改动先用 `node guard.js -p 2999` 验证，再 push 出 EXE，见 3.4 节
 
 ### 待处理
 

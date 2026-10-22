@@ -140,6 +140,14 @@ function S7client(_data, _logger, _events, _runtime) {
                     logger.error(`'${data.name}' _readVars error! ${reason}`);
                 }
                 _checkWorking(false);
+                // 连接类错误（PLC 主动断开、网络中断等）时，native 库的 Connected() 标志不会自动更新，
+                // 导致上层 device.js checkStatus() 检测不到断连、不触发重连。
+                // 这里主动断开以重置 native 状态，让 checkStatus() 下次轮询时触发重连。
+                const msg = reason ? (reason.message || String(reason)) : '';
+                if (/connection|reset|refused|timeout|broken pipe|peer/i.test(msg)) {
+                    logger.warn(`'${data.name}' connection lost detected, forcing disconnect to allow reconnect`);
+                    this.disconnect().catch(() => {});
+                }
             };
         } else {
             _emitStatus('connect-busy');

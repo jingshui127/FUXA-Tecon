@@ -105,7 +105,6 @@ jobs:
       with:
         name: fuxa-pro-headless-1.3.5
         path: artifacts/fuxa-pro-headless.exe
-        retention-days: 30
 
     - name: Start EXE health check
       shell: powershell
@@ -163,7 +162,6 @@ jobs:
           fuxa-exe.stdout.log
           fuxa-exe.stderr.log
         if-no-files-found: warn
-        retention-days: 14
 
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v2

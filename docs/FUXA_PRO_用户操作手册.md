@@ -28,9 +28,9 @@ Release 中的 `fuxa-pro-headless.exe` 即最终交付文件，无需解压。
 
 | Artifacts 产物名称 | 说明 |
 |---------|------|
-| `fuxa-pro-headless-1.3.5.zip` | 压缩包，解压后得到 `fuxa-pro-headless.exe` |
+| `fuxa-pro-headless-1.3.5` | 压缩包，解压后得到 `fuxa-pro-headless.exe` |
 
-Artifacts 名称带版本号并保留 30 天；Release 中的产物名称固定为 `fuxa-pro-headless.exe`，始终为最新构建。
+Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数跟随仓库设置（当前上限为 3 天），过期后需重新运行工作流。Release 中的产物名称固定为 `fuxa-pro-headless.exe`，始终为最新构建且长期保留，正式交付建议使用 Release。
 
 ---
 

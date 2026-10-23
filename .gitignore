@@ -87,6 +87,7 @@ _logs/
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Temporary files
 *.tmp

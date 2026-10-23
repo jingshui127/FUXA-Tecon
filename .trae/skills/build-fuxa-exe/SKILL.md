@@ -125,4 +125,6 @@ foreach ($path in $paths) {
 - **单文件运行**: `fuxa-pro-headless.exe` 自包含 Node.js 运行时，直接拷贝到任意 Windows 电脑即可运行
 - **首次启动**: 自动在 EXE 同级创建 `data/` 目录（数据库、日志、设置）
 - **端口修改**: `fuxa-pro-headless.exe -p 8899`
-- **更换 LOGO**: 在 EXE 同级创建 `customization/` 文件夹，放入 `config.json`、`logo.svg`、`favicon.ico` 即可覆盖默认品牌标识（可选，不影响运行）
+- **更换 LOGO / 品牌**: 两种方式任选
+  - 运行时覆盖（推荐，免重打包）：在 EXE 同级创建 `customization/` 文件夹，放入 `config.json`、`logo.svg`、`favicon.ico`，重启 EXE 即生效。外部文件优先于内置，未提供的文件自动回退内置默认，可只放其中一部分。生效时启动日志会出现 `Customization: using external brand assets from <路径>`。
+  - 打包内置：替换 `client/dist/assets/customization/` 下的对应文件后重新打包。注意官方约定该目录会随版本升级被覆盖，需先备份。

@@ -74,7 +74,25 @@ Launching FUXA server with userDir: <EXE目录>\data
 
 所有项目数据存储在 EXE 同级的 `data\` 目录中，首次运行会自动创建该目录。Node-RED 流程位于 `data\_appdata\node-red\flows.json`，网页安装插件位于 `data\_pkg\runtime\node_modules\`。
 
-### 3.5 停止服务
+### 3.5 品牌定制（LOGO / 名称）
+
+在 EXE 同级创建 `customization\` 目录，放入需要替换的文件后重启 EXE 即可，**不需要重新打包**：
+
+| 文件 | 作用 |
+|---|---|
+| `config.json` | 应用名、浏览器标题、侧边栏标题、服务器名、帮助页信息、闪屏文案、日志文件名、报表页眉 |
+| `logo.svg` | 闪屏与帮助页使用的 LOGO 图片 |
+| `favicon.ico` | 浏览器标签页图标 |
+
+规则：
+
+- 外部目录中的文件**优先于** EXE 内置资源，未提供的文件自动回退内置默认，因此可以只覆盖其中一部分（例如只放 `logo.svg`）。
+- 目录不存在或文件缺失时，界面保持内置默认品牌，不影响运行。
+- 生效时启动日志会输出 `Customization: using external brand assets from <路径>`。
+- 可参考交付素材 `docs\customization\` 的 `config.json` 格式。
+- 与官方约定一致：升级 FUXA 版本后内置默认品牌可能变化，外部 `customization\` 目录不受升级影响，建议保留备份。
+
+### 3.6 停止服务
 
 在控制台窗口中按 `Ctrl+C` 停止服务。
 

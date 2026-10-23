@@ -486,6 +486,13 @@ if (rewrittenAssets.size) {
     });
 }
 
+// 外部 customization 目录优先于内置资源：同名文件用外部的，缺失的自动回退内置
+const externalCustomizationDir = getCustomizationDir();
+if (fs.existsSync(externalCustomizationDir)) {
+    app.use(BASE_PATH + '/assets/customization', express.static(externalCustomizationDir));
+    logger.info(`Customization: using external brand assets from ${externalCustomizationDir}`);
+}
+
 for (const shellPath of SHELL_ROUTES) {
     app.use(BASE_PATH + shellPath, express.static(settings.httpStatic));
 }
@@ -702,9 +709,19 @@ process.on('SIGINT', function () {
     });
 });
 
+// 外部品牌定制目录：打包后为 EXE 同级目录，源码模式为项目根目录。
+// 外部目录中存在的文件优先于打包内置资源，未提供的文件自动回退内置默认。
+function getCustomizationDir() {
+    const baseDir = process.pkg ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
+    return path.join(baseDir, 'customization');
+}
+
 function getCustomization() {
     try {
-        const config = path.join(__dirname, '..', 'client', 'dist', 'assets', 'customization', 'config.json');
+        const externalConfig = path.join(getCustomizationDir(), 'config.json');
+        const config = fs.existsSync(externalConfig)
+            ? externalConfig
+            : path.join(__dirname, '..', 'client', 'dist', 'assets', 'customization', 'config.json');
         if (!fs.existsSync(config)) {
             return null;
         }

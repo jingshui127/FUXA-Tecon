@@ -1,21 +1,19 @@
 {
-    "appName": "FUXA",
-    "appTitle": "FUXA",
+    "appName": "TcScada",
+    "appTitle": "科控物联",
     "favicon": "assets/customization/favicon.ico",
-    "serverName": "FUXA Server",
+    "serverName": "TcScada Server",
     "appInfo": {
-        "title": "FUXA",
-        "image": "",
-        "subText": "powered by frangoteam"
-    },
-    "sideMenuTitle": "FUXA",
-    "logFileName": "fuxa-log",
-    "reportHeaderText": "Report created from FUXA",
-    "splash": {
-        "text": "FUXA is Loading...",
+        "title": "TcScada",
         "image": "assets/customization/logo.svg",
-        "subText": "powered by frangoteam",
-	    "spinner": false,
-        "delay": 2000
+        "subText": "技术服务 QQ:2492123056"
+    },
+    "sideMenuTitle": "TcScada",
+    "logFileName": "TcScada-log",
+    "reportHeaderText": "Report created from TcScada",
+    "splash": {
+        "text": "Scada is Loading...",
+        "image": "assets/customization/logo.svg",
+        "subText": "技术支持： 科控物联"
     }
 }

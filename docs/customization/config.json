@@ -1,0 +1,19 @@
+{
+    "appName": "TcScada",
+    "appTitle": "科控物联",
+    "favicon": "assets/customization/favicon.ico",
+    "serverName": "TcScada Server",
+    "appInfo": {
+        "title": "TcScada",
+        "image": "assets/customization/logo.svg",
+        "subText": "技术服务 QQ:2492123056"
+    },
+    "sideMenuTitle": "TcScada",
+    "logFileName": "TcScada-log",
+    "reportHeaderText": "Report created from TcScada",
+    "splash": {
+        "text": "Scada is Loading...",
+        "image": "assets/customization/logo.svg",
+        "subText": "技术支持： 科控物联"
+    }
+}

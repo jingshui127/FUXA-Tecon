@@ -24,7 +24,7 @@ http://127.0.0.1:1881/plugins
 <EXE目录>\data\_pkg\runtime\node_modules\
 ```
 
-迁移到其他 Windows x64 电脑时，必须同时复制 EXE 和完整的 `data\` 文件夹，已安装插件、项目数据和配置才会保留。Node-RED 内置依赖不属于网页通讯插件，不要混用两套安装方式。
+迁移到其他 Windows x64 电脑时，必须同时复制 EXE 和完整的 `data\` 文件夹，已安装插件、项目数据和配置才会保留。若使用了外部品牌定制目录 `<EXE目录>\customization\`，也必须一并复制——该目录不在 `data\` 内，遗漏会导致品牌回退为内置默认。Node-RED 内置依赖不属于网页通讯插件，不要混用两套安装方式。
 
 ## 二、Node-RED 入口
 
@@ -147,15 +147,36 @@ node -e "require('odbc'); const {ChartJSNodeCanvas}=require('chartjs-node-canvas
 
 因此，重新打包后直接启动新 EXE 即可继续使用 `data` 中已有的插件、流程、数据库和业务资源，无需再次下载插件。
 
-## 六、构建输入与迁移边界
+## 六、品牌定制目录
+
+品牌资源（应用名、LOGO、浏览器图标）的默认内置路径为 `client/dist/assets/customization/`，已打包进 EXE，**打包后无法修改**。
+
+运行时可覆盖，无需重新打包：
+
+```text
+<EXE目录>\customization\
+    ├── config.json
+    ├── logo.svg
+    └── favicon.ico
+```
+
+- 外部文件优先于内置资源，未提供的文件自动回退内置默认，可只放其中一部分。
+- 目录不存在或文件缺失时，界面保持内置默认品牌，不影响运行。
+- 生效时启动日志输出：`Customization: using external brand assets from <路径>`。
+- 官方约定 `client/dist/assets/customization/` 会随 FUXA 版本升级被覆盖；外部 `customization\` 目录不受升级影响。项目内 `docs\customization\` 为回填母本，升级后需重新写回。
+
+## 七、构建输入与迁移边界
 
 不得将以下内容作为构建输入或提交内容：
 
 ```text
 artifacts\
 data\
+customization\
 fuxa-headless\fuxa-headless\
 临时构建日志
 ```
+
+`client/dist` 属于交付所需的前端静态资源，**必须纳入版本控制**（`.gitignore` 中不得用 `dist/` 将其整体忽略），否则 CI 构建出的 EXE 会缺少前端 bundle，打开页面白屏。
 
 不要同时运行多个 `npm ci`、pkg 或完整构建脚本；Windows 文件锁会导致 `EPERM`，并可能生成未经过 patch 的 EXE。

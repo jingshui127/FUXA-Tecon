@@ -6,6 +6,8 @@
 - 打包前必须按顺序执行源码同步、`npm ci --omit=dev --no-audit --no-fund`、`patch-nodered.js`、pkg；不能只复制文件后直接打包。
 - `patch-nodered.js` 必须定位 `fuxa-headless\node_modules`，修复 Node-RED registry 以及 Node-RED 4.1.10 telemetry 对 `got` 的加载；旧版 `21-httprequest.js` 只能作为兼容性可选目标，不能假设必然存在。依赖缺失、模式不匹配或验证失败时退出非零。
 - 构建日志必须出现 `[patch-nodered] verification passed` 和 `[BUILD] SUCCESS`；只有看到 `[BUILD] SUCCESS` 才能认为 `artifacts\fuxa-pro-headless.exe` 已被本次构建覆盖。启动日志不得出现 `Cannot find package 'got'`。
+- `build-and-push.ps1` 的成功判定必须依据日志标记（构建日志含 `[BUILD] SUCCESS`，推送日志含 `[GIT] SUCCESS pushed` 或 `[GIT] Push skipped`）。不得用 `Start-Process -PassThru` 返回对象的 `ExitCode` 判断：PowerShell 5.1 下它可能为 `$null`，`$null -ne 0` 成立，会把成功误报为失败。
+- `client\dist` 是交付必需的前端静态资源，必须纳入版本控制；`.gitignore` 不得用 `dist/` 规则把它整体忽略（需保留 `!client/dist/` 例外）。否则 CI 从全新克隆构建出的 EXE 缺少 `main.*.js`、`styles.*.css`，打开页面 404 白屏。
 
 - 不允许多个 `npm ci`、pkg 或构建脚本同时操作 `fuxa-headless\node_modules`。
 - 不得把 `artifacts\`、运行时 `data\` 或异常嵌套的 `fuxa-headless\fuxa-headless\` 目录作为构建输入或提交内容。
@@ -23,5 +25,7 @@
 
 - 网页安装插件保存于 `<EXE目录>\data\_pkg\runtime\node_modules\`。
 - Node-RED 流程保存于 `<EXE目录>\data\_appdata\node-red\flows.json`。
+- 品牌资源内置路径为 `client\dist\assets\customization\`（打入 EXE 快照，打包后不可修改），内置默认品牌为科控物联（`TcScada`）。支持 `<EXE目录>\customization\` 运行时覆盖：外部文件优先、缺失文件回退内置；该目录不在 `data\` 内，迁移时必须单独复制。`docs\customization\` 为回填母本，官方升级覆盖 `client\dist` 后需重新写回。
+- 工作分支为 `1.3.5-PRO`，CI 触发分支与 `build-and-push.ps1` 默认分支必须保持一致。
 - 当前操作文档只描述 1.3.5-PRO 和 `fuxa-pro-headless.exe`；旧版本方案必须明确标记为历史，不得混入当前命令。
 - 当前项目不保留旧版本排查文档；可执行规则以本文件和 build skill 为准。

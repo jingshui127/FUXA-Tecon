@@ -108,7 +108,16 @@ Get-Content $PushLog -ErrorAction SilentlyContinue | Write-Host
 Write-Host "ExitCode=$($push.ExitCode)"
 Get-Content $PushErrorLog -ErrorAction SilentlyContinue | Write-Host
 
-if ($build.ExitCode -ne 0 -or $push.ExitCode -ne 0) {
+$buildText = Get-Content $BuildLog -Raw -ErrorAction SilentlyContinue
+$pushText = Get-Content $PushLog -Raw -ErrorAction SilentlyContinue
+
+# PowerShell 5.1 下 Start-Process -PassThru 返回对象的 ExitCode 可能为 $null
+# （即使 HasExited 为 True），用 $null -ne 0 判断会把成功误判为失败，
+# 因此以子进程日志中的成功标记作为判定依据。
+$buildOk = $buildText -match '\[BUILD\] SUCCESS'
+$pushOk = ($pushText -match '\[GIT\] SUCCESS pushed') -or ($pushText -match '\[GIT\] Push skipped')
+
+if (-not $buildOk -or -not $pushOk) {
     Write-Error 'Parallel build/push finished with errors. Check artifacts\build-parallel*.log and artifacts\push-parallel*.log.'
     exit 1
 }

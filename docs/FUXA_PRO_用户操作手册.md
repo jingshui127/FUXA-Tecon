@@ -16,13 +16,21 @@ FUXA PRO 是基于 FUXA 开源 SCADA 系统的科控物联定制版，支持西�
 访问 GitHub Actions 构建页面下载最新版本：  
 https://github.com/jingshui127/FUXA-Tecon/actions
 
-选择对应的工作流运行记录，在页面底部的 **Artifacts** 区域下载：
+选择对应的工作流运行记录获取产物，两种方式任选：
 
-| 产物名称 | 说明 |
+**方式一：Release（推荐，直接下 EXE）**
+
+https://github.com/jingshui127/FUXA-Tecon/releases/tag/headless-pro-latest
+
+Release 中的 `fuxa-pro-headless.exe` 即最终交付文件，无需解压。
+
+**方式二：Actions Artifacts（需解压）**
+
+| Artifacts 产物名称 | 说明 |
 |---------|------|
-| `fuxa-pro-headless.exe` | Windows 独立可执行文件 |
+| `fuxa-pro-headless-1.3.5.zip` | 压缩包，解压后得到 `fuxa-pro-headless.exe` |
 
-当前版本仅发布 `fuxa-pro-headless.exe` 这一种 Windows 独立可执行文件。
+Artifacts 名称带版本号并保留 30 天；Release 中的产物名称固定为 `fuxa-pro-headless.exe`，始终为最新构建。
 
 ---
 
@@ -46,17 +54,28 @@ https://github.com/jingshui127/FUXA-Tecon/actions
 
 ### 3.2 启动信息
 
-启动后控制台会显示以下信息：
+启动后控制台会显示以下信息（时间戳与路径随实际环境变化）：
 
 ```
-FUXA PRO starting...
-技术支持QQ：2492123056
-FUXA PRO 科控物联定制版
-版本：1.3.5-PRO
-
-Using existing data directory: <EXE目录>\data
-Launching FUXA server with userDir: <EXE目录>\data
+[FUXA PRO] 2026-10-23T02:47:34.582Z | FUXA PRO Headless Guardian starting...
+[FUXA PRO] 2026-10-23T02:47:34.583Z | 科控物联提供技术支持 | QQ: 2492123056
+[FUXA PRO] 2026-10-23T02:47:34.584Z | Working directory: <EXE目录>
+[FUXA PRO] 2026-10-23T02:47:34.588Z | =====================================
+[FUXA PRO] 2026-10-23T02:47:34.590Z | Starting FUXA server (restart #0)...
+[Server] FUXA PRO Headless Server starting...
+[Server] Data directory: <EXE目录>\data
+[Server] Node.js: v18.20.8
+2026-10-23T02:47:35.979Z [INF]  TcScada V.1.3.5-2968
+2026-10-23T02:47:36.310Z [INF]  TcScada started!
+2026-10-23T02:47:38.006Z [INF]  [Node-RED] Started at /flows (dashboard: /dashboard)
+2026-10-23T02:47:38.011Z [INF]  WebServer is running http://127.0.0.1:1881/
 ```
+
+说明：
+
+- 日志中的应用名（上例为 `TcScada`）来自品牌配置，内置默认为科控物联品牌；配置了外部 `customization\` 目录时会跟随外部 `config.json` 的 `appName` 变化。
+- 启动日志出现 `WebServer is running` 表示服务已就绪。
+- 使用 `-p 1882` 指定端口时，`WebServer is running` 显示的端口同步变为 1882。
 
 ### 3.3 访问界面
 
@@ -90,7 +109,7 @@ Launching FUXA server with userDir: <EXE目录>\data
 - 目录不存在或文件缺失时，界面保持内置默认品牌，不影响运行。
 - 生效时启动日志会输出 `Customization: using external brand assets from <路径>`。
 - 可参考交付素材 `docs\customization\` 的 `config.json` 格式。
-- 与官方约定一致：升级 FUXA 版本后内置默认品牌可能变化，外部 `customization\` 目录不受升级影响，建议保留备份。
+- 与官方约定一致：升级 FUXA 版本时 `client\dist` 会被覆盖，内置品牌会回退为官方 FUXA 默认，需要用项目内 `docs\customization\` 重新写回；外部 `customization\` 目录不受升级影响。
 
 ### 3.6 停止服务
 
@@ -120,7 +139,13 @@ Launching FUXA server with userDir: <EXE目录>\data
 
 ### 4.3 地图功能
 
-地图源已优化为国内可访问的 OpenStreetMap 服务器。
+地图瓦片源已由默认的 `tile.openstreetmap.org` 替换为 OpenStreetMap HOT 瓦片服务：
+
+```text
+https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png
+```
+
+若网络环境无法访问该瓦片服务，地图将无法显示，需自行部署或改用可访问的瓦片源。
 
 ---
 
@@ -154,7 +179,7 @@ taskkill /PID <进程ID> /F
 ### 5.4 浏览器无法访问
 
 **检查清单：**
-- 确认服务已启动（控制台显示 "FUXA started!"）
+- 确认服务已启动（控制台显示 `<应用名> started!`，内置默认品牌下为 `TcScada started!`）
 - 确认使用正确的地址和端口
 - 确认防火墙未阻止访问
 - 尝试使用 `http://127.0.0.1:1881` 代替 `localhost`
@@ -167,10 +192,10 @@ taskkill /PID <进程ID> /F
 
 | 项目 | 要求 |
 |------|------|
-| 操作系统 | Windows 7/10/11/Server 2016+ |
+| 操作系统 | Windows 10 / 11 / Server 2016+（x64）。Node.js 18 官方支持 Windows 8.1 及以上，本项目仅在 Windows 10 / 11 实测 |
 | 架构 | x64 |
-| 内存 | 最低 512MB，推荐 1GB+ |
-| 磁盘 | 最低 200MB 可用空间 |
+| 内存 | 建议 2GB 以上；上千数据点的大规模项目请参考 [Modbus/MQTT 大规模项目准备指南](Modbus_MQTT_大规模项目准备指南.md)（建议 8GB） |
+| 磁盘 | EXE 本体约 315MB，另需为 `data\` 预留空间，建议 ≥2GB 可用空间 |
 | 浏览器 | Chrome、Edge、Firefox 最新版 |
 
 ### 6.2 运行环境
@@ -179,4 +204,4 @@ taskkill /PID <进程ID> /F
 |------|------|
 | 运行时 | 已包含于 `fuxa-pro-headless.exe`，无需单独安装 Node.js 或 Docker |
 | 网络 | 浏览器访问服务端口；跨设备访问时放行 TCP 1881 |
-| 数据迁移 | 复制 EXE 与同级 `data\` 目录 |
+| 数据迁移 | 复制 EXE 与同级 `data\` 目录；若使用了外部品牌目录，还需一并复制 `customization\`（它不在 `data\` 内） |

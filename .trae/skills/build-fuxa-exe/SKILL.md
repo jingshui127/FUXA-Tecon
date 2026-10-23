@@ -83,7 +83,7 @@ node -e "require('odbc'); const {ChartJSNodeCanvas}=require('chartjs-node-canvas
 pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/fuxa-pro-headless.exe
 ```
 
-### 5. 输出结果
+### 6. 输出结果
 
 必须确认构建日志包含：
 
@@ -96,26 +96,41 @@ pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/fuxa-
 
 ## 快速测试
 
-打包完成后测试：
+打包完成后测试。先做健康检查（`/dashboard` 在未配置 Dashboard 流程时返回 404，属正常）：
 
 ```powershell
 Get-Process fuxa-pro-headless, fuxa-headless -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Process ".\artifacts\fuxa-pro-headless.exe"
 Start-Sleep 10
 
-$paths = '/', '/flows', '/nodered', '/dashboard'
+$paths = '/', '/flows', '/nodered'
 foreach ($path in $paths) {
     $r = Invoke-WebRequest -Uri "http://127.0.0.1:1881$path" -UseBasicParsing -TimeoutSec 10
     if ($r.StatusCode -lt 200 -or $r.StatusCode -ge 400) { throw "Health check failed: $path" }
 }
 ```
 
+必须再做**前端静态资源检查**，防止出现“健康检查通过但页面白屏”（bundle 未进包时 `/` 仍返回 200）：
+
+```powershell
+$html = (Invoke-WebRequest -Uri 'http://127.0.0.1:1881/' -UseBasicParsing).Content
+$refs = [regex]::Matches($html, '(?:src|href)="((?!http|//)[^"]+\.(?:js|css))"') | ForEach-Object { $_.Groups[1].Value }
+foreach ($ref in $refs) {
+    $r = Invoke-WebRequest -Uri "http://127.0.0.1:1881/$ref" -UseBasicParsing -TimeoutSec 15
+    if ($r.StatusCode -ne 200) { throw "静态资源缺失（会导致白屏）: $ref -> $($r.StatusCode)" }
+    Write-Host "static ok: $ref ($($r.RawContentLength) bytes)"
+}
+```
+
+同时确认启动日志不含 `Cannot find package 'got'`。
+
 ## 注意事项
 
 - 使用 `compression: "None"` 避免 GZip 压缩阶段长时间占用 CPU；实际耗时和文件大小以构建日志为准。
 - Node.js 版本必须是 18.x（node-snap7 兼容性）
 - 工作目录必须是项目根目录 `d:\FUXA\FUXApro最新版`
-- `client/dist` 已预编译，不需要前端构建步骤
+- `client/dist` 已预编译，不需要前端构建步骤。
+- `client/dist` 必须在 git 中跟踪（`.gitignore` 保留 `!client/dist/`）。CI 从全新克隆构建时若缺 `main.*.js` / `styles.*.css`，EXE 首页会 404 白屏。
 - EXE 打包内嵌的是构建时快照，修改源码后需重新打包才能生效
 - **开发调试推荐用 `guard.js`**：`cd server && node guard.js -p PORT`，无需重新打包 EXE
 - `server/node_modules` 不重复复制；运行时依赖由 headless 根目录 `node_modules/**/*` 作为 pkg assets 打入，避免同一套依赖被扫描两次。
@@ -123,6 +138,7 @@ foreach ($path in $paths) {
 ## EXE 部署说明
 
 - **单文件运行**: `fuxa-pro-headless.exe` 自包含 Node.js 运行时，直接拷贝到任意 Windows 电脑即可运行
+- **迁移**: 必须复制 EXE + 完整 `data/` 目录；若使用了外部品牌目录，还需一并复制 `customization/`（它不在 `data/` 内）
 - **首次启动**: 自动在 EXE 同级创建 `data/` 目录（数据库、日志、设置）
 - **端口修改**: `fuxa-pro-headless.exe -p 8899`
 - **更换 LOGO / 品牌**: 两种方式任选

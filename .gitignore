@@ -47,6 +47,9 @@ client/node_modules/
 # Build outputs
 artifacts/
 dist/
+# client/dist 是随 EXE 发布的前端静态资源，必须纳入版本控制，
+# 否则新版 bundle（main.*.js / styles.*.css）不会进入 CI 克隆，导致页面 404 空白
+!client/dist/
 build/
 *.exe
 *.zip

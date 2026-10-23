@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Branch = '1.3.4-PRO',
+    [string]$Branch = '1.3.5-PRO',
     [string]$CommitMessage = 'chore: build and publish latest changes',
     [string]$OutputPath = 'artifacts\fuxa-pro-headless.exe',
     [switch]$SkipCommit,

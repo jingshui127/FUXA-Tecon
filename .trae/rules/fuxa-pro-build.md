@@ -32,3 +32,11 @@
 - 工作分支为 `1.3.5-PRO`，CI 触发分支与 `build-and-push.ps1` 默认分支必须保持一致。
 - 当前操作文档只描述 1.3.5-PRO 和 `fuxa-pro-headless.exe`；旧版本方案必须明确标记为历史，不得混入当前命令。
 - 当前项目不保留旧版本排查文档；可执行规则以本文件和 build skill 为准。
+
+## 版本升级（换官方源码）
+
+- PRO 版与开源版分开维护，**不得把开源版源码合入 PRO 分支**，也不得用开源版产物替换当前交付。
+- 升级必须走分支合并，禁止把官方源码包直接解压覆盖工作区（会静默冲掉品牌化与补丁）。标准流程：在只装官方源码的 `upstream-X.Y.Z` 分支提交一次，再 `git merge` 到 `1.3.x-PRO`；冲突应集中在我们改过的文件上，其余自动合并。
+- 合并对象只包含源码，**不得把压缩包里的 `node_modules`、`artifacts\`、`fuxa-headless\` 带进仓库**。
+- 升级后必须完成五项复查：① 用 `docs\customization\` 把内置品牌写回 `client\dist\assets\customization\`；② 重跑 `patch-nodered.js` 并确认 `[patch-nodered] verification passed`；③ 重新验证 `odbc` 与 `chartjs-node-canvas` 的真实 `require` 与图表渲染；④ 确认 `/flows`、`/nodered`、`/dashboard` 三条入口；⑤ 健康检查覆盖 `/`、`/flows`、`/nodered`、`/dashboard`，并确认启动日志 `[Node-RED] Started at /flows (dashboard: /dashboard)` 且不含 `Cannot find package 'got'`。
+- 前端静态资源检查不可省略：`/` 返回 200 不代表页面可用，必须逐个请求首页引用的 `*.js` / `*.css`。

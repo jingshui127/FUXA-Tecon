@@ -144,3 +144,23 @@ foreach ($ref in $refs) {
 - **更换 LOGO / 品牌**: 两种方式任选
   - 运行时覆盖（推荐，免重打包）：在 EXE 同级创建 `customization/` 文件夹，放入 `config.json`、`logo.svg`、`favicon.ico`，重启 EXE 即生效。外部文件优先于内置，未提供的文件自动回退内置默认，可只放其中一部分。生效时启动日志会出现 `Customization: using external brand assets from <路径>`。
   - 打包内置：替换 `client/dist/assets/customization/` 下的对应文件后重新打包。注意官方约定该目录会随版本升级被覆盖，需先备份。
+
+## 版本升级（换官方源码包）
+
+PRO 与开源版分开维护，禁止混用。升级走分支合并，不要解压覆盖工作区：
+
+```powershell
+git checkout -b upstream-1.3.6
+# 解压官方源码包到工作区（先删掉包内 node_modules / artifacts / fuxa-headless）
+git add -A; git commit -m "vendor: FUXA PRO 1.3.6 源码"
+git checkout 1.3.6-PRO
+git merge upstream-1.3.6
+```
+
+合并后按以下顺序复查，任一项不过就不允许打包：
+
+1. 品牌回填：`docs\customization\` → `client\dist\assets\customization\`（官方新版会覆盖该目录，页面会退回 FUXA 默认样式）
+2. `node fuxa-headless/server/scripts/patch-nodered.js`，日志必须出现 `[patch-nodered] verification passed`
+3. `require('odbc')` 与 `chartjs-node-canvas` 真实图表渲染（不能只看 npm 安装成功）
+4. `/`、`/flows`、`/nodered`、`/dashboard` 四个地址均 200，且首页引用的 `*.js` / `*.css` 逐个 200
+5. 启动日志含 `[Node-RED] Started at /flows (dashboard: /dashboard)`，不含 `Cannot find package 'got'`

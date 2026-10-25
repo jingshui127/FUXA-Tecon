@@ -9,9 +9,7 @@ ARG NODE_SLIM_IMAGE=node:18-bookworm-slim
 FROM --platform=$BUILDPLATFORM ${NODE_IMAGE} AS client-builder
 WORKDIR /usr/src/app/client
 COPY client/package*.json ./
-RUN npm config set registry https://registry.npmmirror.com \
-    && npm config set replace-registry-host npmjs \
-    && npm install --no-audit --no-fund
+RUN npm install --no-audit --no-fund
 COPY client/ ./
 RUN npm run build -- --configuration production
 
@@ -34,9 +32,7 @@ COPY server/package*.json ./server/
 # Copy scripts first so postinstall (patch-nodered.js) can run during npm install
 COPY server/scripts ./server/scripts/
 WORKDIR /usr/src/app/FUXA/server
-RUN npm config set registry https://registry.npmmirror.com \
-    && npm config set replace-registry-host npmjs \
-    && npm install --no-audit --no-fund
+RUN npm install --no-audit --no-fund
 RUN npm prune --production
 
 # Optional Snap7 installation

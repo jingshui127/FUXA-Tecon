@@ -53,6 +53,8 @@ dist/
 build/
 *.exe
 *.zip
+# deploy\ 是交付母本，Agent.exe 属第三方工具、无法通过编译获得，需入库
+!deploy/Agent.exe
 
 # Build staging and extracted archives
 fuxa-headless/fuxa-headless/

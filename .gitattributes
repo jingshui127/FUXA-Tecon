@@ -1,0 +1,2 @@
+# 用户侧批处理必须保持 GBK(936) + CRLF + 无 BOM，禁止 Git 转换换行
+deploy/*.bat -text

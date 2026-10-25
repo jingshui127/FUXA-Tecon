@@ -1,0 +1,76 @@
+<p style="text-align:center;margin:0 0 12px;"><img src="assets/kv.jpg" style="width:100%;display:block;border-radius:6px;" /></p>
+<p style="text-align:center;font-size:13px;color:#8a8a8a;margin:0 0 36px;">科控物联 FUXA PRO 部署于现场控制室</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;">科控物联 FUXA PRO 已经同步到官方 <strong style="color:#0f6fbf;">1.3.5</strong>。</p>
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;">这一版新增了配方管理、通用 EtherNet/IP 驱动，并修掉二十余项现场问题。</p>
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 36px;">已经部署的现场可以平滑升级；还没上手的，文末有下载入口。</p>
+
+<p style="margin:48px 0 0;"><span style="display:inline-block;background:#0f6fbf;color:#fff;font-size:19px;font-weight:bold;padding:3px 15px;border-radius:8px;">01</span></p>
+<p style="font-size:20px;font-weight:bold;color:#0f6fbf;margin:14px 0 24px;border-bottom:3px solid #0f6fbf;padding-bottom:9px;">官方 1.3.5 新增了什么</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;"><strong style="color:#0f6fbf;">配方管理</strong>是这一版的重头：支持从 PLC 上传和下载配方，带进度跟踪与取消，配方可以 CSV / JSON 导入导出，还新增了配方控件。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;"><strong>通用 EtherNet/IP 驱动</strong>上线，支持设备发现、I/O 模块配置和标签设置。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;"><strong>连接参数更可控</strong>：MQTT 与 Modbus 的连接超时可配置，MQTT 支持逐主题设置 retain。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;"><strong>脚本编辑器加入 JavaScript 语法校验</strong>，写完当场就能发现问题，不用等运行。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;"><strong>安全方面一并收口</strong>：认证、Node-RED 授权、DAQ 查询限制与设置泄露均已加固。</p>
+
+<p style="font-size:17px;line-height:1.75;color:#1a1a1a;font-weight:bold;text-align:center;margin:36px 0;">决定现场能不能长期跑下去的，<br />往往不是多了几个新功能，<br />而是那些“以前偶尔出、现在不再出”的问题。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;">所以 1.3.5 里更值得一看的，是这批修复：S7 布尔量写入 Bool 标签、客户端脚本每次 interval 重复执行、Modbus 与 OPC UA 写失败不上报、HMI 回车重复提交、Node-RED 基础路径下的路由与登出……都是现场真会碰到的。</p>
+
+<p style="margin:48px 0 0;"><span style="display:inline-block;background:#0f6fbf;color:#fff;font-size:19px;font-weight:bold;padding:3px 15px;border-radius:8px;">02</span></p>
+<p style="font-size:20px;font-weight:bold;color:#0f6fbf;margin:14px 0 24px;border-bottom:3px solid #0f6fbf;padding-bottom:9px;">科控 PRO 版在此之上做了什么</p>
+
+<table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;color:#333;margin:0 0 20px;">
+  <tr>
+    <th style="border:1px solid #d8e3ee;background:#eef5fc;color:#0f6fbf;font-weight:bold;padding:9px 10px;text-align:left;font-size:14px;">场景</th>
+    <th style="border:1px solid #d8e3ee;background:#eef5fc;color:#0f6fbf;font-weight:bold;padding:9px 10px;text-align:left;font-size:14px;">科控 PRO 版</th>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">部署方式</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">单个 EXE 自带 Node.js 18 运行时，复制即用，免安装</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">品牌外观</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">内置科控物联 TcScada 品牌；EXE 同级 <strong>customization\</strong> 目录可运行时替换 LOGO 与配置</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">通讯稳定性</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">S7 断线自动重连，单台设备异常不牵连其他设备</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">流程编排</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">Node-RED 提供 <strong>/flows</strong> 管理入口与 <strong>/dashboard</strong> 面板入口</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">开机自启</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">Agent.exe 进程守护，程序崩溃后自动拉起，附一键安装 / 卸载脚本</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">数据迁移</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">数据库、流程与插件集中在 <strong>data\</strong>，整目录搬迁即可</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">原生插件</td>
+    <td style="border:1px solid #d8e3ee;padding:9px 10px;vertical-align:top;">ODBC、chartjs-node-canvas 已预置并实际验证</td>
+  </tr>
+</table>
+
+<p style="margin:48px 0 0;"><span style="display:inline-block;background:#0f6fbf;color:#fff;font-size:19px;font-weight:bold;padding:3px 15px;border-radius:8px;">03</span></p>
+<p style="font-size:20px;font-weight:bold;color:#0f6fbf;margin:14px 0 24px;border-bottom:3px solid #0f6fbf;padding-bottom:9px;">适合谁，不适合谁</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;"><strong>适合</strong>：要把现场设备联网做集中监控；现场只有一台工控机、希望免安装部署；需要给最终用户换成自己的品牌；或者 S7 / Modbus / OPC UA / EtherNet/IP 多驱动混用。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 34px;"><strong>不适合</strong>：只做一次性数据看板、不接现场设备；或者只想跑纯开源版、不希望附带守护服务。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 14px;">已经部署的现场，可以直接升级到 1.3.5；还没上手的，可以先用一台工控机试装，跑通一个 Modbus 或 S7 设备再往下走。</p>
+
+<p style="font-size:16px;line-height:1.8;color:#333;margin:0 0 34px;">下载与资料入口：<strong style="color:#0f6fbf;">科控物联 FUXA PRO</strong>。技术问题可直接联系下方服务号。</p>
+
+<p style="background:#eef5fc;border-left:4px solid #0f6fbf;padding:16px 18px;font-size:15px;line-height:1.9;color:#2b4b6f;margin:0 0 30px;">技术服务 QQ：<strong style="font-size:17px;color:#0f6fbf;">2492123056</strong><br />服务范围：安装部署、驱动对接、品牌定制</p>
+
+<p style="text-align:center;font-size:13px;color:#9a9a9a;margin:0;">科控物联 · FUXA PRO 1.3.5</p>

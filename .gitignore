@@ -110,3 +110,8 @@ _article/
 node_payload.json
 temp_api_body.json
 启动FUXA.bat
+final_payload.json
+upload_payload.json
+gh_latest.yml
+gh_workflow.yml
+verify.yml

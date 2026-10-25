@@ -37,6 +37,7 @@
     "morgan": "1.12.1",
     "modbus-serial": "8.0.25",
     "mqtt": "4.3.7",
+    "net-snmp": "3.29.2",
     "node-red": "^4.1.10",
     "node-schedule": "2.1.1",
     "node-snap7": "1.0.9",

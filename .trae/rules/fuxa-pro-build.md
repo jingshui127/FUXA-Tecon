@@ -38,7 +38,8 @@
 ## 版本升级（换官方源码）
 
 - PRO 版与开源版分开维护，**不得把开源版源码合入 PRO 分支**，也不得用开源版产物替换当前交付。
-- 升级必须走分支合并，禁止把官方源码包直接解压覆盖工作区（会静默冲掉品牌化与补丁）。标准流程：在只装官方源码的 `upstream-X.Y.Z` 分支提交一次，再 `git merge` 到 `1.3.x-PRO`；冲突应集中在我们改过的文件上，其余自动合并。
+- 升级必须走分支合并，禁止把官方源码包直接解压覆盖工作区（会静默冲掉品牌化与补丁）。标准流程：在只装官方源码的 `upstream-X.Y.Z` 分支提交一次，再 `git merge` 到 `1.3.x-PRO`；冲突应集中在我们改过的文件上，其余自动合并。该流程由 `scripts\upgrade-fuxa.ps1 -SourceZip <官方包>` 编排：解压、生成变更清单、建分支、提交、合并、回填品牌与地图；`-InspectOnly` 只输出清单。它不构建、不跑 `patch-nodered.js`、不动 `artifacts\data\`。
+- 升级编排以最新的 `upstream-*` 分支作为新 upstream 分支的起点，保证合并是三方合并；首次升级没有基线，脚本会打印被官方包覆盖的文件清单，必须人工确认本地定制未丢失。`client\dist` 冲突自动采用官方版本（随后由 patch 脚本回填）；仅源码冲突时脚本以退出码 2 暂停并列出文件，人工解决后按提示执行品牌与地图补丁。
 - 合并对象只包含源码，**不得把压缩包里的 `node_modules`、`artifacts\`、`fuxa-headless\` 带进仓库**。
 - 厂家交付形态为「后端源码 + 前端编译产物」：`client\dist` 按二进制资产处理，合并时整体采用官方版本，**不要尝试逐文件三方合并**；随后由 `patch-brand-assets.js` 自动回填品牌资源。合并后必须核对后端 `package.json` 版本与前端构建产物版本一致，避免前后端错配。前端源码不可用：地图瓦片由 `server\scripts\patch-map-tiles.js` 脚本化处理（见下条），其余前端改动只能在编译产物上修补（不推荐）或反馈厂家。
 - 升级后必须完成六项复查：① 品牌回填：`node server/scripts/patch-brand-assets.js`，确认 `[patch-brand] verification passed`（`docs\customization\` → `client\dist\assets\customization\`）；② 重跑 `patch-nodered.js` 并确认 `[patch-nodered] verification passed`；③ 在部署机上运行 `node scripts\verify-native-plugins.js` 并确认 `[verify-native] ALL CHECKS PASSED`（该目录在 `data\_pkg\runtime`，CI 覆盖不到）；④ 确认 `/flows`、`/nodered`、`/dashboard` 三条入口；⑤ 健康检查覆盖 `/`、`/flows`、`/nodered`、`/dashboard`，并确认启动日志 `[Node-RED] Started at /flows (dashboard: /dashboard)` 且不含 `Cannot find package 'got'`；⑥ 运行 `scripts\smoke-test.ps1` 并确认 `[smoke] ALL CHECKS PASSED`。

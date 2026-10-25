@@ -147,7 +147,18 @@ foreach ($ref in $refs) {
 
 ## 版本升级（换官方源码包）
 
-PRO 与开源版分开维护，禁止混用。升级走分支合并，不要解压覆盖工作区：
+PRO 与开源版分开维护，禁止混用。升级走分支合并，不要解压覆盖工作区。优先用编排脚本：
+
+```powershell
+# 先只看清单，不改仓库
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\upgrade-fuxa.ps1 -SourceZip D:\downloads\FUXA-Pro-1.3.6.zip -InspectOnly
+# 确认后执行
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\upgrade-fuxa.ps1 -SourceZip D:\downloads\FUXA-Pro-1.3.6.zip
+```
+
+脚本负责解压、清单、建 `upstream-X.Y.Z`、提交官方源码、合并回 PRO、回填品牌与地图。它自动以最新的 `upstream-*` 为基线（首次升级无基线，会打印被覆盖文件清单，需人工确认定制）；`client/dist` 冲突自动取官方版本；仅源码冲突时退出码 2，人工解决后 `git add` + `git commit`，再执行下面第 1、2 步。它不构建、不跑 `patch-nodered.js`、不动 `artifacts\data\`。
+
+手工兜底流程：
 
 ```powershell
 git checkout -b upstream-1.3.6

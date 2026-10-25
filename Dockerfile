@@ -1,12 +1,17 @@
-# --- Base images (override for arm64: --build-arg NODE_IMAGE=node:18-bookworm-arm64) ---
+# --- Base images ---
+# 官方 node 镜像本身是多架构 manifest，buildx 会按目标平台自动选择 amd64/arm64 变体。
 ARG NODE_IMAGE=node:18-bookworm
 ARG NODE_SLIM_IMAGE=node:18-bookworm-slim
 
 # --- STAGE 1: Angular Client Builder ---
-FROM ${NODE_IMAGE} AS client-builder
+# 前端产物是纯 JS/CSS，与 CPU 架构无关。固定在构建机原生架构上只编译一次，
+# 多平台构建时各架构目标共享这一份 dist，避免在 QEMU 下重复跑 Angular 构建。
+FROM --platform=$BUILDPLATFORM ${NODE_IMAGE} AS client-builder
 WORKDIR /usr/src/app/client
 COPY client/package*.json ./
-RUN npm install --no-audit --no-fund
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm config set replace-registry-host npmjs \
+    && npm install --no-audit --no-fund
 COPY client/ ./
 RUN npm run build -- --configuration production
 
@@ -29,7 +34,9 @@ COPY server/package*.json ./server/
 # Copy scripts first so postinstall (patch-nodered.js) can run during npm install
 COPY server/scripts ./server/scripts/
 WORKDIR /usr/src/app/FUXA/server
-RUN npm install --no-audit --no-fund
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm config set replace-registry-host npmjs \
+    && npm install --no-audit --no-fund
 RUN npm prune --production
 
 # Optional Snap7 installation

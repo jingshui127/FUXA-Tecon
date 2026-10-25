@@ -104,3 +104,9 @@ AGENTS.md
 
 # Local deliverable docs (articles, reports)
 _article/
+
+# Local temp/debug files and credentials
+科控物联优化/token
+node_payload.json
+temp_api_body.json
+启动FUXA.bat

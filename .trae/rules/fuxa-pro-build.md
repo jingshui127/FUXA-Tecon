@@ -14,6 +14,7 @@
 - 不允许多个 `npm ci`、pkg 或构建脚本同时操作 `fuxa-headless\node_modules`。
 - 不得把 `artifacts\`、运行时 `data\` 或异常嵌套的 `fuxa-headless\fuxa-headless\` 目录作为构建输入或提交内容。
 - 交付母本统一存放于 `deploy\`（`Agent.exe`、`Config\Agent.config`、`Config\Star.config`、`Config\StarAgent.config`、`一键安装服务.bat`、`一键卸载服务.bat`），该目录必须入库；`artifacts\` 只作为构建输出与运行目录。打包时 `Agent.exe` 与两个 `.bat` 从 `deploy\` 覆盖复制到 `artifacts\`；`Config\` 仅在目标缺失时复制，避免覆盖现场改过的配置与安装时生成的 `httpConfig_StarAgent.json`；`data\`、`Log\` 永不参与同步。
+- `deploy\headless\package.json` 与 `package-lock.json` 是 headless 打包描述（含 pkg 配置与依赖清单，无法重建），必须入库；CI 与 `build-and-push.ps1` 在打包前把它们复制到 `fuxa-headless\`。不允许把这些文件放在被忽略的 `fuxa-headless\` 内，否则 CI 从干净克隆构建会报 `fuxa-headless/package.json is missing`。
 - `fuxa-headless\` 为构建中间目录，必须整体忽略，不得纳入版本控制；`node_modules\`、`artifacts\`、`FuxaPro已部署版\` 同样不入库。入库判定标准是「换一台干净机器能否可靠重建」：能重建的不入库，不可重建的（Agent.exe、GBK 批处理母本、`client\dist`）必须入库。
 - 重新打包只覆盖 `artifacts\fuxa-pro-headless.exe`；不得删除、清空或重新初始化已有的 `artifacts\data\`。该目录保存数据库、Node-RED flows、插件和业务资源。
 - `odbc@2.4.9` 与 `chartjs-node-canvas@3.2.0`（依赖 `canvas@2.11.2`）属于原生插件，必须在目标 Node.js 18 / Windows x64 环境中预置并验证后再交付；不能只验证 npm 包下载成功。它们安装在 `<EXE目录>\data\_pkg\runtime\node_modules\`，**不在构建仓库内，CI 无法验证**，必须在部署机上执行 `node scripts\verify-native-plugins.js`，看到 `[verify-native] ALL CHECKS PASSED` 才算通过。

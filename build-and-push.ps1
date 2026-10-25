@@ -34,6 +34,12 @@ function Start-ParallelProcess {
 $buildCommand = @"
 `$ErrorActionPreference = 'Stop'
 `$start = Get-Date
+Write-Output '[BUILD] Restoring headless build descriptors'
+if (-not (Test-Path 'deploy/headless/package.json')) { throw 'deploy/headless/package.json is missing' }
+if (-not (Test-Path 'deploy/headless/package-lock.json')) { throw 'deploy/headless/package-lock.json is missing' }
+New-Item -ItemType Directory -Force 'fuxa-headless' | Out-Null
+Copy-Item 'deploy/headless/package.json' 'fuxa-headless/package.json' -Force
+Copy-Item 'deploy/headless/package-lock.json' 'fuxa-headless/package-lock.json' -Force
 Write-Output '[BUILD] Syncing server source'
 robocopy 'server' 'fuxa-headless/server' /E /NFL /NDL /NJH /NJS /XD '.git' 'node_modules' '_pkg' '_appdata' 'data' | Out-Null
 if (`$LASTEXITCODE -ge 8) { throw "server sync failed: `$LASTEXITCODE" }
@@ -91,8 +97,8 @@ if (-not $SkipCommit) {
     Write-Host '[GIT] Preparing commit before parallel tasks'
     $currentBranch = (git branch --show-current).Trim()
     if ($currentBranch -ne $Branch) { throw "expected branch '$Branch', got '$currentBranch'" }
-    git add -u -- docs server fuxa-headless/main.js node-red .github/workflows/headless_tecon.yml fuxa-headless/package.json server/package.json server/package-lock.json fuxa-headless/server/package-lock.json
-    git add -- build-and-push.ps1
+    git add -u -- docs server node-red .github/workflows/headless_tecon.yml server/package.json server/package-lock.json
+    git add -- build-and-push.ps1 deploy/headless
     if ($LASTEXITCODE -ne 0) { throw "git add failed: $LASTEXITCODE" }
     if (-not (git diff --cached --quiet)) {
         git commit -m $CommitMessage

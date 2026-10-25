@@ -56,6 +56,8 @@ jobs:
       run: |
         $ErrorActionPreference = 'Stop'
         New-Item -ItemType Directory -Force -Path fuxa-headless/server, fuxa-headless/client/dist | Out-Null
+        Copy-Item 'deploy/headless/package.json' 'fuxa-headless/package.json' -Force
+        Copy-Item 'deploy/headless/package-lock.json' 'fuxa-headless/package-lock.json' -Force
         robocopy server fuxa-headless/server /E /NFL /NDL /NJH /NJS /NP /XD node_modules .git
         if ($LASTEXITCODE -gt 7) { throw "robocopy server failed with exit code $LASTEXITCODE" }
         $global:LASTEXITCODE = 0

@@ -37,6 +37,9 @@ $buildCommand = @"
 Write-Output '[BUILD] Syncing server source'
 robocopy 'server' 'fuxa-headless/server' /E /NFL /NDL /NJH /NJS /XD '.git' 'node_modules' '_pkg' '_appdata' 'data' | Out-Null
 if (`$LASTEXITCODE -ge 8) { throw "server sync failed: `$LASTEXITCODE" }
+Write-Output '[BUILD] Patching brand assets'
+& node 'server/scripts/patch-brand-assets.js'
+if (`$LASTEXITCODE -ne 0) { throw "brand asset patch failed: `$LASTEXITCODE" }
 Write-Output '[BUILD] Patching map tiles'
 & node 'server/scripts/patch-map-tiles.js'
 if (`$LASTEXITCODE -ne 0) { throw "map tile patch failed: `$LASTEXITCODE" }

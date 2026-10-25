@@ -159,9 +159,10 @@ git merge upstream-1.3.6
 
 合并后按以下顺序复查，任一项不过就不允许打包：
 
-1. 品牌回填：`docs\customization\` → `client\dist\assets\customization\`（官方新版会覆盖该目录，页面会退回 FUXA 默认样式）
+1. 品牌回填：`node server/scripts/patch-brand-assets.js`，日志必须出现 `[patch-brand] verification passed`（打包时自动执行，无需手工复制）
 2. 地图瓦片：`node server/scripts/patch-map-tiles.js`，日志必须出现 `[patch-map] verification passed`；报「官方可能更换了地图服务商」时须人工确认新瓦片源并更新脚本
 3. `node fuxa-headless/server/scripts/patch-nodered.js`，日志必须出现 `[patch-nodered] verification passed`
 4. `require('odbc')` 与 `chartjs-node-canvas` 真实图表渲染（不能只看 npm 安装成功）
 5. `/`、`/flows`、`/nodered`、`/dashboard` 四个地址均 200，且首页引用的 `*.js` / `*.css` 逐个 200
 6. 启动日志含 `[Node-RED] Started at /flows (dashboard: /dashboard)`，不含 `Cannot find package 'got'`
+7. 冒烟测试：`powershell -NoProfile -ExecutionPolicy Bypass -File scripts\smoke-test.ps1 -LogFile <启动日志>`，必须输出 `[smoke] ALL CHECKS PASSED`（本地与 CI 共用同一脚本，勿在别处重复实现检查）

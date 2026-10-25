@@ -8,6 +8,8 @@
 - 构建日志必须出现 `[patch-nodered] verification passed` 和 `[BUILD] SUCCESS`；只有看到 `[BUILD] SUCCESS` 才能认为 `artifacts\fuxa-pro-headless.exe` 已被本次构建覆盖。启动日志不得出现 `Cannot find package 'got'`。
 - `build-and-push.ps1` 的成功判定必须依据日志标记（构建日志含 `[BUILD] SUCCESS`，推送日志含 `[GIT] SUCCESS pushed` 或 `[GIT] Push skipped`）。不得用 `Start-Process -PassThru` 返回对象的 `ExitCode` 判断：PowerShell 5.1 下它可能为 `$null`，`$null -ne 0` 成立，会把成功误报为失败。
 - `client\dist` 是交付必需的前端静态资源，必须纳入版本控制；`.gitignore` 不得用 `dist/` 规则把它整体忽略（需保留 `!client/dist/` 例外）。否则 CI 从全新克隆构建出的 EXE 缺少 `main.*.js`、`styles.*.css`，打开页面 404 白屏。
+- 本地打包与 CI 共用 `scripts\smoke-test.ps1` 做健康检查：覆盖 `/`、`/flows`、`/nodered`、`/dashboard`，逐个请求首页引用的 `main.*.js` / `styles.*.css`，并校验启动日志含 `[Node-RED] Started at /flows` 且无 `Cannot find package 'got'`。禁止 workflow 与本地脚本各自维护一套检查逻辑。
+- 品牌资源由 `server\scripts\patch-brand-assets.js` 在打包时从 `docs\customization\` 自动回填到 `client\dist\assets\customization\` 并校验 `appTitle`，日志须出现 `[patch-brand] verification passed`；不得手工替换 `client\dist` 内的品牌文件。
 
 - 不允许多个 `npm ci`、pkg 或构建脚本同时操作 `fuxa-headless\node_modules`。
 - 不得把 `artifacts\`、运行时 `data\` 或异常嵌套的 `fuxa-headless\fuxa-headless\` 目录作为构建输入或提交内容。
@@ -38,7 +40,7 @@
 - PRO 版与开源版分开维护，**不得把开源版源码合入 PRO 分支**，也不得用开源版产物替换当前交付。
 - 升级必须走分支合并，禁止把官方源码包直接解压覆盖工作区（会静默冲掉品牌化与补丁）。标准流程：在只装官方源码的 `upstream-X.Y.Z` 分支提交一次，再 `git merge` 到 `1.3.x-PRO`；冲突应集中在我们改过的文件上，其余自动合并。
 - 合并对象只包含源码，**不得把压缩包里的 `node_modules`、`artifacts\`、`fuxa-headless\` 带进仓库**。
-- 厂家交付形态为「后端源码 + 前端编译产物」：`client\dist` 按二进制资产处理，合并时整体采用官方版本，**不要尝试逐文件三方合并**；随后立即用 `docs\customization\` 回填品牌资源。合并后必须核对后端 `package.json` 版本与前端构建产物版本一致，避免前后端错配。前端源码不可用：地图瓦片由 `server\scripts\patch-map-tiles.js` 脚本化处理（见下条），其余前端改动只能在编译产物上修补（不推荐）或反馈厂家。
-- 升级后必须完成五项复查：① 用 `docs\customization\` 把内置品牌写回 `client\dist\assets\customization\`；② 重跑 `patch-nodered.js` 并确认 `[patch-nodered] verification passed`；③ 重新验证 `odbc` 与 `chartjs-node-canvas` 的真实 `require` 与图表渲染；④ 确认 `/flows`、`/nodered`、`/dashboard` 三条入口；⑤ 健康检查覆盖 `/`、`/flows`、`/nodered`、`/dashboard`，并确认启动日志 `[Node-RED] Started at /flows (dashboard: /dashboard)` 且不含 `Cannot find package 'got'`。
+- 厂家交付形态为「后端源码 + 前端编译产物」：`client\dist` 按二进制资产处理，合并时整体采用官方版本，**不要尝试逐文件三方合并**；随后由 `patch-brand-assets.js` 自动回填品牌资源。合并后必须核对后端 `package.json` 版本与前端构建产物版本一致，避免前后端错配。前端源码不可用：地图瓦片由 `server\scripts\patch-map-tiles.js` 脚本化处理（见下条），其余前端改动只能在编译产物上修补（不推荐）或反馈厂家。
+- 升级后必须完成六项复查：① 品牌回填：`node server/scripts/patch-brand-assets.js`，确认 `[patch-brand] verification passed`（`docs\customization\` → `client\dist\assets\customization\`）；② 重跑 `patch-nodered.js` 并确认 `[patch-nodered] verification passed`；③ 重新验证 `odbc` 与 `chartjs-node-canvas` 的真实 `require` 与图表渲染；④ 确认 `/flows`、`/nodered`、`/dashboard` 三条入口；⑤ 健康检查覆盖 `/`、`/flows`、`/nodered`、`/dashboard`，并确认启动日志 `[Node-RED] Started at /flows (dashboard: /dashboard)` 且不含 `Cannot find package 'got'`；⑥ 运行 `scripts\smoke-test.ps1` 并确认 `[smoke] ALL CHECKS PASSED`。
 - 地图瓦片源内置在编译后的 `client\dist\main.*.js` 中，必须由 `server\scripts\patch-map-tiles.js` 自动回填（官方默认 `openstreetmap.org` → `https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png`）。`build-and-push.ps1` 在同步 `client\dist` 前自动执行；若报「官方可能更换了地图服务商」不得跳过，须人工确认新瓦片源后更新脚本中的替换规则。禁止手工编辑 `client\dist`。
 - 前端静态资源检查不可省略：`/` 返回 200 不代表页面可用，必须逐个请求首页引用的 `*.js` / `*.css`。

@@ -1,4 +1,7 @@
 # Temporary synchronized runtime copy
+# fuxa-headless 是构建时由 server/ 与 client/dist 同步生成的中间目录，
+# 整体忽略；此前误跟踪的 node.exe、node_modules 已从索引移除
+fuxa-headless/
 fuxa-headless/新建文件夹/
 fuxa-headless/Config/
 fuxa-headless/customization/

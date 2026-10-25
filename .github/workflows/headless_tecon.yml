@@ -96,6 +96,21 @@ jobs:
         if ($file.Length -le 1MB) { throw "Built EXE is unexpectedly small: $($file.Length) bytes" }
         Write-Host "Verified EXE: $($file.FullName) ($($file.Length) bytes)"
 
+    - name: Assemble deploy package
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $stage = Join-Path $PWD 'artifacts\deploy'
+        New-Item -ItemType Directory -Force $stage | Out-Null
+        Copy-Item 'deploy\Agent.exe' $stage -Force
+        Copy-Item 'deploy\*.bat' $stage -Force
+        New-Item -ItemType Directory -Force (Join-Path $stage 'Config') | Out-Null
+        Get-ChildItem 'deploy\Config' -Filter '*.config' | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $stage 'Config') -Force
+        }
+        Compress-Archive -Path (Join-Path $stage '*') -DestinationPath 'artifacts\fuxa-pro-agent-1.3.5.zip' -Force
+        Write-Host 'Assembled deploy package: artifacts\fuxa-pro-agent-1.3.5.zip'
+
     - name: List built files
       shell: bash
       run: ls -la artifacts/
@@ -104,7 +119,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: fuxa-pro-headless-1.3.5
-        path: artifacts/fuxa-pro-headless.exe
+        path: |
+          artifacts/fuxa-pro-headless.exe
+          artifacts/fuxa-pro-agent-1.3.5.zip
 
     - name: Start EXE health check
       shell: powershell
@@ -186,6 +203,8 @@ jobs:
           - Guardian 守护模式：崩溃后 2 秒自动重启
           - 便携式部署：整个目录可拷贝到其他电脑直接使用
           - 支持 S7/Modbus/MQTT/OPC UA 等全部设备驱动
-        files: artifacts/fuxa-pro-headless.exe
+        files: |
+          artifacts/fuxa-pro-headless.exe
+          artifacts/fuxa-pro-agent-1.3.5.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

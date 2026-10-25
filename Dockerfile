@@ -1,5 +1,9 @@
+# --- Base images (override for arm64: --build-arg NODE_IMAGE=node:18-bookworm-arm64) ---
+ARG NODE_IMAGE=node:18-bookworm
+ARG NODE_SLIM_IMAGE=node:18-bookworm-slim
+
 # --- STAGE 1: Angular Client Builder ---
-FROM node:18-bookworm AS client-builder
+FROM ${NODE_IMAGE} AS client-builder
 WORKDIR /usr/src/app/client
 COPY client/package*.json ./
 RUN npm install --no-audit --no-fund
@@ -7,7 +11,7 @@ COPY client/ ./
 RUN npm run build -- --configuration production
 
 # --- STAGE 2: Server & Native Dependencies Builder ---
-FROM node:18-bookworm AS server-builder
+FROM ${NODE_IMAGE} AS server-builder
 # Define build arguments with defaults
 ARG NODE_SNAP=false
 ARG INSTALL_ODBC=true
@@ -22,6 +26,8 @@ RUN apt-get update && apt-get install -y \
 
 # Install Server dependencies
 COPY server/package*.json ./server/
+# Copy scripts first so postinstall (patch-nodered.js) can run during npm install
+COPY server/scripts ./server/scripts/
 WORKDIR /usr/src/app/FUXA/server
 RUN npm install --no-audit --no-fund
 RUN npm prune --production
@@ -47,7 +53,7 @@ RUN rm -rf test
 RUN npm run build
 
 # --- STAGE 3: Runner ---
-FROM node:18-bookworm-slim
+FROM ${NODE_SLIM_IMAGE}
 ARG INSTALL_ODBC=true
 WORKDIR /usr/src/app/FUXA
 

@@ -53,6 +53,25 @@ if (-not (Test-Path 'fuxa-headless/node_modules/got/package.json')) { throw 'fux
 Write-Output '[BUILD] Packaging EXE'
 & pkg 'fuxa-headless/package.json' --targets node18-win-x64 --output '$OutputPath'
 if (`$LASTEXITCODE -ne 0) { throw "pkg failed: `$LASTEXITCODE" }
+Write-Output '[BUILD] Syncing deploy master to artifacts'
+if (-not (Test-Path 'deploy/Agent.exe')) { throw 'deploy/Agent.exe is missing' }
+Copy-Item 'deploy/Agent.exe' 'artifacts/Agent.exe' -Force
+`$deployBats = @(Get-ChildItem 'deploy' -Filter '*.bat')
+if (`$deployBats.Count -lt 1) { throw 'no .bat master found in deploy/' }
+foreach (`$bat in `$deployBats) {
+    Copy-Item `$bat.FullName (Join-Path 'artifacts' `$bat.Name) -Force
+    Write-Output "[SYNC] copied `$(`$bat.Name)"
+}
+New-Item -ItemType Directory -Force 'artifacts/Config' | Out-Null
+Get-ChildItem 'deploy/Config' -Filter '*.config' | ForEach-Object {
+    `$target = Join-Path 'artifacts/Config' `$_.Name
+    if (Test-Path `$target) {
+        Write-Output "[SYNC] keep existing Config/`$(`$_.Name)"
+    } else {
+        Copy-Item `$_.FullName `$target -Force
+        Write-Output "[SYNC] added Config/`$(`$_.Name)"
+    }
+}
 `$exe = Get-Item '$OutputPath'
 `$seconds = [math]::Round(((Get-Date)-`$start).TotalSeconds)
 `$sizeMb = [math]::Round(`$exe.Length/1MB, 1)

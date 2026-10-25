@@ -42,6 +42,15 @@ jobs:
         npm ci --prefer-offline --no-audit --no-fund --ignore-scripts
       working-directory: ./server
 
+    - name: Patch brand and map tiles
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = 'Stop'
+        node server/scripts/patch-brand-assets.js
+        if ($LASTEXITCODE -ne 0) { throw "brand patch failed: $LASTEXITCODE" }
+        node server/scripts/patch-map-tiles.js
+        if ($LASTEXITCODE -ne 0) { throw "map tile patch failed: $LASTEXITCODE" }
+
     - name: Setup Headless Package Directory
       shell: pwsh
       run: |

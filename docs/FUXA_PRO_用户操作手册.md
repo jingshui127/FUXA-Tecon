@@ -14,20 +14,20 @@ FUXA PRO 是基于 FUXA 开源 SCADA 系统的科控物联定制版，支持西�
 ### 2.1 下载地址
 
 访问 GitHub Actions 构建页面下载最新版本：  
-https://github.com/jingshui127/FUXA-Tecon/actions
+<https://github.com/jingshui127/FUXA-Tecon/actions>
 
 选择对应的工作流运行记录获取产物，两种方式任选：
 
 **方式一：Release（推荐，直接下 EXE）**
 
-https://github.com/jingshui127/FUXA-Tecon/releases/tag/headless-pro-latest
+<https://github.com/jingshui127/FUXA-Tecon/releases/tag/headless-pro-latest>
 
 Release 中的 `fuxa-pro-headless.exe` 即最终交付文件，无需解压。
 
 **方式二：Actions Artifacts（需解压）**
 
-| Artifacts 产物名称 | 说明 |
-|---------|------|
+| Artifacts 产物名称            | 说明                                |
+| ------------------------- | --------------------------------- |
 | `fuxa-pro-headless-1.3.5` | 压缩包，解压后得到 `fuxa-pro-headless.exe` |
 
 Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数跟随仓库设置（当前上限为 3 天），过期后需重新运行工作流。Release 中的产物名称固定为 `fuxa-pro-headless.exe`，始终为最新构建且长期保留，正式交付建议使用 Release。
@@ -81,11 +81,11 @@ Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数�
 
 启动成功后，在浏览器访问：
 
-- FUXA 主界面：http://127.0.0.1:1881/
-- Node-RED 管理界面：http://127.0.0.1:1881/flows
-- Node-RED 兼容入口：http://127.0.0.1:1881/nodered
-- Dashboard/HTTP 入口：http://127.0.0.1:1881/dashboard
-- 插件管理：http://127.0.0.1:1881/plugins
+- FUXA 主界面：<http://127.0.0.1:1881/>
+- Node-RED 管理界面：<http://127.0.0.1:1881/flows>
+- Node-RED 兼容入口：<http://127.0.0.1:1881/nodered>
+- Dashboard/HTTP 入口：<http://127.0.0.1:1881/dashboard>
+- 插件管理：<http://127.0.0.1:1881/plugins>
 
 使用 `-p 1882` 时，将上述地址中的端口替换为 `1882`。没有配置 Dashboard 流程时，直接访问 `/dashboard` 返回 404 属于正常现象。
 
@@ -97,11 +97,11 @@ Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数�
 
 在 EXE 同级创建 `customization\` 目录，放入需要替换的文件后重启 EXE 即可，**不需要重新打包**：
 
-| 文件 | 作用 |
-|---|---|
+| 文件            | 作用                                         |
+| ------------- | ------------------------------------------ |
 | `config.json` | 应用名、浏览器标题、侧边栏标题、服务器名、帮助页信息、闪屏文案、日志文件名、报表页眉 |
-| `logo.svg` | 闪屏与帮助页使用的 LOGO 图片 |
-| `favicon.ico` | 浏览器标签页图标 |
+| `logo.svg`    | 闪屏与帮助页使用的 LOGO 图片                          |
+| `favicon.ico` | 浏览器标签页图标                                   |
 
 规则：
 
@@ -147,6 +147,8 @@ https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png
 
 若网络环境无法访问该瓦片服务，地图将无法显示，需自行部署或改用可访问的瓦片源。
 
+该替换由打包脚本 `server\scripts\patch-map-tiles.js` 自动完成并校验，不需要手工修改前端文件。
+
 ---
 
 ## 五、常见问题
@@ -156,6 +158,7 @@ https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png
 **现象：** 启动时提示 `Error: listen EADDRINUSE: address already in use 0.0.0.0:1881`
 
 **解决方法：**
+
 ```bash
 # 方法一：更换端口
 .\fuxa-pro-headless.exe -p 1882
@@ -172,6 +175,7 @@ taskkill /PID <进程ID> /F
 ### 5.3 Windows 防火墙阻止访问
 
 **解决方法：**
+
 1. 打开 Windows 防火墙设置
 2. 添加入站规则，允许 TCP 端口 1881
 3. 或临时关闭防火墙测试
@@ -179,6 +183,7 @@ taskkill /PID <进程ID> /F
 ### 5.4 浏览器无法访问
 
 **检查清单：**
+
 - 确认服务已启动（控制台显示 `<应用名> started!`，内置默认品牌下为 `TcScada started!`）
 - 确认使用正确的地址和端口
 - 确认防火墙未阻止访问
@@ -190,18 +195,18 @@ taskkill /PID <进程ID> /F
 
 ### 6.1 Windows 版本
 
-| 项目 | 要求 |
-|------|------|
+| 项目   | 要求                                                                                           |
+| ---- | -------------------------------------------------------------------------------------------- |
 | 操作系统 | Windows 10 / 11 / Server 2016+（x64）。Node.js 18 官方支持 Windows 8.1 及以上，本项目仅在 Windows 10 / 11 实测 |
-| 架构 | x64 |
-| 内存 | 建议 2GB 以上；上千数据点的大规模项目请参考 [Modbus/MQTT 大规模项目准备指南](Modbus_MQTT_大规模项目准备指南.md)（建议 8GB） |
-| 磁盘 | EXE 本体约 315MB，另需为 `data\` 预留空间，建议 ≥2GB 可用空间 |
-| 浏览器 | Chrome、Edge、Firefox 最新版 |
+| 架构   | x64                                                                                          |
+| 内存   | 建议 2GB 以上；上千数据点的大规模项目请参考 [Modbus/MQTT 大规模项目准备指南](Modbus_MQTT_大规模项目准备指南.md)（建议 8GB）           |
+| 磁盘   | EXE 本体约 315MB，另需为 `data\` 预留空间，建议 ≥2GB 可用空间                                                  |
+| 浏览器  | Chrome、Edge、Firefox 最新版                                                                      |
 
 ### 6.2 运行环境
 
-| 项目 | 要求 |
-|------|------|
-| 运行时 | 已包含于 `fuxa-pro-headless.exe`，无需单独安装 Node.js 或 Docker |
-| 网络 | 浏览器访问服务端口；跨设备访问时放行 TCP 1881 |
+| 项目   | 要求                                                                      |
+| ---- | ----------------------------------------------------------------------- |
+| 运行时  | 已包含于 `fuxa-pro-headless.exe`，无需单独安装 Node.js 或 Docker                    |
+| 网络   | 浏览器访问服务端口；跨设备访问时放行 TCP 1881                                             |
 | 数据迁移 | 复制 EXE 与同级 `data\` 目录；若使用了外部品牌目录，还需一并复制 `customization\`（它不在 `data\` 内） |

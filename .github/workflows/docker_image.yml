@@ -15,6 +15,11 @@ on:
     paths:
       - 'Dockerfile'
       - '.github/workflows/docker_image.yml'
+      - 'server/**'
+      - 'client/src/**'
+      - 'client/package*.json'
+      - 'node-red/**'
+      - 'odbc/**'
 
 env:
   REGISTRY: ghcr.io

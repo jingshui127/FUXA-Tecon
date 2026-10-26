@@ -67,3 +67,23 @@ jobs:
             ${{ env.IMAGE }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # 在 runner 上直接以 arm64 运行刚推送的镜像，确认不是只"构建成功"却起不来
+      - name: Smoke test arm64
+        run: |
+          IMG="${{ env.IMAGE }}:${{ steps.meta.outputs.version }}"
+          docker pull --platform linux/arm64 "$IMG"
+          docker run -d --name fuxa-smoke --platform linux/arm64 -p 1881:1881 "$IMG"
+          ok=0
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:1881/ || true)
+            if [ "$code" = "200" ]; then ok=1; break; fi
+            sleep 3
+          done
+          docker logs --tail 30 fuxa-smoke
+          docker rm -f fuxa-smoke
+          if [ "$ok" != "1" ]; then
+            echo "arm64 容器未返回 200（最后状态码 $code）"
+            exit 1
+          fi
+          echo "arm64 启动验证通过"

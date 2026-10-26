@@ -70,7 +70,16 @@ RUN npm run build
 # E:\FUXA-Pro\_SESSION_FACTS.md for the authoritative list and reasoning.
 FROM ${NODE_IMAGE} AS plugins-builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3 \
+    pkg-config \
     unixodbc-dev \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg62-turbo-dev \
+    libgif-dev \
+    librsvg2-dev \
+    libvips-dev \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /plugins_pkg/runtime
 WORKDIR /plugins_pkg/runtime
@@ -93,9 +102,16 @@ ARG INSTALL_ODBC=true
 WORKDIR /usr/src/app/FUXA
 
 # Install ONLY runtime libraries
+# libcairo2/libpango*/libjpeg/libgif are required at runtime by the
+# native `canvas` module (transitively installed via chartjs-node-canvas
+# in stage plugins-builder). Without them the chart plugin throws
+# "Error: Cannot find module 'canvas'" or the .node file fails to load.
 RUN apt-get update \
     && apt-get install -y \
         sqlite3 libsqlite3-0 \
+        libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 \
+        libjpeg62-turbo libgif7 \
+        libglib2.0-0 \
         $( [ "$INSTALL_ODBC" = "true" ] && echo "unixodbc odbc-mariadb odbc-postgresql libsqliteodbc tdsodbc" ) \
     && if [ "$INSTALL_ODBC" = "true" ]; then \
         mkdir -p /usr/lib/odbc && \

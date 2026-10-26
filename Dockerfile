@@ -55,6 +55,38 @@ COPY server/ ./
 RUN rm -rf test
 RUN npm run build
 
+# --- STAGE 2.5: Communication Plugins Pre-Installer ---
+# Pre-install all communication plugins so the runner image ships with them
+# ready to use. Without this stage, users would have to manually install each
+# plugin via the FUXA UI on first boot.
+#
+# Uses the full node:18-bookworm image (not slim) so native build tooling
+# (python3, gcc, make) is available for packages like `odbc`, `node-bacnet`,
+# `mcprotocol`, `redis`, `node-webcam` that need to compile or have optional
+# native deps.
+#
+# The 11 packages match the working fuxa-test container's
+# _pkg/runtime/package.json as of 2026-10-26. See
+# E:\FUXA-Pro\_SESSION_FACTS.md for the authoritative list and reasoning.
+FROM ${NODE_IMAGE} AS plugins-builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    unixodbc-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /plugins_pkg/runtime
+WORKDIR /plugins_pkg/runtime
+RUN npm init -y >/dev/null && npm install --no-audit --no-fund --omit=dev \
+        node-opcua@2.149.0 \
+        st-ethernet-ip@2.7.5 \
+        omron-ethernet-ip@0.0.2 \
+        ads-client@2.1.0 \
+        mcprotocol@0.1.2 \
+        node-bacnet@0.2.4 \
+        nodepccc@0.1.17 \
+        redis@5.8.2 \
+        odbc@2.4.9 \
+        chartjs-node-canvas@3.2.0 \
+        node-webcam@0.8.2
+
 # --- STAGE 3: Runner ---
 FROM ${NODE_SLIM_IMAGE}
 ARG INSTALL_ODBC=true
@@ -87,6 +119,12 @@ RUN if [ "$INSTALL_ODBC" = "true" ]; then cp odbc/odbcinst.ini /etc/odbcinst.ini
 
 # 4. Copy static app files
 COPY node-red/ ./node-red/
+
+# 5. Copy pre-installed communication plugins (built in plugins-builder stage)
+#    These are installed into server/_pkg/runtime/ at image build time so the
+#    container ships with all communication protocols ready to use, without
+#    requiring users to npm-install them via the FUXA UI on first boot.
+COPY --from=plugins-builder /plugins_pkg ./server/_pkg
 
 # Final cleanup
 WORKDIR /usr/src/app/FUXA/server

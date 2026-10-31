@@ -52,15 +52,10 @@ if (process.env.FUXA_SERVER === '1') {
     process.env.userDir = fuxaDataDir;
     process.env.FUXA_DATA_DIR = fuxaDataDir;
     
-    const serverPath = path.join(__dirname, 'server', 'main.js');
-    
-    if (!fs.existsSync(serverPath)) {
-        console.error(`[FUXA] ERROR: Server not found at ${serverPath}`);
-        process.exit(1);
-    }
-    
+    // 使用静态相对路径字面量，确保 pkg 能在构建时把 server/main.js 编译进快照
+    // （动态 path.join(__dirname,...) 会阻止 pkg 静态分析，导致 require 读到压缩的 asset 字节而报 "Invalid or unexpected token"）
     try {
-        require(serverPath);
+        require('./server/main.js');
     } catch (err) {
         console.error(`[FUXA] Failed to start server: ${err.message}`);
         if (err.stack) console.error(err.stack);
@@ -158,6 +153,18 @@ function startServer() {
             process.exit(1);
         }
     });
+
+    // === 保活：pkg 快照下，spawn 的子进程句柄不会保持 guardian 主进程的事件循环，
+    //     导致主进程事件循环空闲而自然退出，连带杀掉正在运行的 server 子进程。
+    //     用一个不 unref 的 setInterval 强制保持主进程事件循环存活。 ===
+    if (!global.__fuxaGuardianKeepAlive) {
+        global.__fuxaGuardianKeepAlive = setInterval(() => {
+            // 每 15 秒心跳一次，仅用于保持事件循环，不产生日志噪音
+        }, 15000);
+        if (global.__fuxaGuardianKeepAlive.unref) {
+            // 注意：绝不 unref，否则主进程仍会因事件循环空闲而退出
+        }
+    }
 }
 
 log('========================================');

@@ -128,12 +128,15 @@ module.exports = {
                     
                     return runtime.project.setProject(newProject);
                 }).then(function(data) {
-                    res.json({ success: true });
                     if (needsRestart) {
-                        setTimeout(() => {
-                            runtime.restart(true);
-                        }, 0);
+                        // 需要重启（devices/server/alarms/notifications 变更）时等待重启完成再响应，
+                        // 与上游一致，避免数据不一致（restart 会重新 load 项目）
+                        return runtime.restart(true).then(function() {
+                            res.json({ success: true });
+                        });
                     }
+                    // 纯视图/只读字段变更：无需重启，立即响应
+                    res.json({ success: true });
                 }).catch(function(err) {
                     if (err && err.code) {
                         res.status(400).json({error:err.code, message: err.message});

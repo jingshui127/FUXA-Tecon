@@ -286,6 +286,8 @@ export class DeviceNetProperty {
     /** MELSEC */
     ascii?: boolean;
     octalIO?: boolean;
+    /** MELSEC MC protocol frame: '1E' (default) or '3E' (Q/L/iQ built-in Ethernet) */
+    frame?: string;
     timeout?: number;
 
     static descriptor = {
@@ -500,8 +502,8 @@ export enum SnmpTagType {
 export class SnmpOptions {
     version: SnmpVersion = SnmpVersion.v3;
     transport: SnmpTransport = SnmpTransport.udp4;
-    /** Request timeout in millisec. */
-    timeout = 5000;
+    /** Request timeout in millisec., keep timeout * (retries + 1) below the polling interval (default 3000) */
+    timeout = 1000;
     retries = 1;
     /** SNMP v3 */
     securityLevel: SnmpSecurityLevel = SnmpSecurityLevel.authPriv;

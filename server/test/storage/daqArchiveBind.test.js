@@ -59,7 +59,7 @@ const mode = process.argv[1];
                 let resolveReady;
                 const ready = new Promise(resolve => { resolveReady = resolve; });
                 let initialized = 0;
-                node = storageModule.create({ dbDir: directory, daqTokenizer: 0 }, {
+                node = storageModule.create({ dbDir: directory, daqTimeToken: 0 }, {
                     info(message) {
                         if (message.includes('connected-to-data') || message.includes('load-map successful')) {
                             if (++initialized === 2) resolveReady();

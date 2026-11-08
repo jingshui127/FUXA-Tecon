@@ -39,7 +39,7 @@ module.exports = {
 
     // DAQ DB to Tokenizer the file and save in archive
     // Default: 24 Hours (1 Day), 0 is disabled only 1 DB file
-    daqTokenizer: 24,
+    daqTimeToken: 24,
 
     // By default, server accepts connections on all IPv4 interfaces.
     // To listen on all IPv6 addresses, set uiHost to "::",

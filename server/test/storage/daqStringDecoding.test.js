@@ -32,7 +32,7 @@ async function readValues(source, values) {
         const ready = new Promise(resolve => { readyResolve = resolve; });
         let initialized = 0;
         const errors = [];
-        node = storage.create({dbDir: directory, daqTokenizer: 0}, {
+        node = storage.create({dbDir: directory, daqTimeToken: 0}, {
             info(message) {
                 if (message.includes('connected-to-data') || message.includes('load-map successful')) {
                     if (++initialized === 2) readyResolve();

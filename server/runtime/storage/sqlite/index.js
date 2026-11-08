@@ -31,8 +31,8 @@ function DaqNode(_settings, _log, _id, _currentStorate) {
     var daqTagsMap = {};                    // Mapped db Tags/Nodes
     var daqNextToken = new Date().getTime();// Interval to split Database data
 
-    daqNextToken += (settings.daqTokenizer) ? db_daqtoken * settings.daqTokenizer : db_daqtoken * 24;
-    if (settings.daqTokenizer === 0) {
+    daqNextToken += (settings.daqTimeToken) ? db_daqtoken * settings.daqTimeToken : db_daqtoken * 24;
+    if (settings.daqTimeToken === 0) {
         daqNextToken = 0;
     } else {
         // check database pending 

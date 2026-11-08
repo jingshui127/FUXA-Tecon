@@ -32,7 +32,7 @@ describe('DAQ archive device identity', function () {
                 let resolveReady;
                 const ready = new Promise(resolve => { resolveReady = resolve; });
                 let initialized = 0;
-                node = storage.create({ dbDir: directory, daqTokenizer: 0 }, {
+                node = storage.create({ dbDir: directory, daqTimeToken: 0 }, {
                     info(message) {
                         if (message.includes('connected-to-data') || message.includes('load-map successful')) {
                             if (++initialized === 2) resolveReady();

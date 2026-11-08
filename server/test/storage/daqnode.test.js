@@ -56,7 +56,7 @@ for (const holdMapLoad of [false, true]) {
                     return nativeAll.apply(this, args);
                 });
             }
-            node = daqstorage.create({ dbDir, daqTokenizer: 0 }, {
+            node = daqstorage.create({ dbDir, daqTimeToken: 0 }, {
                 info: message => collected.info.push(message),
                 warn: message => collected.warnings.push(message),
                 error: message => collected.errors.push(message)

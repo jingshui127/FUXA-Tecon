@@ -84,6 +84,12 @@ function Report(_property, _runtime) {
                     bold: path.join(__dirname, 'fonts/Roboto-Medium.ttf'),
                     italics: path.join(__dirname, 'fonts/Roboto-Italic.ttf'),
                     bolditalics: path.join(__dirname, 'fonts/Roboto-MediumItalic.ttf')
+                },
+                CJK: {
+                    normal: path.join(__dirname, 'fonts/CJK-sc.ttf'),
+                    bold: path.join(__dirname, 'fonts/CJK-sc.ttf'),
+                    italics: path.join(__dirname, 'fonts/CJK-sc.ttf'),
+                    bolditalics: path.join(__dirname, 'fonts/CJK-sc.ttf')
                 }
               };
             let pdfmake = new Pdfmake(fonts);
@@ -106,6 +112,7 @@ function Report(_property, _runtime) {
         return new Promise(async function (resolve, reject) {
             try {
                 let docDefinition = {...report.docproperty };
+                docDefinition.defaultStyle = Object.assign({}, docDefinition.defaultStyle, { font: 'CJK' });
                 docDefinition['header'] = { text: 'FUXA by frangoteam', style:[{fontSize: 6}]};
                 docDefinition['footer'] = function(currentPage, pageCount) {
                     return { text: currentPage.toString() + ' / ' + pageCount, style:[{alignment: 'right', fontSize: 8}]} ;

@@ -4,7 +4,7 @@
   "description": "Web-based Process Visualization (SCADA/HMI/Dashboard) software",
   "main": "main.js",
   "scripts": {
-    "test": "mocha --recursive --timeout 10000",
+    "test": "mocha --recursive --ignore 'test/.simulator/**' --timeout 10000",
     "start": "node main.js",
     "build": "tsc",
     "postinstall": "node scripts/patch-nodered.js"
@@ -42,6 +42,7 @@
     "node-schedule": "2.1.1",
     "node-snap7": "1.0.9",
     "nodemailer": "^8.0.8",
+    "nodes7": "^0.3.18",
     "nopt": "5.0.0",
     "pdfmake": "0.2.5",
     "pg": "^8.18.0",

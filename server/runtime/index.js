@@ -176,7 +176,7 @@ function init(_io, _api, _settings, _log, eventsMain) {
         // client ask device property
         socket.on(Events.IoEventTypes.DEVICE_PROPERTY, (message) => {
             try {
-                if (!isSocketWriteAuthorized(socket)) {
+                if (!isSocketAdminAuthorized(socket)) {
                     logger.warn(`${Events.IoEventTypes.DEVICE_PROPERTY}: unauthorized request from ${socket.userId || 'guest'}`);
                     return;
                 }
@@ -287,6 +287,14 @@ function init(_io, _api, _settings, _log, eventsMain) {
                 if (msg && Array.isArray(msg.sids) && msg.sids.length) {
                     const TIME_CHUNK_SIZE = 6 * 60 * 60 * 1000;
                     const MAX_TIME_CHUNKS = 744; // Maximum query range: 186 days
+                    const MAX_SIDS = 100;
+                    if (msg.sids.length > MAX_SIDS) {
+                        socket.emit(Events.IoEventTypes.DAQ_ERROR, {
+                            gid: msg.gid,
+                            error: `Invalid DAQ query (maximum ${MAX_SIDS} tags)`
+                        });
+                        return;
+                    }
                     if (!Number.isFinite(msg.from) || !Number.isFinite(msg.to) || msg.from >= msg.to ||
                         msg.to - msg.from > TIME_CHUNK_SIZE * MAX_TIME_CHUNKS) {
                         socket.emit(Events.IoEventTypes.DAQ_ERROR, {
@@ -324,6 +332,10 @@ function init(_io, _api, _settings, _log, eventsMain) {
                 }
             } catch (err) {
                 logger.error(`${Events.IoEventTypes.DAQ_QUERY}: ${err}`);
+                socket.emit(Events.IoEventTypes.DAQ_ERROR, {
+                    gid: msg && msg.gid,
+                    error: err && err.message ? err.message : String(err)
+                });
             }
         });
         // client ask alarms status
@@ -574,70 +586,30 @@ function update(cmd, data) {
 function restart(clear) {
     return new Promise(function (resolve, reject) {
         try {
-            // 优化：先处理非设备的清理工作
-            if (clear) {
-                alarmsMgr.clear();
-                notificatorMgr.clear();
-            }
-            
-            logger.info('runtime.update-project: stopping...', true);
-            
-            // 尝试停止所有设备（异步，不等待完成）
-            // 注意：S7 设备的 disconnect 可能导致原生模块崩溃
-            // 因此使用 fire-and-forget 模式，不阻塞后续启动
-            var stopPromise = devices.stop().catch(function (err) {
-                logger.error('runtime.failed-to-stop-devices: ' + err);
-                // 即使停止失败也继续启动（OS 会清理资源）
-            });
-            
-            // 同时停止其他组件（这些通常是安全的）
-            Promise.all([
-                alarmsMgr.stop().catch(function (err) {
-                    logger.error('runtime.failed-to-stop-alarms: ' + err);
-                }),
-                notificatorMgr.stop().catch(function (err) {
-                    logger.error('runtime.failed-to-stop-notificatorMgr: ' + err);
-                }),
-                scriptsMgr.stop().catch(function (err) {
-                    logger.error('runtime.failed-to-stop-scriptsMgr: ' + err);
-                }),
-                jobsMgr.stop().catch(function (err) {
-                    logger.error('runtime.failed-to-stop-jobsMgr: ' + err);
-                })
-            ]).then(function () {
+            stop().then(function () {
+                if (clear) {
+                    alarmsMgr.clear();
+                    notificatorMgr.clear();
+                }
                 logger.info('runtime.update-project: stopped!', true);
-                
-                // 额外延迟以确保资源释放（特别是 S7 原生模块）
-                setTimeout(function () {
-                    start().then(function () {
-                        logger.info('runtime.update-project: restart!');
-                        resolve(true);
-                    }).catch(function (err) {
-                        logger.error('runtime.update-project-start: ' + err);
-                        reject();
-                    });
-                }, 500); // 500ms 延迟给 OS 清理时间
+                start().then(function () {
+                    logger.info('runtime.update-project: restart!');
+                    resolve(true);
+                }).catch(function (err) {
+                    logger.error('runtime.update-project-start: ' + err);
+                    reject();
+                });
             }).catch(function (err) {
                 logger.error('runtime.update-project-stop: ' + err);
-                // 即使出错也尝试启动
-                setTimeout(function () {
-                    start().then(function () {
-                        logger.info('runtime.update-project: restart!');
-                        resolve(true);
-                    }).catch(function (err2) {
-                        logger.error('runtime.update-project-start: ' + err2);
-                        reject(err2);
-                    });
-                }, 500);
+                reject();
             });
-            
         } catch (err) {
             if (err.stack) {
                 logger.error(err.stack);
             } else {
                 logger.error(err);
             }
-            reject(err);
+            reject();
         }
     });
 }

@@ -1,9 +1,9 @@
 # FUXA Headless EXE 定制化优化指南
 
-> 最后更新: 2026-10-22
-> 当前版本: 1.3.5-2918（已同步上游正式版 tag `v1.3.5`）
-> 分支: `1.3.5-2918`
-> 仓库: https://github.com/jingshui127/FUXA-Tecon
+> 最后更新: 2026-11-16
+> 当前版本: 1.3.6-2918（基于官方 master 开发版打包；官方最新正式版仍是 tag `v1.3.5`，2026-10-19）
+> 分支: `1.3.6-2918`
+> 仓库: https://github.com/jingshui127/FUXA-Tecon（remote 名 `origin`）
 
 ---
 
@@ -16,6 +16,8 @@
 5. [待办事项](#五待办事项)
 
 > **品牌化定制快速入口**：见 [2.12 节](#212-品牌化定制2026-08-10)，通过 `data/brand.json` 自定义品牌，无需改源码。
+> **S7 读取优化快速入口**：见 [2.1.1 节](#211-s7-读取路径合并读优化2026-11-06)；S7 通用知识（地址矩阵、缺陷、修复代码、升级核对）见共用文档 [S7通讯实测与地址类型指南.md](S7通讯实测与地址类型指南.md)。
+> **同步前必读**：见 [2.18 节](#218-上游是否已修复我们的定制核查基线与比对方法2026-11-16)——先查官方有没有自己修，再决定哪些补丁要重放。
 
 ---
 
@@ -26,7 +28,7 @@
 | `app/headless/headless-guardian.js`                                 | 新建 | 双模式 EXE 入口（Guardian + Server）                                              |
 | `server/guard.js`                                                   | 新建 | 开发调试用守护脚本 (`node guard.js -p PORT`)                                    |
 | `.github/workflows/headless_packaging.yml`                          | 修改 | GitHub Actions 自动构建配置                                                       |
-| `server/runtime/devices/s7/index.js`                                | 修改 | 跳过 Disconnect + exit handler + **断连自动重连**（见 2.1）    |
+| `server/runtime/devices/s7/index.js` | 修改 | `disconnect()` try-catch 保护 + `resolve(true)` + exit handler（见 2.1）；正则版断连重连可剔（上游 `cf9f47c8` 已有结构化判断，见 2.18）；合并读优化见 2.1.1 |
 | `server/runtime/devices/index.js`                                   | 修改 | 设备 start/stop try-catch 保护                                                    |
 | `server/runtime/index.js`                                           | 修改 | 异步重启 + 500ms 延迟                                                             |
 | `server/api/projects/index.js`                                      | 修改 | 视图修改免重启 + upload mkdir 修复 + 异步重启                                     |
@@ -50,12 +52,15 @@
 | `client/src/app/home/home.component.ts`                             | 修改 | 用户信息对话框`DialogUserInfo` 注入 AppService 获取品牌信息                     |
 | `client/src/app/home/userinfo.dialog.html`                          | 修改 | 用户信息对话框底部文字替换为品牌 footer                                           |
 | `client/src/app/reports/report-editor/report-editor.component.ts`   | 修改 | PDF 报表 header 文字使用品牌信息                                                  |
-| `server/runtime/plugins/recipes/recipes.ts`                         | 修改 | 配方下载/上传模板优先修复（官方 400 bug，见 2.14）                                |
+| `server/api/recipes/index.js` | 修改 | 配方下载/上传模板优先解析（官方 400 bug，见 2.14） |
+| `server/runtime/recipes/recipe-service.js`<br>`recipe-storage.js`<br>`recipe-utils.js` | 修改 | 「模板优先、实例兜底」下沉到 `getRecipeData()`，`export`/`download`/`upload` 共用一个入口 |
+| `server/runtime/jobs/report.js`                                     | 修改 | 注册 `CJK` 字体族（**四字形全注册**）+ `defaultStyle.font='CJK'`，修复 PDF 中文方块（见 2.17） |
+| `server/runtime/jobs/fonts/CJK-sc.ttf`                              | 新建 | SimHei 中文字体（9,745,792 B）；pdfkit 只吃单文件 ttf，`.ttc` 不行（见 2.17）      |
 | `.gitignore`                                                        | 修改 | 忽略 `client/dist/`（避免官方同步冲突，见 4.14）；官方新增 `.agents/`、`AGENTS.md` |
 | `client/dist/`                                                      | 移除跟踪 | 构建产物不再入库，EXE 由 Actions 现场构建（见 4.14）                     |
 | `server/i18n/*.json`                                                | 修改 | 官方新键与本地 `plugins-notice` 键深合并                                        |
-| `.github/workflows/headless_packaging.yml`                          | 修改 | 版本统一为 `1.3.5-2918`（分支触发、pkg 版本、EXE 名、Artifact 名）              |
-| `.github/workflows/docker_release.yml`                              | 修改 | 版本统一为 `1.3.5-2918`                                                        |
+| `.github/workflows/headless_packaging.yml`                          | 修改 | 版本统一为当前 `1.3.6-2918`（分支触发、pkg 版本、EXE 名、Artifact 名）；**每次构建独立 tag `headless-latest-<run_id>`** |
+| `.github/workflows/docker_release.yml`                              | 修改 | 版本统一为当前 `1.3.6-2918`                                                    |
 
 ---
 
@@ -78,17 +83,37 @@
 
 | 修改                                   | 说明                                  | 原因                                                                                         |
 | -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `disconnect()` 跳过 `Disconnect()` | 仅清 JS 侧状态，不调用原生 Disconnect | node-snap7 原生层 bug：Disconnect 在回调中调用会触发`STATUS_ACCESS_VIOLATION` (3221225477) |
-| `process.on('exit')` handler         | 退出前`s7client = null`             | 降低退出时原生模块清理冲突概率                                                               |
+| `disconnect()` 里 `Disconnect()` 加 try-catch | 原生调用崩只记日志，不带走进程 | node-snap7 原生层 bug：`Disconnect()` 在回调中调用会触发 `STATUS_ACCESS_VIOLATION` (3221225477)，整个进程直接死 |
+| `process.on('exit')` handler | 退出前 `s7client = null` | 降低退出时原生模块清理冲突概率 |
+
+> **2026-11-16 更正**：早期版本是「完全不调原生 `Disconnect()`」；现在上游代码本身已带「`!s7client.Connected()` 就跳过」的分支，我们的定制只是把**已连接**那条路径上的 `Disconnect()` 包进 try-catch。原因：完全不调会让原生侧 TCP 连接只能等 OS 回收，长时间运行累积句柄；try-catch 既保住不崩，又能正常释放。**文档以本节代码为准**。
 
 ```javascript
-// 当前 disconnect 实现
+// 当前 disconnect 实现（提交 3dc4ecd）
 this.disconnect = function () {
     return new Promise(function (resolve) {
         _checkWorking(false);
-        _emitStatus('connect-off');
-        _clearVarsValue();
-        resolve(true);
+        if (!s7client.Connected()) {
+            // 未连接：跳过原生调用，避免浪费 native 资源
+            _emitStatus('connect-off');
+            _clearVarsValue();
+            resolve(true);
+        } else {
+            // 已连接：try-catch 保护，崩了也不带走进程
+            try {
+                var result = s7client.Disconnect();
+                if (result) {
+                    logger.info(`'${data.name}' disconnected!`, true);
+                } else {
+                    logger.warn(`'${data.name}' Disconnect() returned false`);
+                }
+            } catch (err) {
+                logger.error(`'${data.name}' Disconnect() crashed: ${err.message || err} — OS will cleanup`);
+            }
+            _emitStatus('connect-off');
+            _clearVarsValue();
+            resolve(true);
+        }
     });
 };
 
@@ -131,9 +156,24 @@ process.on('exit', function () {
 }
 ```
 
-**注意**：本修复调用的是我们定制过的 `disconnect()`（只清 JS 状态、不调原生 `Disconnect()`），因此不会触发 2.1 节所述的 `STATUS_ACCESS_VIOLATION` 崩溃；如果哪天把 `disconnect()` 改回调用原生 `Disconnect()`，这个自动重连补丁会带来崩溃风险。
+**注意**：本修复调用的是我们定制过的 `disconnect()`（未连接跳过、已连接则 try-catch 包住原生 `Disconnect()`），因此即使原生层抛 `STATUS_ACCESS_VIOLATION` 也会被 catch 住，不会带崩进程；只有把 `disconnect()` 改成裸调原生 `Disconnect()` 时，这个自动重连补丁才会重新带来崩溃风险。
 
 **验证**：拔掉 S7-1500 网线 → 出现 `connection lost detected, forcing disconnect to allow reconnect` → 约 5 秒内自动重连；插回网线后数据自动恢复。
+
+> ⚠️ **上游后来用更准的方式实现了同一件事**（`cf9f47c8` / #2638，2026-10-28）：`_getErr()` 里给错误对象打 `reason.connectionLost` 标志（按 Snap7 错误码位判断 `(s7err & 0x000FFFFF) !== 0`），`polling()` 里认这个标志。我们这段按**错误消息文本**匹配，PLC 换语言/改措辞就可能失效 → 下次同步删掉这 8 行、改取上游判断即可。
+
+#### 2.1.1 S7 读取路径合并读优化（2026-11-06）
+
+**文件**：`server/runtime/devices/s7/index.js`（`_readVars`）
+
+**本次改动**：非 DB 区（M/I/Q）由 `ReadMultiVars` 改为按 `(Area, DBNumber)` 分组 `ReadArea` 整块读最小字节区间后按偏移解析，与 DB 区 `_readDB` 语义一致。修复两处缺陷（M/I/Q 区位标签读错位、多条 `BYTE`/`BOOL`/`DWORD` 奇数索引项被拒 `0x2300000`）。
+
+**验证**：`node --check` 通过；端到端 20 标签两次轮询稳定。
+
+> **完整内容**（缺陷分析、地址类型矩阵、修复代码、升级核对清单、备份与回退）已抽为跨版本共用文档：
+> [S7通讯实测与地址类型指南.md](S7通讯实测与地址类型指南.md)
+>
+> 该文件是 S7 通用知识的**唯一真相源**，普通版与 PRO 版共用；本指南只保留本版差异。后续 S7 相关内容请直接更新该文件。
 
 ### 2.2 守护进程（Guardian）
 
@@ -158,8 +198,8 @@ process.on('exit', function () {
 **命令行**:
 
 ```powershell
-FUXA-1.3.5-2918-win-x64.exe              # 默认端口 1881
-FUXA-1.3.5-2918-win-x64.exe -p 1882      # 指定端口
+FUXA-1.3.6-2918-win-x64.exe              # 默认端口 1881
+FUXA-1.3.6-2918-win-x64.exe -p 1882      # 指定端口
 ```
 
 #### 开发调试守护脚本
@@ -342,11 +382,11 @@ data/brand.json  ──(服务器启动时读取)──▶  server/brand.js  ─
 ```json
 {
     "name": "TcScada",
-    "title": "TcScada - 工业监控平台",
+    "title": "科控物联 - 工业监控平台",
     "logo": "logo.svg",
     "favicon": "favicon.ico",
-    "shortName": "TCS",
-    "footer": "© 2026 TcScada"
+    "shortName": "KKWL",
+    "footer": "© 2026 科控物联"
 }
 ```
 
@@ -354,19 +394,16 @@ data/brand.json  ──(服务器启动时读取)──▶  server/brand.js  ─
 | ------------- | -------------------------------- | --------------------------------------------------------------- |
 | `name`      | 品牌名称                         | 侧边栏标题、加载页「XXX Loading...」、关于对话框标题            |
 | `title`     | 浏览器标签页标题                 | `<title>` 标签                                                |
-| `logo`      | Logo 文件名（相对于 data/ 目录） | 加载页 Logo、关于对话框 Logo、侧边栏 Logo                       |
-| `favicon`   | 浏览器图标文件名                 | `<link rel="icon">`                                           |
-| `shortName` | 短名称（预留）                   | 移动端显示（预留）                                              |
+| `logo`      | 文件名（相对 `brand.json` 所在目录或 `customization/`）或 http(s) URL；`null` 不用图 | 加载页 Logo、关于对话框 Logo、侧边栏 Logo（无图时显示品牌首字母方块） |
+| `favicon`   | 文件名或 http(s) URL；未配置则用包内原版 | `<link rel="icon">`                                           |
+| `shortName` | 短名称，默认同 name；**当前无组件使用** | 无（仅接口保留） |
 | `footer`    | 页脚文字                         | 加载页底部、关于对话框底部、用户信息对话框底部、PDF 报表 header |
 
 #### 后端 `server/brand.js`
 
-**查找顺序**（找到第一个即停止）：
+**查找顺序**（找到第一个即停止）：**pkg/EXE 模式先看 exe 旁边** —— `<exe目录>/data/brand.json` → `<exe目录>/brand.json`，然后才是 `<rootDir>/brand.json` → `<rootDir>/data/brand.json` → `<rootDir>/../data/brand.json` → `<rootDir>/../brand.json`（`rootDir` = `__dirname`，源码模式即 `server/`，可被 `--userDir` / `env.userDir` 覆盖）。都没找到则读 PRO 版 `customization/config.json` 并映射字段（`appName/appTitle/splash.image/favicon/splash.subText`），最后回落 FUXA 默认。
 
-1. `<userDir>/brand.json`
-2. `<userDir>/data/brand.json` ← 默认位置
-3. `<userDir>/../data/brand.json`
-4. `<userDir>/../brand.json`
+> 为什么要加 exe 目录：pkg 打包后 `__dirname` 是**只读虚拟快照**，打进包里的 `brand.json` 改不动，实际可改的只有 exe 旁边的 `data/`。
 
 **API 端点**（`server/main.js` 注册，无需认证）：
 
@@ -378,8 +415,8 @@ data/brand.json  ──(服务器启动时读取)──▶  server/brand.js  ─
 
 **index.html 注入**（`injectBrandToHtml` 函数）：
 
-- 替换 `<title>` 为 `brand.title`
-- 替换 `<link rel="icon">` 为 `/api/brand/favicon`
+- 替换 `<title>` 为 `brand.title`（仅当 title ≠ 默认 `FUXA` 时）
+- 替换 `<link rel="icon">` 为 `/api/brand/favicon`（仅当自定义 favicon 文件实际存在时）
 - 替换加载占位符 `FUXA Loading...` → `{brand.name} Loading...`
 - 替换加载页 Logo div → `<img src="/api/brand/logo">`
 - 替换底部 `powered by frangoteam` → `brand.footer`
@@ -420,6 +457,17 @@ getBrandLogo(): string | null { ... }
 1. 编辑 `data/brand.json`（可选：放入 `logo.svg` 和 `favicon.ico` 到 `data/` 目录）
 2. **重启服务器**（品牌配置在启动时一次性加载，修改文件后不会自动重新加载）
 3. 浏览器强制刷新（`Ctrl + Shift + R`）清除缓存
+
+> 📘 **字段大全、目录优先级、验证命令、常见问题、PRO 版共用** → 同目录 [`品牌配置说明.md`](品牌配置说明.md)。那份是**操作手册**，本节只记实现与改造原因，别在两处各改一半。
+
+**品牌残留（2026-11-16 二次核查后）**：
+
+- ✅ **已修**：AR 视图标题由 `FUXA AR` 改为 `{{brandName}} AR`（`client/src/app/ar/ar-view/ar-view.component.{ts,html}`，注入 `AppService`）；SMTP 测试邮件主题由 `'FUXA'` 改为 `{品牌名} TEST`（`client/src/app/editor/app-settings/app-settings.component.ts` 的 `onSmtpTest()`）。两项均为**前端源码改动**，须重打包 EXE 才在现场生效。
+- ⚪ **不改**：登录页无品牌位——原版登录框就没有，且现场未启用安全模式（`AuthGuard` 需 `isSecurityEnabled()` 或服务端 `secureEnabled`），登录框不弹出；加品牌位属 UI 增强而非缺陷。`_models/device.ts` 的 `FuxaServer.name='FUXA'` 是 id=0 系统设备的显示名（逻辑只认 `DeviceType.FuxaServer`/`id`），改它只影响新建工程，收益≈0。
+- 🔴 **禁止改**：`kiosk-widgets.service.ts` 的 `repoName='FUXA-SVG-Widgets'` 是 GitHub 仓库名，改了 SVG 控件库拉不到。
+- ⚪ **不是残留**：`client/src/index.html` 的 `FUXA Loading...`、`powered by frangoteam` 是模板占位，`server/brand.js:212-247` 在运行时按 `brand.name`/`brand.footer` 替换；只有 `name` 仍是 `FUXA` 且 `footer` 为空时才露出原文。
+
+`window.__BRAND__` 里**不含 favicon**（favicon 由服务端直接改 `<link>`）。
 
 > **重要**：修改 `brand.json` 后必须重启服务器才生效。启动日志会输出 `[Brand] Loaded brand config from ...: name="XXX"` 确认加载。
 
@@ -465,7 +513,7 @@ getBrandLogo(): string | null { ... }
 
 **背景**: 官方 1.3.5 新增配方管理（#2492）。UI 配方列表操作的是**模板**（ProjectRecipe type），但官方 `downloadRecipe`/`uploadRecipe` 只查询**实例存储**（SetRecipe）→ 下载模板报 `400 "Recipe not found"`。
 
-**修复**（`server/runtime/plugins/recipes/recipes.ts`，提交 `77783dff`）：
+**修复**（提交 `77783dff`；文件当时叫 `server/runtime/plugins/recipes/recipes.ts`，**上游后续重构后路径已变**，现为 `server/api/recipes/index.js` + `server/runtime/recipes/recipe-service.js` / `recipe-storage.js` / `recipe-utils.js`）：
 
 - 取数与 `export` 一致：**模板优先（`getRecipeOrInstance`），实例兜底**
 - 下载：模板 → 从模板取 entries 执行写入；实例 → 按原逻辑
@@ -508,12 +556,112 @@ getBrandLogo(): string | null { ... }
 
 ### 2.16 官方同步检查清单（每次同步照做）
 
-1. `gh api repos/frangoteam/FUXA/releases/latest --jq '.tag_name,.target_commitish'` 拿正式版 tag
-2. `git fetch official --tags` → `git merge official/vX.Y.Z`
-3. 冲突按 2.15 的表格处理；**i18n 一律深合并**
-4. 合并后跑：`git diff --stat` 逐个确认本地定制文件是否被覆盖
-5. 本地源码模式验证（见 3.4）→ 通过后再 push 出 EXE
-6. 更新本文档 2.x 与 `fuxa-maintainer` / `build-fuxa-exe` skill 的版本与要点
+1. **先判断官方是不是已经自己修了**（2026-11-16 新增）：按 2.18 的查法看目标文件的上游提交历史，避免把已被上游覆盖的补丁再重放一遍
+2. `gh api repos/frangoteam/FUXA/releases/latest --jq '.tag_name,.target_commitish'` 拿正式版 tag
+3. `git fetch upstream --tags` → `git merge upstream/vX.Y.Z`（本机 remote 名是 `upstream`，不是 `official`）
+4. 冲突按 2.15 的表格处理；**i18n 一律深合并**
+5. 🔴 比对**必须**写全 ref：`git diff refs/remotes/upstream/master -- <文件>`。写成 `upstream/master` 会被同名 tag（`46bb25d0`）截走，比对的是 10 月的旧快照，差异虚高到离谱（S7 曾因此虚报 152 行，忽略空白后真实差异只有 3 处）
+6. 合并后跑 `git diff --stat` 逐个确认本地定制文件是否被覆盖；S7 按 2.18「可剔清单」删掉与上游重合的部分
+7. 本地源码模式验证（见 3.4）→ 通过后再 push 出 EXE
+8. 更新本文档 2.x 与 `fuxa-maintainer` / `build-fuxa-exe` skill 的版本与要点
+
+> 🔴 **每次同步的最高风险区**：`server/api/projects/index.js`、`server/runtime/index.js`、`server/runtime/project/index.js`、`server/api/recipes/index.js` 这四个文件同时承载「我们的定制」和「官方持续的安全加固」（最新的 `1b0f2213` 全动了）。冲突优先保我们的行为，再逐行把官方的权限/脱敏逻辑套回去，别整段 `--ours`。
+
+### 2.17 报告 PDF 中文变方块：嵌入 CJK 字体（2026-11-16 闭环）
+
+**症状**：`/reports` 生成的 PDF 里，英文标题、日期、数字全部正常，**中文全部显示为小方块**（豆腐块）。
+
+**根因**：`server/runtime/jobs/report.js` 生成 PDF 时只给 pdfmake 注册了 `Roboto` 一族，而 `jobs/fonts/` 里 12 个 ttf 全是 Roboto 变体（Latin-only）。pdfkit 遇到汉字码点查不到 glyph，就用 `.notdef` 画成方块。**PDF 自带字形，与编码、UTF-8、浏览器、系统是否装中文字体都无关。**
+
+硬证据（对比 `/BaseFont`）：
+
+| PDF | BaseFont | 中文 |
+|---|---|---|
+| 修复前 | `Roboto-Regular` + `Roboto-Medium` | 方块 |
+| 修复后 | `BZZZZZ+SimHei`（`FontFile2` = 1，字形流已嵌入） | 正常 |
+
+**改动**（提交 `3dc4ecd`，共 +7 行 + 1 个字体文件）：
+
+1. `server/runtime/jobs/report.js` 的 `var fonts = {...}` 里新增一族：
+
+```javascript
+CJK: {
+    normal:      path.join(__dirname, 'fonts/CJK-sc.ttf'),
+    bold:        path.join(__dirname, 'fonts/CJK-sc.ttf'),
+    italics:     path.join(__dirname, 'fonts/CJK-sc.ttf'),
+    bolditalics: path.join(__dirname, 'fonts/CJK-sc.ttf')
+}
+```
+
+2. 紧接 `new Pdfmake(fonts)` 之后让所有文本默认走这一族：
+
+```javascript
+docDefinition.defaultStyle = Object.assign({}, docDefinition.defaultStyle, { font: 'CJK' });
+```
+
+3. `server/runtime/jobs/fonts/CJK-sc.ttf` = SimHei（`C:\Windows\Fonts\simhei.ttf`，9,745,792 B）。
+
+**三个必踩的坑**：
+
+- **四字形必须全注册**（都指同一个 ttf 即可）。真实报告的表格表头（`report.js:150`）和报警表头（`:284`）都是 `{text: 中文, bold: true}`，只注册 `normal` 会抛 `Font 'CJK' in style 'bold' is not defined`，**整份报告生成失败，比方块更糟**。这条靠读代码推不出来，是在真实 `Report.execute()` 链上跑出来的。
+- **只能单文件 `.ttf`**；`.ttc`（`msyh.ttc` 微软雅黑、`simsun.ttc` 宋体）pdfkit 读不了。
+- **报告编辑器的「字体」下拉是死字段**（`docproperty.fontName`，本工程写的是 Helvetica）。字体表在 `new Pdfmake(fonts)` 时就固定了，改配置无效。
+
+**生效前提**：
+
+- 该路径命中 `headless_packaging.yml` 的 `server/**` 过滤，push 到 `1.3.6-2918` 后会自动出带字体的 EXE；`Copy-Item -Recurse -Force "server\*"` 无排除 + `pkg.assets` 含 `server/**/*`，字体一定被打进快照。
+- **已生成的旧 PDF 不会变**：字形已经烧进文件，换 EXE、重启、改配置都无效，必须 `POST /api/reportBuild`（body `{"params":{"id":"r_line2_daily"}}`，另一份 `r_water_daily`）重新生成。
+- exe 是 pkg 只读快照，**在磁盘上放补丁或字体、重启 exe 都不生效**，只能重新打包。
+
+**边界**：SimHei 是 Windows 系统字体，自用可控；**对外分发的 EXE 有再分发许可问题**，正式分发需换开源单文件 CJK ttf。
+
+### 2.18 上游是否已修复我们的定制：核查基线与比对方法（2026-11-16）
+
+**为什么要单独记**：我们的定制分两类。一类是官方产品路线上根本不会有的需求（中文 PDF、现场 EXE 视图免重启、国内地图源、品牌化、Guardian），只能自己维护；另一类是**真 bug**（S7 崩、配方 400），官方会自己修。同步时必须能区分，否则重复打补丁，冲突越滚越大。
+
+**查法**（本机到 `github.com` 的 git smart-HTTP 被代理阻断，`git fetch upstream` 会 502，改走 `gh api` 的 REST 通道）：
+
+```bash
+GH="C:/Program Files/GitHub CLI/gh.exe"
+# 1) 上游最近提交（判断这几天有没有动静）
+"$GH" api "repos/frangoteam/FUXA/commits?per_page=40&sha=master" \
+  --jq '.[] | "\(.sha[0:8]) \(.commit.author.date) \(.commit.message|split("\n")[0])"'
+# 2) 直接读上游当前文件，判断有没有我们那段代码
+"$GH" api "repos/frangoteam/FUXA/contents/server/runtime/jobs/report.js?ref=master" \
+  --jq .content | base64 -d > /tmp/up_report.js && grep -n "CJK\|Roboto" /tmp/up_report.js
+# 3) 某文件上游改过几次（区分「官方自己修」和「我们独有」）
+"$GH" api "repos/frangoteam/FUXA/commits?path=server/runtime/devices/s7/index.js&per_page=6" \
+  --jq '.[] | "\(.sha[0:8]) \(.commit.author.date) \(.commit.message|split("\n")[0])"'
+```
+
+**基线（master = `1b0f2213`，北京时间 2026-11-16 05:12）**
+
+| 档 | 项 | 证据 |
+| -- | -- | ---- |
+| ℹ️ 上游早就有（**不是我们的补丁**，别再重复实现） | S7 结构化 `reason.connectionLost` 断连处理 | `cf9f47c8` #2638（10-28）；我们在 10-22 加的**正则版**是冗余兜底，可剔 |
+| | S7 `_parseConnectionIndex()` rack/slot 校验 | `ef6bac2e` #2636（10-28）；本地从未改过它 |
+| | S7 `Promise.allSettled` 整批 settle + 写失败上报 | `9b060f22` #2702（11-05） |
+| | S7 可选纯 JS 驱动 nodes7 | `76a6621c` #2643（11-06），额外能力 |
+| ❌ 仍未修 | 报告 PDF 中文 | `report.js:81-89` 仍只有 Roboto 四字形，快照无 `CJK-sc.ttf` |
+| | 视图修改免重启 | `POST /api/project` 仍无条件 `runtime.restart(true)` |
+| | `getRawProject()` | 上游 `project/index.js` 命中 0 次 |
+| | `PORT` 环境变量 | `main.js` 只有 `-p/--port`；env 仅认 `BASE_PATH` / `userDir` / `NODE_ENV` |
+| | fontkit 懒加载 | `api/resources/index.js:10` 仍顶层 `require('fontkit')` |
+| | 地图源 | `maps-view.component.ts:80` 仍 `tile.openstreetmap.org`，无 `.fr/hot`、无 `bc` 子域 |
+| | 配方模板优先 | `api/recipes/index.js` 的 `getRecipeData` 无模板判定 |
+| ⚪ 官方不会有 | Guardian / `guard.js`、`brand.js`、`patch-nodered.js`、`headless_packaging.yml` | 工程层定制，上游无对应实现 |
+
+**S7 真实差异只有 3 处**（`git diff -w --ignore-blank-lines 1e68854c 1.3.6-2918 -- server/runtime/devices/s7/index.js` 实测）：
+
+| 差异 | 处理 |
+| ---- | ---- |
+| `polling()` catch 里的**正则版**断连重连（8 行，靠匹配 `connection / reset / refused / timeout…` 消息文本判断） | **可剔**。上游 `cf9f47c8` 用结构化 `reason.connectionLost` 判断，不看文案、更准 |
+| `disconnect()` 里把 `s7client.Disconnect()` 包进 try-catch + `resolve(true)` | **必须保留**（官方 issue #2436 / #2503 仍 open） |
+| `process.on('exit')` 释放 `s7client` | **必须保留**（上游没有） |
+
+> 🔴 **别被 `git diff` 的 `+` 行骗**：忽略空白后只剩 3 处，其余都是位置/缩进变化。而且上游**本来就有**「未连接跳过 `Disconnect()`」分支、`_parseConnectionIndex`、`allSettled`——这三项我们从来没打过补丁，同步时不要重复实现。
+
+**官方 issue 现状**：#2436 / #2503（S7 保存项目即崩）仍 **open**；搜 `pdf font` 的 issue 总数 **0**——中文方块这个需求官方从未受理过，不要等它。
 
 ---
 
@@ -521,12 +669,12 @@ getBrandLogo(): string | null { ... }
 
 ### 3.1 GitHub Actions 自动构建（推荐）
 
-推送代码到 `1.3.5-2918` 分支后自动触发构建，产物上传到 Release。
+推送代码到 `1.3.6-2918` 分支后自动触发构建，产物上传到 Release。
 
 **手动触发**:
 
 ```bash
-gh workflow run "Build FUXA Headless (Latest)" --ref 1.3.5-2918
+gh workflow run "Build FUXA Headless (Latest)" --ref 1.3.6-2918
 ```
 
 或浏览器打开 [Actions 页面](https://github.com/jingshui127/FUXA-Tecon/actions) → 选择 workflow → Run workflow。
@@ -540,13 +688,13 @@ gh run view <RUN_ID>
 
 **下载 EXE**:
 
-```bash
-# 直连
-gh release download headless-latest --repo jingshui127/FUXA-Tecon --pattern "*.exe" --dir ./download
-
-# 国内镜像
-# https://gh-proxy.com/https://github.com/jingshui127/FUXA-Tecon/releases/download/headless-latest/FUXA-headless-windows-x64.exe
+```powershell
+# tag 不是固定的 headless-latest，而是每次构建独立生成 headless-latest-<run_id>
+$rid = gh run list --repo jingshui127/FUXA-Tecon --branch 1.3.6-2918 --limit 1 --json databaseId --jq '.[0].databaseId'
+gh release download "headless-latest-$rid" --repo jingshui127/FUXA-Tecon --pattern "*.exe" --dir ./download
 ```
+
+> 单连接会卡（~130 KB/s），实际请用 3.5 节的分段并行。若 release 资产返回 **IIS 404 HTML**（本机代理劫持了 `release-assets.githubusercontent.com`），改走 Actions artifact 通道，见 4.13 节。
 
 ### 3.2 本地打包（备选）
 
@@ -562,14 +710,14 @@ robocopy "client\dist" "fuxa-headless\client\dist" /E /NFL /NDL
 Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
 
 # Step 3: 打包
-pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.5-2918-win-x64.exe
+pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.6-2918-win-x64.exe
 ```
 
 ### 3.3 测试验证
 
 ```powershell
 # 启动
-.\artifacts\FUXA-1.3.5-2918-win-x64.exe -p 1882
+.\artifacts\FUXA-1.3.6-2918-win-x64.exe -p 1882
 
 # 访问 http://127.0.0.1:1882/
 ```
@@ -601,7 +749,7 @@ node guard.js -p 2999
 | `server/package.json`（依赖） | ⚠️ 需 `npm install` | ✅ 必须 |
 | `data/brand.json` | ✅ 启动时读取，改完重启即可 | ❌ 不用 |
 
-**推荐工作流**：本地源码验证 → 通过后 `git push private 1.3.5-2918` → Actions 出正式 EXE → 只做一次打包回归。
+**推荐工作流**：本地源码验证 → 通过后 `git push origin 1.3.6-2918` → Actions 出正式 EXE → 只做一次打包回归。
 
 > 直接改 dist 仅用于**本地快速看效果**，不能替代提交 `client/src` 源码；dist 已从 git 移除跟踪，Actions 永远用 src 现场构建。
 
@@ -758,6 +906,29 @@ curl.exe -fL --retry 10 -H "Authorization: token $token" -H "Accept: application
 
 > **务必加 `-f`**，否则 404 也返回 exit 0，留下 0 字节文件无法启动。
 
+**2026-11-16 补充：上面这条在本机会失败。** `api.github.com` 的 302 正常返回，但跳转目标 `release-assets.githubusercontent.com` 被本机代理劫持，返回的是 **IIS 10.0 的 404 HTML 页面**（不是 GitHub 的 404）。表现为：HTTP 码看着像正常的 302/200，下载下来却是 HTML。
+
+**此时改走 Actions artifact 通道**（→ `*.blob.core.windows.net`，支持 Range，返回 206）：
+
+```powershell
+$token = gh auth token
+# 1) 找 artifact（zip，约 100 MB；名字 FUXA-1.3.6-2918-win-x64）
+gh api "repos/jingshui127/FUXA-Tecon/actions/runs/$rid/artifacts" --jq '.artifacts[]|{id,name,size_in_bytes}'
+# 2) 只取 302 的 Location（gh api 会自动跟随，必须用 curl 拿头）
+$loc = (curl.exe -sS -k -D - -o NUL -H "Authorization: Bearer $token" `
+        "https://api.github.com/repos/jingshui127/FUXA-Tecon/actions/artifacts/<artifact_id>/zip") |
+        Select-String '^Location:' | ForEach-Object { $_.ToString().Substring(9).Trim() }
+# 3) 8 段并行 curl.exe -sS -k -f --retry 10 -r "$s-$e" -o partNN $loc，按序拼接
+# 4) Expand-Archive 解压出 exe
+```
+
+判据：
+
+- **通道是否可用看首字节魔数**：zip = `PK`、exe = `MZ`。只看 HTTP 码会被代理的 HTML 骗。
+- 代理做 TLS MITM，`curl.exe` 不带 `-k` 报 `SEC_E_UNTRUSTED_ROOT`。
+- 拼接后字节数必须等于 `size_in_bytes`（release 则是 `assets[0].size`），差一个字节都不能用。
+- `xargs -P 8` 在本机 Git Bash 会崩（`assertion "bc_ctl.arg_max >= LINE_MAX" failed`）→ 用多个独立命令并行。
+
 ### 4.14 client/dist 移除跟踪
 
 **原因**: 官方每次更新都提交 dist → merge 官方 master 必然冲突；且本地 dist 常为官方旧构建（与本地 src 不一致，见 4.11）。
@@ -826,6 +997,8 @@ $content = [System.IO.File]::ReadAllText($path)
 - [X] **地图源改为子域轮询**（2026-10-22）— `openstreetmap.fr/hot` + `subdomains:'bc'` + 规范 attribution，提交 `6301cd53`，详见 2.6 节
 - [X] **EXE 下载手段升级**（2026-10-22）— CDN 单连接过慢时用 8 线程 Range 分段并行下载，见 3.5 节
 - [X] **本地源码快速验证流程**（2026-10-22）— 后端改动先用 `node guard.js -p 2999` 验证，再 push 出 EXE，见 3.4 节
+- [X] **S7 读取路径全类型实测与合并读优化**（2026-11-06）— M/I/Q 区位标签读错位 + ReadMultiVars 批量奇数项被拒，改为按 (Area,DBNumber) 分组整块读，端到端验证 20 标签稳定，详见共用文档 [S7通讯实测与地址类型指南.md](S7通讯实测与地址类型指南.md)
+- [X] **报告 PDF 中文方块修复**（2026-11-16）— `report.js` 只注册 Roboto（Latin-only）导致中文画成 `.notdef` 方块；新增 `CJK` 字体族（**四字形全注册**，只给 `normal` 会因 bold 表头整份失败）+ `defaultStyle.font='CJK'` + `fonts/CJK-sc.ttf`，提交 `3dc4ecd`，新 EXE 生成的 PDF `/BaseFont` 为 `BZZZZZ+SimHei`，详见 2.17 节
 
 ### 待处理
 

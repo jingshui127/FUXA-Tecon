@@ -624,7 +624,7 @@ function startFuxa() {
             // Mount Node-RED if present; never block FUXA if it fails
             if (settings.nodeRedEnabled && typeof mountNodeRedIfInstalled === 'function') {
                 try {
-                    await mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events });
+                    await mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events, indexHtml: indexHtmlCache });
                 } catch (e) {
                     logger.warn('[Node-RED] Failed to initialize, continuing without it.', e);
                 }

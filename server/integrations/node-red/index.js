@@ -362,7 +362,7 @@ function createNodeRedAuthMiddleware({ settings, runtime, logger, authJwt }) {
     };
 }
 
-async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events }) {
+async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger, authJwt, events, indexHtml }) {
     const RED = tryRequireNodeRed(runtime);
     if (!RED) {
         logger.info('[Node-RED] Package not installed. Skipping Node-RED initialization.');
@@ -533,6 +533,12 @@ async function mountNodeRedIfInstalled({ app, server, settings, runtime, logger,
             // Skip API routes and static assets, including routes below BASE_PATH.
             if (shouldBypassSpaCatchAll(req.path)) {
                 return next();
+            }
+            // Prefer the brand/base-path injected copy held in memory by main.js.
+            // Falling back to the raw file would drop brand injection (tab title
+            // would show "FUXA") on any deep link outside SHELL_ROUTES.
+            if (indexHtml) {
+                return res.type('html').send(indexHtml);
             }
             res.sendFile(path.join(settings.httpStatic, 'index.html'));
         });

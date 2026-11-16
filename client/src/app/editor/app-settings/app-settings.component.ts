@@ -3,6 +3,7 @@ import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
 
 import { SettingsService } from '../../_services/settings.service';
 import { DiagnoseService } from '../../_services/diagnose.service';
+import { AppService } from '../../_services/app.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastrService } from 'ngx-toastr';
 
@@ -51,6 +52,7 @@ export class AppSettingsComponent implements OnInit {
 
     constructor(private settingsService: SettingsService,
         private diagnoseService: DiagnoseService,
+        private appService: AppService,
         private translateService: TranslateService,
         private toastr: ToastrService,
         public dialogRef: MatDialogRef<AppSettingsComponent>) { }
@@ -137,7 +139,7 @@ export class AppSettingsComponent implements OnInit {
 
     onSmtpTest() {
         this.smtpTesting = true;
-        let msg = <MailMessage>{ from: this.settings.smtp.mailsender || this.settings.smtp.username, to: this.smtpTestAddress, subject: 'FUXA', text: 'TEST' };
+        let msg = <MailMessage>{ from: this.settings.smtp.mailsender || this.settings.smtp.username, to: this.smtpTestAddress, subject: this.appService.getBrandName() + ' TEST', text: 'TEST' };
         this.diagnoseService.sendMail(msg, this.settings.smtp).subscribe(() => {
             this.smtpTesting = false;
             var msg = '';

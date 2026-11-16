@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { View } from '../../_models/hmi';
+import { AppService } from '../../_services/app.service';
 import { ProjectService } from '../../_services/project.service';
 import { GaugesManager } from '../../gauges/gauges.component';
 import { ArMarkerScannerMode, ArMarkerScannerService } from './ar-marker-scanner.service';
@@ -38,10 +39,15 @@ export class ArViewComponent implements AfterViewInit, OnDestroy {
         public gaugesManager: GaugesManager,
         public projectService: ProjectService,
         private route: ActivatedRoute,
+        private appService: AppService,
     ) { }
 
     get visibleMarkers(): ArVisibleMarker[] {
         return this.arViewService.visibleMarkers;
+    }
+
+    get brandName(): string {
+        return this.appService.getBrandName();
     }
 
     get hasConfiguredMarkers(): boolean {

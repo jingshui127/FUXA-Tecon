@@ -521,29 +521,59 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _readVars = function (vars) {
         return new Promise((resolve, reject) => {
-            s7client.ReadMultiVars(vars, (err, res) => {
-                if (err) return reject(_getReadErr(err));
-                let errs = [];
-                res = vars.map((v, i) => {
-                    let value = null;
-                    if (res[i].Result !== 0) {
-                        errs.push(`${v.name} - ${s7client.ErrorText(res[i].Result)}`);
-                    } else {
-                        try {
-                            if (v.type === 'BOOL') {
-                                value = datatypes['BYTE'].parser(res[i].Data);
-                            } else {
-                                value = datatypes[v.type].parser(res[i].Data);
-                            }
-                            v.changed = value !== v.value;
-                            v.value = value;
-                            return v;
-                        } catch { }
+            // FIX (S7 通讯未完全修复的两处缺陷)：
+            // 1) 位地址错误：_getTagItem 对 M/I/Q 位返回 Start=字节地址，而 ReadMultiVars 的
+            //    S7WLBit 要求 Start 为位地址，导致位标签读错位（写路径 _writeVars 用 Start*8+bit 是对的）。
+            // 2) node-snap7 ReadMultiVars 对多条 BYTE/BOOL/DINT 请求时奇数索引项被 CPU 拒绝
+            //    (Result=0x2300000)，导致 M/I/Q 区含字节/双字标签时批量读失败。
+            // 方案：改为按 (Area, DBNumber) 分组用 ReadArea 整块读最小字节区间，再按偏移解析，
+            //      与 DB 区 _readDB 语义一致（读整字节 + _updateVarsValue 按 bit 提取）。
+            //      同时绕开 ReadMultiVars 的奇数项缺陷，位标签也读到正确位。
+            var groups = {};
+            vars.forEach(v => {
+                var key = (v.Area || 0) + '|' + (v.dbnum || 0);
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(v);
+            });
+            var tasks = Object.keys(groups).map(key => {
+                var items = groups[key];
+                var area = items[0].Area;
+                var dbnr = items[0].dbnum || 0;
+                var minStart = Number.MAX_SAFE_INTEGER;
+                var maxEnd = 0;
+                items.forEach(v => {
+                    var len = (datatypes[v.type] && datatypes[v.type].bytes) ? datatypes[v.type].bytes : 1;
+                    if (v.Start < minStart) minStart = v.Start;
+                    if (maxEnd < v.Start + len) maxEnd = v.Start + len;
+                });
+                var size = maxEnd - minStart;
+                return new Promise((res, rej) => {
+                    try {
+                        s7client.ReadArea(area, dbnr, minStart, size, s7client.S7WLByte, (err, buf) => {
+                            if (err) return rej(_getReadErr(err));
+                            items.forEach(v => {
+                                var off = v.Start - minStart;
+                                var value = null;
+                                try {
+                                    if (v.type === 'BOOL') {
+                                        // 读整字节，由 _updateVarsValue 按 bit 提取
+                                        value = datatypes['BYTE'].parser(buf.slice(off, off + 1));
+                                    } else {
+                                        // 非 BOOL：parser 第二参数是 offset，v.bit 仅 BOOL 有效，不传
+                                        value = datatypes[v.type].parser(buf.slice(off, off + (datatypes[v.type].bytes || 1)));
+                                    }
+                                    v.changed = value !== v.value;
+                                    v.value = value;
+                                } catch (e) { }
+                            });
+                            res();
+                        });
+                    } catch (e) {
+                        rej(_getReadErr(e));
                     }
                 });
-                if (errs.length) return reject(_getErr(errs));
-                resolve(vars);
             });
+            Promise.all(tasks).then(() => resolve(vars), reason => reject(reason));
         });
     }
 

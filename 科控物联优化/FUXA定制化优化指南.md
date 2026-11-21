@@ -1,8 +1,8 @@
 # FUXA Headless EXE 定制化优化指南
 
 > 最后更新: 2026-11-16
-> 当前版本: 1.3.6-2918（基于官方 master 开发版打包；官方最新正式版仍是 tag `v1.3.5`，2026-10-19）
-> 分支: `1.3.6-2918`
+> 当前版本: 1.3.6-2919（已合并官方 **v1.3.6 正式版** tag `56f97035`，2026-11-20）
+> 分支: `1.3.6-2918`（分支名沿用，未随版本号改名）
 > 仓库: https://github.com/jingshui127/FUXA-Tecon（remote 名 `origin`）
 
 ---
@@ -59,8 +59,8 @@
 | `.gitignore`                                                        | 修改 | 忽略 `client/dist/`（避免官方同步冲突，见 4.14）；官方新增 `.agents/`、`AGENTS.md` |
 | `client/dist/`                                                      | 移除跟踪 | 构建产物不再入库，EXE 由 Actions 现场构建（见 4.14）                     |
 | `server/i18n/*.json`                                                | 修改 | 官方新键与本地 `plugins-notice` 键深合并                                        |
-| `.github/workflows/headless_packaging.yml`                          | 修改 | 版本统一为当前 `1.3.6-2918`（分支触发、pkg 版本、EXE 名、Artifact 名）；**每次构建独立 tag `headless-latest-<run_id>`** |
-| `.github/workflows/docker_release.yml`                              | 修改 | 版本统一为当前 `1.3.6-2918`                                                    |
+| `.github/workflows/headless_packaging.yml`                          | 修改 | 版本统一为当前 `1.3.6-2919`（pkg 版本、EXE 名、Artifact 名）；分支触发仍为 `1.3.6-2918`；**每次构建独立 tag `headless-latest-<run_id>`** |
+| `.github/workflows/docker_release.yml`                              | 修改 | 镜像 tag 取 `server/package.json` 版本（当前 `1.3.6-2919`） |
 
 ---
 
@@ -198,8 +198,8 @@ process.on('exit', function () {
 **命令行**:
 
 ```powershell
-FUXA-1.3.6-2918-win-x64.exe              # 默认端口 1881
-FUXA-1.3.6-2918-win-x64.exe -p 1882      # 指定端口
+FUXA-1.3.6-2919-win-x64.exe              # 默认端口 1881
+FUXA-1.3.6-2919-win-x64.exe -p 1882      # 指定端口
 ```
 
 #### 开发调试守护脚本
@@ -692,6 +692,64 @@ GH="C:/Program Files/GitHub CLI/gh.exe"
 > 🔴 **别把「拉新代码」误解成「重做定制」**：196 条定制里绝大多数是历史 cherry-pick 的小改，rebase 会自动跟随。真正要手解的冲突集中在 `server/runtime/devices/s7/index.js`、`server/api/projects/index.js`、`server/api/recipes/index.js` 三个文件。
 > 🔴 **升级必须开分支试**，不要在 `1.3.6-2918` 上直接 rebase——现场跑的 EXE 就是从它打出来的。
 
+### 2.18.2 合完官方后怎么验：7 项硬判据（2026-11-16 首次全量 merge 实测）
+
+全量 merge 上游 34 条（130 文件、41 冲突）后打出的包，光"能打开、看着正常"是不够的。下面 7 项都有可复现的命令判据，缺一项就可能漏回归：
+
+| # | 验什么 | 判据 |
+|---|---|---|
+| 0 | 包对不对 | `sha256sum` == release digest；`netstat` 确认监听 1882 的 PID 是新进程（pkg 会 fork 子进程，可能残留旧 PID） |
+| 1 | **深层链接标题** | 11 个路径 `/`、`/home`、`/editor`、`/reports`、`/alarms`、`/scripts`、`/recipes`、`/logs`、`/flows`、`/devices`、`/graphics` 的 `<title>` 必须**全部**等于 `brand.title`。这是最容易回归的一项：`main.js` 的 `SHELL_ROUTES` 只列 10 条，其余落到 Node-RED 的 catch-all，那里若用 `res.sendFile(磁盘 index.html)` 就绕过了 `brand.injectBrandToHtml`，标题回退成 `FUXA` |
+| 2 | 项目数据 | 73 views / 12 graphs / 28 charts / 13 scripts / 26 devices / 2 reports；**graphs 与 charts 的 `sources` 全部命中存在的 tag id**（有孤儿源说明改绑/删设备留下的悬空引用） |
+| 3 | 真采集 | `GET /api/getTagValue?ids=[...]` 有 `ts` 且年龄 < 1s；`mq`（现场 MQTT）与 `S7-1500` 都要有。**只有 `enabled:true` 不算数** |
+| 4 | **S7 分组 ReadArea + 位地址** | 4 个 Real 实时刷新；**14 个 Bool 位标签值各不相同**（M100.0=1 / M100.2=0 / M100.3=1 / M101.x=0 / DB4.DBX0.1=1）。这条是 11-16 现场修的两个缺陷的判据：位标签若读成同值或整批 `Result=0x2300000`，说明退回了 `ReadMultiVars` |
+| 5 | 报表中文 | `POST /api/reportBuild {"params":{"id":"r_water_daily"}}` → PDF 里 `BaseFont=BZZZZZ+SimHei`、`FontFile2` 存在、文本流是 CID（`<0001 0002 …>`） |
+| 6 | 无新错误 | `fuxa-err.log` 本次启动后排除 127.0.0.1 模拟从站 `ECONNREFUSED` 与 `S7测试-本地 10061` 后应为空；特别看有没有 `require` 失败 / `nodes7` 加载错误 |
+
+**关于 nodes7 的成对检查**（合上游时的隐蔽坑）：`s7/index.js` 里 `create()` 有一段
+```js
+if (String((data?.property?.driver) || '').toLowerCase() === 'nodes7') {
+    const nodes7Driver = require('./nodes7');
+    return nodes7Driver.create(data, logger, events, manager, runtime);
+}
+```
+取回我们自己的 `_readVars`（`git checkout --ours`）会**连带丢掉这 4 行**（因为它是自动合入进来的），而 `nodes7.js` 文件是新加的、不受 `--ours` 影响。两者必须成对：`grep -n nodes7 server/runtime/devices/s7/index.js` 应有 4 行 + `ls server/runtime/devices/s7/nodes7.js` 应存在。若只丢其中一个，**启动时不报错，切到 nodes7 驱动才炸**。
+
+### 2.18.3 自定义 SVG 控件的 `putValue` / `postValue` 契约（控制台红字的真相）
+
+**症状**：打开主画面，控制台一直刷 `Module (wModule_xxx) or postValue function not found!`，但画面功能完全正常。
+
+**根因**（`client/src/app/gauges/controls/html-image/html-image.component.ts:246-261`）：`bindEvents()` 的进入条件是
+
+```ts
+if (ga.type === propertyWidgetType && ga.property.scriptContent && ga.property.varsToBind?.length) {
+    if (window[scriptContent.moduleId]?.['postValue']) { /* 包装成写回回调 */ }
+    else { console.error(`Module (${scriptContent.moduleId}) or postValue function not found!`); }
+}
+```
+
+判据是 **`varsToBind` 非空**，而不是"这个控件会不会写回 PLC"。而 `_pc_*` / `_pn_*` / `_pb_*` 这些**控件自身属性**（背景色、边框宽度、圆角、显示秒）也都会进 `varsToBind`，于是**纯展示控件（数字时钟、水位计）照样触发检查**，而它们只导出了 `putValue`，于是每帧刷红字。
+
+**为什么功能不受影响**：往控件推值走的是另一条独立判断——`updateValue` 里 `if (window[moduleId]['putValue']) { putValue(name, sig.value) }`，跟 `postValue` 无关。所以这是**噪声，不是故障**。
+
+**修法（最小、不动代码、不用重打包）**：在 `scriptContent.content` 的导出行后面补空实现。项目内 114 个控件就是这个写法：
+
+```js
+// 放在 `wModule_xxx.putValue = putValue;` 之后
+function postValue(id, value) { return; }   // 只读控件不写回任何变量
+wModule_xxx.postValue = postValue;
+```
+
+**落地姿势**：`POST /api/projectData {cmd:'set-view', data:完整 view 对象}`（**整体替换**，先用 `GET /api/project` 拿最新内存态，别用缓存快照）。脚本 `batch/fix-widget-postvalue.cjs`（`dry-run` / `--apply` / `--verify`，幂等，已含 postValue 自动跳过）。
+
+**验收必须双口径 + 断言"只有目标 item 变"**：
+
+1. `GET /api/project` 回读：目标控件 `function postValue` 与 `.postValue =` 都在，`items` 总数不变（124）
+2. 对全部 item 逐个算 sha1，除目标外**意外变更数必须为 0**——这是"没搞坏别的 122 个控件"的证据
+3. 直读 `data/_appdata/project.fuxap.db` 的 `views` 表（一视图一行、没有 id 列、`value` 是 JSON 字符串）确认落盘
+
+> ⚠️ **别拿这个当打包问题追**：它不在 EXE 里，改 EXE 无用、重打包也无用。同类误判还有 `/reports` 页面的删除按钮返回 404——那是 `!fs.existsSync(filePath)` 分支的正确响应（"文件本就不存在"），不是新包回归。
+
 ---
 
 ## 三、构建与部署
@@ -745,14 +803,14 @@ robocopy "client\dist" "fuxa-headless\client\dist" /E /NFL /NDL
 Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
 
 # Step 3: 打包
-pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.6-2918-win-x64.exe
+pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.6-2919-win-x64.exe
 ```
 
 ### 3.3 测试验证
 
 ```powershell
 # 启动
-.\artifacts\FUXA-1.3.6-2918-win-x64.exe -p 1882
+.\artifacts\FUXA-1.3.6-2919-win-x64.exe -p 1882
 
 # 访问 http://127.0.0.1:1882/
 ```
@@ -947,7 +1005,7 @@ curl.exe -fL --retry 10 -H "Authorization: token $token" -H "Accept: application
 
 ```powershell
 $token = gh auth token
-# 1) 找 artifact（zip，约 100 MB；名字 FUXA-1.3.6-2918-win-x64）
+# 1) 找 artifact（zip，约 100 MB；名字 FUXA-1.3.6-2919-win-x64）
 gh api "repos/jingshui127/FUXA-Tecon/actions/runs/$rid/artifacts" --jq '.artifacts[]|{id,name,size_in_bytes}'
 # 2) 只取 302 的 Location（gh api 会自动跟随，必须用 curl 拿头）
 $loc = (curl.exe -sS -k -D - -o NUL -H "Authorization: Bearer $token" `

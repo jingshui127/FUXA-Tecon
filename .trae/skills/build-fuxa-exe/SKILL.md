@@ -1,11 +1,11 @@
 ---
 name: "build-fuxa-exe"
-description: "Builds the ordinary FUXA 1.3.5-2918 Headless Windows EXE. Invoke when asked to package or build the FUXA EXE."
+description: "Builds the ordinary FUXA 1.3.6-2919 Headless Windows EXE. Invoke when asked to package or build the FUXA EXE."
 ---
 
 # 构建普通版 Headless EXE
 
-普通版当前版本为 `1.3.5-2918`。唯一正式 Windows 产物为 `artifacts/FUXA-1.3.5-2918-win-x64.exe`。
+普通版当前版本为 `1.3.6-2919`。唯一正式 Windows 产物为 `artifacts/FUXA-1.3.6-2919-win-x64.exe`。
 
 ## 前提
 
@@ -20,7 +20,7 @@ description: "Builds the ordinary FUXA 1.3.5-2918 Headless Windows EXE. Invoke w
 $ErrorActionPreference = 'Stop'
 $root = (Get-Location).Path
 $inputDir = Join-Path $root 'fuxa-headless'
-$artifact = Join-Path $root 'artifacts\FUXA-1.3.5-2918-win-x64.exe'
+$artifact = Join-Path $root 'artifacts\FUXA-1.3.6-2919-win-x64.exe'
 
 npm install --no-audit --no-fund --directory=./server
 npm install --no-audit --no-fund --directory=./client
@@ -37,7 +37,7 @@ Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -F
 @'
 {
   "name": "fuxa-headless",
-  "version": "1.3.5-2918",
+  "version": "1.3.6-2919",
   "bin": "main.js",
   "pkg": {
     "assets": ["server/**/*", "client/dist/**/*"],
@@ -70,7 +70,7 @@ Invoke-WebRequest 'http://127.0.0.1:2899/' -UseBasicParsing
 Stop-Process -Id $p.Id -Force
 ```
 
-确认日志包含 `FUXA V.1.3.5-2918`、`FUXA started!` 和 `WebServer is running`。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
+确认日志包含 `FUXA V.1.3.6-2919`、`FUXA started!` 和 `WebServer is running`。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
 
 ## 原生模块验证
 
@@ -84,19 +84,19 @@ node -e "console.log(require('modbus-serial').name || 'modbus-serial loaded'); c
 
 ## 首选：GitHub Actions 云端构建
 
-本地打包通常不需要跑——**push 到 `1.3.5-2918` 即自动构建**（`headless_packaging.yml`，约 6 分钟，Actions 现场 `npm run build` 出 dist 再 pkg）。
+本地打包通常不需要跑——**push 到 `1.3.6-2918` 即自动构建**（`headless_packaging.yml`，约 6 分钟，Actions 现场 `npm run build` 出 dist 再 pkg）。
 
 ```powershell
-git push private 1.3.5-2918
-gh run list --repo jingshui127/FUXA-Tecon --branch 1.3.5-2918 --limit 3
+git push origin 1.3.6-2918
+gh run list --repo jingshui127/FUXA-Tecon --branch 1.3.6-2918 --limit 3
 gh run watch <run_id> --repo jingshui127/FUXA-Tecon --interval 15
 ```
 
-产物：Release `headless-latest-<run_id>` 下的 `FUXA-1.3.5-2918-win-x64.exe`（约 283 MB，`Brotli` 压缩）。
+产物：Release `headless-latest-<run_id>` 下的 `FUXA-1.3.6-2919-win-x64.exe`（约 309 MiB，`Brotli` 压缩）。
 
 ### 下载产物（国内必须分段并行）
 
-单连接约 130 KB/s，283MB 会卡死。用 8 线程 Range 并行 + 拼接，并**校验最终字节数 == 资产 `size`**：
+单连接约 130 KB/s，309 MiB 会卡死。用 8 线程 Range 并行 + 拼接，并**校验最终字节数 == 资产 `size`**：
 
 ```powershell
 $tag = 'headless-latest-<run_id>'

@@ -11,7 +11,7 @@ description: "FUXA 项目维护知识库：版本线、硬约束、GitHub Action
 
 | 版本 | 分支 | 本地目录 | 说明 |
 |---|---|---|---|
-| 普通版 | `1.3.5-2918` | `c:\Users\13971\Downloads\FUXA-master` | 开源版定制，remote 名 `private` |
+| 普通版 | `1.3.6-2919` | `E:\FUXA-all\FUXA-Tecon-Normal` | 开源版定制，remote 名 `origin` |
 | PRO 版 | `1.3.4-PRO` | `D:\FUXA\FUXApro最新版\` | 商业版，文档与配置不同 |
 
 - 上游原版仓库：`https://github.com/frangoteam/FUXA`（仅参考，不直接同步）
@@ -21,6 +21,7 @@ description: "FUXA 项目维护知识库：版本线、硬约束、GitHub Action
 
 | 上游版本 | 时间 | 合并提交 | 备注 |
 |---|---|---|---|
+| v1.3.6 正式版（tag `56f97035`，5 提交） | 2026-11-20 | `ec7d6067` | 调度任务持久化对账 #2775、取消登录误弹、初始视图空 viewName #2772 |
 | v1.3.5 正式版（tag `cf0a44c7`，50 提交） | 2026-10-22 | `8a111469` | 安全加固 #2598、DAQ 作用域隔离 #2604/#2606、S7 Bool 写入 #2579、中文翻译 #2601 |
 | 官方 master（75 提交） | 2026-10-07 | `d3694928` | 反向代理、报警权限、输入验证 |
 
@@ -71,26 +72,26 @@ description: "FUXA 项目维护知识库：版本线、硬约束、GitHub Action
 
 ## 正常 EXE 指标
 
-- 产物：`artifacts/FUXA-1.3.5-2918-win-x64.exe`
+- 产物：`artifacts/FUXA-1.3.6-2919-win-x64.exe`
 - **正常体积约 268 MB**（含全部通讯插件）。若构建产物小于 100 MB，说明打包流程错误（大概率漏了 node_modules）。
 - pkg target：`node18-win-x64`，压缩用 `Brotli`（与上游一致）。
 - 不使用 `publicPackages`（全部 bundle 进 EXE，避免原生模块加载问题）。
 
 ## GitHub Actions 构建（云端）
 
-- Workflow：`.github/workflows/headless_packaging.yml`（分支 `1.3.5-2918`）
-- 触发：push 到 `1.3.5-2918`（路径过滤：`server/**`、`client/src/**`、`app/headless/**`、workflow 自身）或 `workflow_dispatch` 手动
-- 手动触发：`gh workflow run headless_packaging.yml --repo jingshui127/FUXA-Tecon --ref 1.3.5-2918`
+- Workflow：`.github/workflows/headless_packaging.yml`（分支 `1.3.6-2918`）
+- 触发：push 到 `1.3.6-2918`（路径过滤：`server/**`、`client/src/**`、`app/headless/**`、workflow 自身）或 `workflow_dispatch` 手动
+- 手动触发：`gh workflow run headless_packaging.yml --repo jingshui127/FUXA-Tecon --ref 1.3.6-2918`
 - 查看 run：`gh run list --repo jingshui127/FUXA-Tecon --workflow headless_packaging.yml --limit 5`
 
 ### 产物位置（构建成功后）
 
 1. **Release**（永久）：每次构建独立 tag `headless-latest-<run_id>`
    ```
-   https://github.com/jingshui127/FUXA-Tecon/releases/download/headless-latest-<run_id>/FUXA-1.3.5-2918-win-x64.exe
+   https://github.com/jingshui127/FUXA-Tecon/releases/download/headless-latest-<run_id>/FUXA-1.3.6-2919-win-x64.exe
    ```
    查询：`gh api /repos/jingshui127/FUXA-Tecon/releases --jq '.[].tag_name'`
-2. **Artifact**（90 天）：Actions run 页面 `FUXA-1.3.5-2918-win-x64`
+2. **Artifact**（90 天）：Actions run 页面 `FUXA-1.3.6-2919-win-x64`
 
 ## 已知陷阱
 
@@ -116,4 +117,4 @@ description: "FUXA 项目维护知识库：版本线、硬约束、GitHub Action
 ## 提交规范
 
 - 只提交目标文件，不要 `git add -A`（工作区常有大量历史删除状态）。
-- 提交后推送：`git push private 1.3.5-2918`。
+- 提交后推送：`git push origin 1.3.6-2918`。

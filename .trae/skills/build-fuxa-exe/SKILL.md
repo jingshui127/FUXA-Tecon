@@ -83,6 +83,14 @@ Stop-Process -Id $r.ProcessId -Force
 
 确认 `<testDir>\data\_logs\fuxa.log` 包含 `FUXA V.1.3.6-2919`、`FUXA started!` 和 `WebServer is running`。**不要用 `/api/version` 校验版本**：它固定返回 `"1.0.0"`（`server/api/index.js:30` 硬编码的 API 规范版本）。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
 
+**复用真实工程数据做升级测试时**，复制来的 `data/_appdata/mysettings.json` 会持久化上一实例的绝对路径、端口和 pkg 快照路径，必须先清理，否则新版 EXE 会卡在启动（CPU 不涨、端口不监听），或反过来读写原实例目录：
+
+```powershell
+node -e "const fs=require('fs');const f=process.argv[1];const j=JSON.parse(fs.readFileSync(f,'utf8'));['logDir','dbDir','workDir','packageDir','settingsFile','uploadFileDir','imagesFileDir','widgetsFileDir','reportsDir','userSettingsFile','webcamSnapShotsDir','appDir','httpStatic'].forEach(k=>delete j[k]);j.uiPort=2997;j.serverPort=2997;fs.writeFileSync(f,JSON.stringify(j,null,4));" '<testDir>\data\_appdata\mysettings.json'
+```
+
+`appDir`/`httpStatic` 是 `C:\snapshot\...` 形式的 pkg 内部路径，跨版本复用必然失效。另外复制 data 后登录密码仍取自 `users.fuxap.db`，不要假设为默认 `123456`；查不到密码时可用 DAQ 归档日志和 `FUXA started!` 判断项目是否加载成功。
+
 ## 原生模块验证
 
 ```powershell

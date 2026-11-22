@@ -45,7 +45,7 @@ Invoke-WebRequest http://127.0.0.1:1881/api/version -UseBasicParsing
 Invoke-WebRequest http://127.0.0.1:1881/ -UseBasicParsing
 ```
 
-`/api/version` 应返回 HTTP 200，并包含版本 `1.3.6-2919`。Node-RED 启用时还应检查 `/nodered` 和 `/dashboard` 的实际响应。
+启动日志应包含 `FUXA V.1.3.6-2919`。注意 `/api/version` 返回的是 API 规范版本 `"1.0.0"`，不是应用版本，不能用于此校验。Node-RED 启用时还应检查 `/nodered` 和 `/dashboard` 的实际响应。
 
 ## 构建成功标准
 

@@ -65,7 +65,6 @@ Write-Host "Build Complete: $($exe.FullName) ($([math]::Round($exe.Length / 1MB,
 ```powershell
 $p = Start-Process $artifact -ArgumentList '-p','2899' -PassThru
 Start-Sleep 20
-Invoke-WebRequest 'http://127.0.0.1:2899/api/version' -UseBasicParsing
 Invoke-WebRequest 'http://127.0.0.1:2899/' -UseBasicParsing
 Stop-Process -Id $p.Id -Force
 ```

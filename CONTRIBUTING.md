@@ -45,7 +45,7 @@ Please ensure you follow the coding standards used through-out the existing code
 
 源码构建输入仅允许来自 `server`、`client/dist` 和 `app/headless`。`data/`、`_appdata/`、`_db/`、`_logs/`、`_images/`、`_widgets/`、`_reports/`、`_certificates/` 是运行时数据或资源，不得清空、覆盖或作为构建输入。`node_modules/`、`fuxa-headless/`、`fuxa-headless-local/`、`artifacts/`、日志和 EXE 均不得提交。
 
-健康检查使用 `GET /api/version`，并确认返回版本为 `1.3.6-2919`。使用 S7 或 Modbus 时，必须实际启动服务并验证 `node-snap7`、`modbus-serial` 能被运行时加载。
+健康检查确认启动日志出现 `FUXA V.1.3.6-2919`。注意 `GET /api/version` 返回的是 **API 规范版本** `"1.0.0"`（`server/api/index.js:30` 硬编码），不能用来校验应用版本。使用 S7 或 Modbus 时，必须实际启动服务并验证 `node-snap7`、`modbus-serial` 能被运行时加载。
 
 ## 🚫 Do NOT Commit Build Artifacts
 

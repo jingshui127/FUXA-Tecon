@@ -60,16 +60,28 @@ Write-Host "Build Complete: $($exe.FullName) ($([math]::Round($exe.Length / 1MB,
 
 ## 启动验证
 
-使用独立测试端口启动，避免影响现有服务：
+**EXE 参数约束（`app/headless/headless-guardian.js` 实测）**：
+
+- 端口只认 `-p <port>` / `--port <port>`（空格分隔）。`--port=2899` 会被静默忽略，回落默认 1881；若 1881 已被占用则进程直接退出。
+- **没有 `--userDir`**：数据目录硬编码为 `EXE 同级的 data/`，无法通过参数隔离。
+- 所以测试必须**先把 EXE 复制到独立目录**，否则它会直接读写现有实例的 SQLite（日志报 `EBUSY: rename`，并发写有损坏风险）。
+- `Start-Process` 启动的进程会随 shell 会话结束被杀；需要常驻时用 WMI。
 
 ```powershell
-$p = Start-Process $artifact -ArgumentList '-p','2899' -PassThru
-Start-Sleep 20
+$testDir = 'E:\FUXA-all\exe-test'
+New-Item -ItemType Directory -Force $testDir | Out-Null
+Copy-Item $artifact $testDir -Force
+$exe = Join-Path $testDir (Split-Path $artifact -Leaf)
+$r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{
+  CommandLine = '"' + $exe + '" -p 2899'
+  CurrentDirectory = $testDir
+}
+Start-Sleep 30
 Invoke-WebRequest 'http://127.0.0.1:2899/' -UseBasicParsing
-Stop-Process -Id $p.Id -Force
+Stop-Process -Id $r.ProcessId -Force
 ```
 
-确认日志包含 `FUXA V.1.3.6-2919`、`FUXA started!` 和 `WebServer is running`。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
+确认 `<testDir>\data\_logs\fuxa.log` 包含 `FUXA V.1.3.6-2919`、`FUXA started!` 和 `WebServer is running`。**不要用 `/api/version` 校验版本**：它固定返回 `"1.0.0"`（`server/api/index.js:30` 硬编码的 API 规范版本）。Node-RED 启用时确认 `/nodered`、`/dashboard` 可访问且无 `httprequest` ESM SyntaxError。
 
 ## 原生模块验证
 

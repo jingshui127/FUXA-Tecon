@@ -18,8 +18,8 @@
 2. 在 `server` 和 `client` 目录安装依赖。
 3. 由 `server` 的 `postinstall` 自动运行 `scripts/patch-nodered.js`。
 4. 在 `client` 目录执行 `npm run build -- --configuration=production`。
-5. 将 `server`、`client/dist` 和 `app/headless/headless-guardian.js` 同步到临时输入目录。
-6. 使用 `@yao-pkg/pkg` 和 `node18-win-x64` 生成正式产物。
+5. 将 `server`、`client/dist` 和 `app/headless/headless-entry.js` 同步到临时输入目录。
+6. 使用 `@yao-pkg/pkg` 和 `node24-win-x64` 生成正式产物。
 7. 启动 EXE，检查日志和 HTTP 健康入口。
 8. 实际加载并验证 `modbus-serial`、`node-snap7`。
 

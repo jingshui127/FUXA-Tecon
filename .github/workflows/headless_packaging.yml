@@ -27,7 +27,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '24'
 
     - name: Install build dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -90,7 +90,7 @@ jobs:
     - name: Build Standalone Binaries (Headless)
       run: |
         New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-        pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.6-2919-win-x64.exe
+        pkg fuxa-headless/package.json --targets node24-win-x64 --output artifacts/FUXA-1.3.6-2919-win-x64.exe
       shell: powershell
 
     - name: Upload artifact

@@ -1,7 +1,7 @@
 /**
  * FUXA Server Guard
  * 从 server/ 目录运行时的守护进程：node guard.js -p 1886
- * 崩溃后自动重启，与 EXE Guardian 模式行为一致
+ * 崩溃后自动重启，与 EXE 独立入口的干净退出行为互补（开发调试用）
  */
 const { spawn } = require('child_process');
 const path = require('path');

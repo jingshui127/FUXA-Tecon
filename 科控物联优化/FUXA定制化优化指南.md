@@ -25,7 +25,7 @@
 
 | 文件                                                                  | 操作 | 用途                                                                              |
 | --------------------------------------------------------------------- | :--: | --------------------------------------------------------------------------------- |
-| `app/headless/headless-guardian.js`                                 | 新建 | 双模式 EXE 入口（Guardian + Server）                                              |
+| `app/headless/headless-entry.js`                                 | 新建 | 独立 EXE 入口（fork 启动 server，便携数据目录在 exe 旁，SIGINT/SIGTERM 干净退出） |
 | `server/guard.js`                                                   | 新建 | 开发调试用守护脚本 (`node guard.js -p PORT`)                                    |
 | `.github/workflows/headless_packaging.yml`                          | 修改 | GitHub Actions 自动构建配置                                                       |
 | `server/runtime/devices/s7/index.js` | 修改 | `disconnect()` try-catch 保护 + `resolve(true)` + exit handler（见 2.1）；正则版断连重连可剔（上游 `cf9f47c8` 已有结构化判断，见 2.18）；合并读优化见 2.1.1 |
@@ -175,38 +175,29 @@ process.on('exit', function () {
 >
 > 该文件是 S7 通用知识的**唯一真相源**，普通版与 PRO 版共用；本指南只保留本版差异。后续 S7 相关内容请直接更新该文件。
 
-### 2.2 守护进程（Guardian）
+### 2.2 EXE 独立入口
 
-#### EXE 双模式入口
+#### EXE 独立入口
 
-**文件**: `app/headless/headless-guardian.js`
+**文件**: `app/headless/headless-entry.js`
 
-同一个 EXE，两种运行模式：
+同一个 EXE，单一模式运行：
 
-- **Guardian 模式**（默认）：监控子进程，崩溃自动重启
-- **Server 模式**（`FUXA_SERVER=1`）：实际运行 FUXA，由 Guardian spawn 启动
+- **Server 模式**（默认）：fork 启动 FUXA server，数据目录在 EXE 旁 `exeDir/data`
+- **干净退出**：收到 SIGINT/SIGTERM 时 kill server 子进程后 `exit(0)`，无残留进程
 
-**守护参数**:
+**端口指定**（entry 版不传 CLI 参数，走 `PORT` 环境变量）：
 
-| 参数         | 值                                                  |
-| ------------ | --------------------------------------------------- |
-| 最大重启次数 | 1000                                                |
-| 重启间隔     | 2 秒                                                |
-| 快速重启上限 | 5 次/10 秒（超过则冷却 10 秒）                      |
-| 端口传递     | 通过环境变量`PORT`（pkg EXE 不支持 CLI 参数透传） |
-
-**命令行**:
-
-```powershell
-FUXA-1.3.6-2919-win-x64.exe              # 默认端口 1881
-FUXA-1.3.6-2919-win-x64.exe -p 1882      # 指定端口
-```
+| 方式 | 示例 |
+| ---- | ---- |
+| 环境变量 `PORT` | `$env:PORT='1882'; .\FUXA-1.3.6-2919-win-x64.exe` |
+| 默认 | 1881 |
 
 #### 开发调试守护脚本
 
 **文件**: `server/guard.js`
 
-为 `node main.js` 开发模式提供守护，与 EXE Guardian 行为一致：
+为 `node main.js` 开发模式提供崩溃自动重启守护，与 EXE 独立入口的干净退出互补：
 
 ```powershell
 cd server
@@ -618,7 +609,7 @@ docDefinition.defaultStyle = Object.assign({}, docDefinition.defaultStyle, { fon
 
 ### 2.18 上游是否已修复我们的定制：核查基线与比对方法（2026-11-16）
 
-**为什么要单独记**：我们的定制分两类。一类是官方产品路线上根本不会有的需求（中文 PDF、现场 EXE 视图免重启、国内地图源、品牌化、Guardian），只能自己维护；另一类是**真 bug**（S7 崩、配方 400），官方会自己修。同步时必须能区分，否则重复打补丁，冲突越滚越大。
+**为什么要单独记**：我们的定制分两类。一类是官方产品路线上根本不会有的需求（中文 PDF、现场 EXE 视图免重启、国内地图源、品牌化），只能自己维护；另一类是**真 bug**（S7 崩、配方 400），官方会自己修。同步时必须能区分，否则重复打补丁，冲突越滚越大。
 
 **查法**（本机到 `github.com` 的 git smart-HTTP 被代理阻断，`git fetch upstream` 会 502，改走 `gh api` 的 REST 通道）：
 
@@ -650,7 +641,7 @@ GH="C:/Program Files/GitHub CLI/gh.exe"
 | | fontkit 懒加载 | `api/resources/index.js:10` 仍顶层 `require('fontkit')` |
 | | 地图源 | `maps-view.component.ts:80` 仍 `tile.openstreetmap.org`，无 `.fr/hot`、无 `bc` 子域 |
 | | 配方模板优先 | `api/recipes/index.js` 的 `getRecipeData` 无模板判定 |
-| ⚪ 官方不会有 | Guardian / `guard.js`、`brand.js`、`patch-nodered.js`、`headless_packaging.yml` | 工程层定制，上游无对应实现 |
+| ⚪ 官方不会有 | `guard.js`、`brand.js`、`patch-nodered.js`、`headless_packaging.yml` | 工程层定制，上游无对应实现 |
 
 **S7 真实差异只有 3 处**（`git diff -w --ignore-blank-lines 1e68854c 1.3.6-2918 -- server/runtime/devices/s7/index.js` 实测）：
 
@@ -800,10 +791,10 @@ cd client && npm run build -- --configuration=production
 # Step 2: 同步文件
 robocopy "server" "fuxa-headless\server" /E /NFL /NDL /XD .git
 robocopy "client\dist" "fuxa-headless\client\dist" /E /NFL /NDL
-Copy-Item "app\headless\headless-guardian.js" "fuxa-headless\main.js" -Force
+Copy-Item "app\headless\headless-entry.js" "fuxa-headless\main.js" -Force
 
 # Step 3: 打包
-pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/FUXA-1.3.6-2919-win-x64.exe
+pkg fuxa-headless/package.json --targets node24-win-x64 --output artifacts/FUXA-1.3.6-2919-win-x64.exe
 ```
 
 ### 3.3 测试验证
@@ -901,9 +892,9 @@ $loc = (curl.exe -sI -H "Authorization: token $token" -H "Accept: application/oc
 
 ### 4.4 pkg 端口参数崩溃
 
-**症状**: `Cannot find module '-p'`，Guardian 反复重启。
+**症状**: `Cannot find module '-p'`，进程启动失败。
 
-**根因**: pkg 打包的 EXE 将第一个 CLI 参数当作 JS 文件路径。
+**根因**: pkg 打包的 EXE 将第一个 CLI 参数当作 JS 文件路径（entry 版不传 CLI 参数）。
 
 **修复**: 改为环境变量 `PORT` 传递端口。
 
@@ -937,7 +928,7 @@ $loc = (curl.exe -sI -H "Authorization: token $token" -H "Accept: application/oc
 | ------------------- | :----: | --------------------------------------------------- |
 | 修复 main.js SIGINT |   低   | 移除同步`process.exit()`，等 `FUXA.stop()` 完成 |
 | 进程组              |   中   | Windows 使用进程组确保连带终止                      |
-| 父进程监控          |   中   | Guardian 检测 Agent.exe 存活状态                    |
+| 父进程监控          |   中   | entry 版 fork 的 server 子进程连带终止             |
 
 > 此问题仅在使用第三方守护程序时出现，直接运行 EXE 或 `node guard.js` 不受影响。
 

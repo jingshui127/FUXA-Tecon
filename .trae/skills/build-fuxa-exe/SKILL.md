@@ -32,7 +32,7 @@ New-Item (Join-Path $inputDir 'server') -ItemType Directory | Out-Null
 New-Item (Join-Path $inputDir 'client\dist') -ItemType Directory | Out-Null
 robocopy 'server' (Join-Path $inputDir 'server') /E /NFL /NDL /XD .git _appdata _db _logs _images _widgets _reports _certificates
 robocopy 'client\dist' (Join-Path $inputDir 'client\dist') /E /NFL /NDL
-Copy-Item 'app\headless\headless-guardian.js' (Join-Path $inputDir 'main.js') -Force
+Copy-Item 'app\headless\headless-entry.js' (Join-Path $inputDir 'main.js') -Force
 
 @'
 {
@@ -60,9 +60,9 @@ Write-Host "Build Complete: $($exe.FullName) ($([math]::Round($exe.Length / 1MB,
 
 ## 启动验证
 
-**EXE 参数约束（`app/headless/headless-guardian.js` 实测）**：
+**EXE 参数约束（`app/headless/headless-entry.js` 实测）**：
 
-- 端口只认 `-p <port>` / `--port <port>`（空格分隔）。`--port=2899` 会被静默忽略，回落默认 1881；若 1881 已被占用则进程直接退出。
+- 端口只认环境变量 `PORT`（entry 版不传 CLI 参数，`fork(serverPath, [])`）。`-p 2899` 会被当作 JS 路径导致 `Cannot find module '-p'`，回落默认 1881。
 - **没有 `--userDir`**：数据目录硬编码为 `EXE 同级的 data/`，无法通过参数隔离。
 - 所以测试必须**先把 EXE 复制到独立目录**，否则它会直接读写现有实例的 SQLite（日志报 `EBUSY: rename`，并发写有损坏风险）。
 - `Start-Process` 启动的进程会随 shell 会话结束被杀；需要常驻时用 WMI。

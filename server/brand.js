@@ -81,7 +81,7 @@ function mapCustomizationToBrand(cfg) {
  * 优先普通版原生 brand.json，其次兼容 PRO 版 customization/config.json。
  * 都找不到时回退 FUXA 默认品牌。
  */
-function loadBrand(userDir) {
+function loadBrand(userDir, options = {}) {
     const dirs = collectDirs(userDir);
 
     let brandFile = null;
@@ -124,6 +124,21 @@ function loadBrand(userDir) {
             console.log(`[Brand] Loaded customization config from ${customizationFile}: name="${brandConfig.name}"`);
         } catch (err) {
             console.warn(`[Brand] Failed to parse customization config, using defaults: ${err.message}`);
+            brandConfig = { ...DEFAULT_BRAND };
+        }
+        return brandConfig;
+    }
+
+    // 打包内置品牌（client/dist/assets/customization/config.json）：外部目录没有配置时回退
+    if (options.builtInConfigFile && fs.existsSync(options.builtInConfigFile)) {
+        const builtInFile = options.builtInConfigFile;
+        brandDataDir = path.dirname(path.dirname(builtInFile));
+        try {
+            const parsed = JSON.parse(fs.readFileSync(builtInFile, 'utf8'));
+            brandConfig = { ...DEFAULT_BRAND, ...mapCustomizationToBrand(parsed) };
+            console.log(`[Brand] Loaded built-in customization config from ${builtInFile}: name="${brandConfig.name}"`);
+        } catch (err) {
+            console.warn(`[Brand] Failed to parse built-in customization config, using defaults: ${err.message}`);
             brandConfig = { ...DEFAULT_BRAND };
         }
         return brandConfig;

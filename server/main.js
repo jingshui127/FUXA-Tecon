@@ -16,6 +16,7 @@ var events = require("./runtime/events").create();
 const FUXA = require('./fuxa.js');
 const runtime = require('./runtime');
 const authJwt = require('./api/jwt-helper');
+const brand = require('./brand');
 
 const BASE_PATH = (process.env.BASE_PATH || '').replace(/\/+$/, '');
 
@@ -132,6 +133,10 @@ try {
     }
     process.exit();
 }
+// 加载品牌：外部 customization/config.json（或 brand.json）优先，缺失时回退 EXE 内置品牌
+brand.loadBrand(rootDir, {
+    builtInConfigFile: path.join(__dirname, '..', 'client', 'dist', 'assets', 'customization', 'config.json')
+});
 // Read user settings
 try {
     var userSettingsFile = path.join(workDir, 'mysettings.json');
@@ -305,19 +310,25 @@ settings.httpStatic = settings.httpStatic || www;
 let indexHtmlCache = null;
 const rewrittenAssets = new Map(); // request path -> { content, type }
 
-if (BASE_PATH) {
-    // here, if a BASE_PATH is set, I push it in the base html, at runtime
-    try {
-        const indexHtmlPath = path.join(settings.httpStatic, 'index.html');
+// Prepare index.html with brand + base path injection
+try {
+    const indexHtmlPath = path.join(settings.httpStatic, 'index.html');
+    let htmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
+    // 品牌注入始终执行（标题/favicon/加载占位/logo/页脚）
+    htmlContent = brand.injectBrandToHtml(htmlContent);
+    if (BASE_PATH) {
         const desiredBase = (BASE_PATH || '') + '/';
-        const withBase = fs.readFileSync(indexHtmlPath, 'utf8')
-            .replace(/<base href="[^"]*"\s*\/?>/, `<base href="${desiredBase}" />`);
+        htmlContent = htmlContent.replace(/<base href="[^"]*"\s*\/?>/, `<base href="${desiredBase}" />`);
         // hook for any runtime code that wants BASE_PATH without parsing <base>
         const bootstrap = `<script>window.__BASE_PATH__=${JSON.stringify(BASE_PATH)};</script>`;
-        indexHtmlCache = withBase.replace('</head>', `${bootstrap}</head>`);
-    } catch (err) {
-        logger.warn('Could not prepare <base href> from BASE_PATH, if working under a reverse proxy check your BASE_PATH env var: ' + err);
+        htmlContent = htmlContent.replace('</head>', `${bootstrap}</head>`);
     }
+    indexHtmlCache = htmlContent;
+} catch (err) {
+    logger.warn('Could not prepare index.html (brand/base path injection): ' + err);
+}
+
+if (BASE_PATH) {
     // and edit the references in .css/.js files, in memory only
     const collectAssets = (dir) => {
         for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -472,6 +483,31 @@ const SHELL_ROUTES = [
 ];
 
 app.use(allowCrossDomain);
+
+// Public brand API (no auth required - needed for login page branding)
+app.get(BASE_PATH + '/api/brand', (req, res) => {
+    res.json(brand.getBrand());
+});
+
+// Serve brand logo statically if configured
+app.get(BASE_PATH + '/api/brand/logo', (req, res) => {
+    const logoPath = brand.getLogoPath();
+    if (logoPath) {
+        res.sendFile(logoPath);
+    } else {
+        res.status(404).end();
+    }
+});
+
+// Serve brand favicon statically if configured
+app.get(BASE_PATH + '/api/brand/favicon', (req, res) => {
+    const faviconPath = brand.getFaviconPath();
+    if (faviconPath) {
+        res.sendFile(faviconPath);
+    } else {
+        res.status(404).end();
+    }
+});
 
 if (indexHtmlCache) {
     const serveShell = (req, res) => res.type('html').send(indexHtmlCache);

@@ -30,7 +30,11 @@ function start() {
     return new Promise(function (resolve, reject) {
         // runtime.logger.info('devices.start-all (' + Object.keys(activeDevices).length + ')', true);
         for (var id in activeDevices) {
-            activeDevices[id].start();
+            try {
+                activeDevices[id].start();
+            } catch (err) {
+                runtime.logger.error('devices.start: ' + id + ' - ' + (err && err.message ? err.message : err));
+            }
         }
         resolve();
         wokingStatus = null;

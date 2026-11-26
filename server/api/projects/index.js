@@ -99,24 +99,37 @@ module.exports = {
                 res.status(401).json({error:"unauthorized_error", message: "Unauthorized!"});
                 runtime.logger.error("api post project: Unauthorized");
             } else {
-                const oldProject = runtime.project.getRawProject();
-                runtime.project.setProject(req.body).then(function(data) {
-                    // 异步重启：先返回成功响应，再判断是否需要重启
-                    res.end();
+                // 仅视图/文本/HMI布局修改时无需重启运行时（设备保持连接）
+                var needsRestart = true;
+                var newProject = req.body;
 
-                    const newProject = req.body;
-                    // 比较 devices/server/alarms/notifications 四个关键字段
-                    const fieldsToCheck = ['devices', 'server', 'alarms', 'notifications'];
-                    const needRestart = fieldsToCheck.some(f => {
-                        return JSON.stringify(oldProject[f]) !== JSON.stringify(newProject[f]);
-                    });
-
-                    if (needRestart) {
-                        runtime.logger.info('api post project: device/server/alarm change detected, restarting...');
-                        runtime.restart(true);
-                    } else {
-                        runtime.logger.info('api post project: views-only change, skip restart');
+                runtime.project.getRawProject().then(function (oldProject) {
+                    if (oldProject) {
+                        var restartKeys = ['devices', 'server', 'alarms', 'notifications'];
+                        var changed = false;
+                        for (var ki = 0; ki < restartKeys.length; ki++) {
+                            var key = restartKeys[ki];
+                            var oldPart = oldProject[key] ?? null;
+                            var newPart = newProject[key] ?? null;
+                            if (JSON.stringify(oldPart) !== JSON.stringify(newPart)) {
+                                changed = true;
+                                break;
+                            }
+                        }
+                        if (!changed) {
+                            needsRestart = false;
+                            runtime.logger.info('api post project: views-only change, skip restart');
+                        }
                     }
+                    return runtime.project.setProject(newProject);
+                }).then(function (data) {
+                    if (needsRestart) {
+                        runtime.logger.info('api post project: device/server/alarm change detected, restarting...');
+                        return runtime.restart(true).then(function () {
+                            res.json({ success: true });
+                        });
+                    }
+                    res.json({ success: true });
                 }).catch(function(err) {
                     if (err && err.code) {
                         res.status(400).json({error:err.code, message: err.message});

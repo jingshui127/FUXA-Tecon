@@ -782,12 +782,14 @@ function getProjectView(viewId, userPermission) {
  * Used for comparing before/after save to determine if restart is needed
  */
 function getRawProject() {
-    try {
-        return JSON.parse(JSON.stringify(data));
-    } catch (err) {
-        logger.error('project.getRawProject: ' + err.message);
-        return {};
-    }
+    return new Promise(function (resolve) {
+        try {
+            resolve(JSON.parse(JSON.stringify(data)));
+        } catch (err) {
+            logger.error('project.getRawProject: ' + err.message);
+            resolve({});
+        }
+    });
 }
 
 /**

@@ -3,8 +3,17 @@ const path = require('node:path');
 const fs = require('fs').promises;
 const os = require('os');
 const { fork } = require('child_process');
-const { pathToFileURL } = require('url');
 const http = require('http');
+let buildBranding = {};
+try {
+    buildBranding = require('./electron-branding.generated.json');
+} catch (error) {
+    // Development runs may not have a generated branding file.
+}
+const packagedAppName = app.getName();
+const appName = process.env.FUXA_APP_NAME?.trim() || buildBranding.appName ||
+    (packagedAppName?.toLowerCase() === 'fuxa' ? 'FUXA' : packagedAppName) || 'FUXA';
+app.setName(appName);
 
 // Global server process
 let serverProcess = null;
@@ -16,27 +25,27 @@ function getRecentProjectsMenuItems(win) {
     try {
         const config = loadConfigSync();
         const recentProjects = config.recentProjects || [];
-        
+
         if (recentProjects.length === 0) {
             return [{ label: 'No recent projects', enabled: false }];
         }
-        
+
         return recentProjects.map(project => ({
             label: `${project.name} (${project.path})`,
             click: async () => {
                 try {
                     const dataDir = path.join(project.path, 'data');
                     const appDataDir = path.join(dataDir, '_appdata');
-                    
+
                     // Validate the project still exists and is valid
                     await fs.access(dataDir);
                     await fs.access(appDataDir);
-                    
+
                     await restartApp(dataDir, win);
                 } catch (error) {
                     console.error('Failed to open recent project:', error.message);
-                    await dialog.showErrorBox('FUXA Error', `Failed to open project: ${error.message}`);
-                    
+                    await dialog.showErrorBox(`${appName} Error`, `Failed to open project: ${error.message}`);
+
                     // Remove invalid project from recent list
                     removeRecentProject(project.path);
                 }
@@ -144,9 +153,9 @@ async function createNewProject(parentWin) {
     try {
         const { canceled, filePath } = await dialog.showSaveDialog(parentWin, {
             title: 'Create New Project',
-            defaultPath: path.join(os.homedir(), 'FUXA-Project'),
+            defaultPath: path.join(os.homedir(), 'Project'),
             buttonLabel: 'Create',
-            filters: [{ name: 'FUXA Project', extensions: [''] }],
+            filters: [{ name: 'Project', extensions: [''] }],
             properties: ['createDirectory']
         });
         if (canceled || !filePath) return null;
@@ -160,7 +169,7 @@ async function createNewProject(parentWin) {
         return dataDir;
     } catch (error) {
         console.error('Error:', error.message);
-        await dialog.showErrorBox('FUXA Error', `Failed to create project: ${error.message}`);
+        await dialog.showErrorBox(`${appName} Error`, `Failed to create project: ${error.message}`);
         return null;
     }
 }
@@ -189,16 +198,16 @@ async function openProject(parentWin) {
         const projectDir = filePaths[0];
         const dataDir = path.join(projectDir, 'data');
         const appDataDir = path.join(dataDir, '_appdata');
-        
+
         // Check if this is a valid FUXA project
         await fs.access(dataDir);
         await fs.access(appDataDir);
-        
+
         await addRecentProject(projectDir, path.basename(projectDir));
         return dataDir;
     } catch (error) {
         console.error('Failed to open project:', error.message);
-        await dialog.showErrorBox('FUXA Error', `Invalid project: The selected folder is not a valid FUXA project. Please select a folder containing a 'data/_appdata' directory.`);
+        await dialog.showErrorBox(`${appName} Error`, `Invalid project: The selected folder is not a valid APP project. Please select a folder containing a 'data/_appdata' directory.`);
         return null;
     }
 }
@@ -224,7 +233,7 @@ async function createProjectSelectionWindow(parentWin, errorMessage = null, rece
 
     // Load the HTML file
     const htmlPath = getHtmlPath('project-selection.html');
-    win.loadURL(pathToFileURL(htmlPath).href);
+    win.loadFile(htmlPath, { query: { appName } });
 
     win.once('ready-to-show', () => {
         win.show();
@@ -321,7 +330,7 @@ async function openSettingsWindow(parentWin) {
 
     // Load the HTML file
     const htmlPath = getHtmlPath('settings.html');
-    settingsWin.loadURL(pathToFileURL(htmlPath).href);
+    settingsWin.loadFile(htmlPath, { query: { appName } });
 
     settingsWin.show();
 }
@@ -346,6 +355,7 @@ function getServerPath() {
 // Create main window
 function createWindow() {
     const win = new BrowserWindow({
+        title: appName,
         width: 1024,
         height: 768,
         webPreferences: {
@@ -357,7 +367,7 @@ function createWindow() {
 
     // Load initial loading screen
     const htmlPath = getHtmlPath('loading.html');
-    win.loadURL(pathToFileURL(htmlPath).href);
+    win.loadFile(htmlPath, { query: { appName } });
 
     // Check fullscreen settings
     loadConfig().then(config => {
@@ -366,7 +376,7 @@ function createWindow() {
         } else {
             win.maximize(); // Start window maximized only if not in fullscreen
         }
-        
+
         // Apply right-click and text selection settings
         if (config.rightClick && !config.rightClick.enabled) {
             applyRightClickSettings(win, false);
@@ -392,7 +402,7 @@ function createWindow() {
                             }
                         } catch (error) {
                             console.error('New project failed:', error.message);
-                            await dialog.showErrorBox('FUXA Error', `New project failed: ${error.message}`);
+                            await dialog.showErrorBox(`${appName} Error`, `New project failed: ${error.message}`);
                         }
                     }
                 },
@@ -409,7 +419,7 @@ function createWindow() {
                                     }
                                 } catch (error) {
                                     console.error('Open project failed:', error.message);
-                                    await dialog.showErrorBox('FUXA Error', `Open project failed: ${error.message}`);
+                                    await dialog.showErrorBox(`${appName} Error`, `Open project failed: ${error.message}`);
                                 }
                             }
                         },
@@ -447,7 +457,7 @@ function createWindow() {
             label: 'Help',
             submenu: [
                 {
-                    label: 'FUXA Documentation',
+                    label: `${appName} Documentation`,
                     click: () => shell.openExternal('https://github.com/frangoteam/FUXA/wiki')
                 }
             ]
@@ -519,7 +529,7 @@ async function restartApp(dataDir, win) {
         console.log(`Server started with dataDir: ${dataDir}`);
     } catch (error) {
         console.error(`Failed to start server: ${error.message}`);
-        await dialog.showErrorBox('FUXA Error', `Failed to start server: ${error.message}`);
+        await dialog.showErrorBox(`${appName} Error`, `Failed to start server: ${error.message}`);
         return;
     }
 
@@ -527,8 +537,8 @@ async function restartApp(dataDir, win) {
     try {
         // Update loading screen to show FUXA is loading
         const htmlPath = getHtmlPath('loading.html');
-        await win.loadURL(pathToFileURL(htmlPath).href);
-        
+        await win.loadFile(htmlPath, { query: { appName } });
+
         // Update loading text
         await win.webContents.executeJavaScript(`
             document.getElementById('loadingText').textContent = 'Starting server...';
@@ -541,13 +551,13 @@ async function restartApp(dataDir, win) {
 
         await win.loadURL('http://localhost:1881');
         console.log('UI loaded: http://localhost:1881');
-        
+
         // Store reference to main window for settings
         mainWindow = win;
-        
+
         // Apply settings after page loads
         const config = await loadConfig();
-        
+
         if (config.rightClick && !config.rightClick.enabled) {
             applyRightClickSettings(win, false);
         }
@@ -556,7 +566,7 @@ async function restartApp(dataDir, win) {
         }
     } catch (error) {
         console.error('Failed to load UI:', error.message);
-        await dialog.showErrorBox('FUXA Error', `Failed to load UI: ${error.message}`);
+        await dialog.showErrorBox(`${appName} Error`, `Failed to load UI: ${error.message}`);
     }
 }
 
@@ -599,12 +609,12 @@ ipcMain.handle('set-right-click-settings', async (event, settings) => {
     const config = await loadConfig();
     config.rightClick = settings;
     await saveConfig(config);
-    
+
     // Apply to main window if it exists
     if (mainWindow) {
         applyRightClickSettings(mainWindow, settings.enabled);
     }
-    
+
     return true;
 });
 
@@ -617,12 +627,12 @@ ipcMain.handle('set-text-selection-settings', async (event, settings) => {
     const config = await loadConfig();
     config.textSelection = settings;
     await saveConfig(config);
-    
+
     // Apply to main window if it exists
     if (mainWindow) {
         applyTextSelectionSettings(mainWindow, settings.enabled);
     }
-    
+
     return true;
 });
 
@@ -692,7 +702,7 @@ app.whenReady().then(async () => {
     let dataDir = dataDirArg ? dataDirArg.split('=')[1] : null;
 
     const win = createWindow();
-    
+
     if (!dataDir) {
         // Check auto-start settings
         const config = await loadConfig();

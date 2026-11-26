@@ -2,7 +2,7 @@
 
 ## 构建与发布
 
-- 当前唯一 Headless 产物是 `artifacts\fuxa-pro-headless.exe`，目标必须是 Node.js 18 `node18-win-x64`。
+- 当前唯一 Headless 产物是 `artifacts\fuxa-pro-headless.exe`，目标必须是 Node.js 22 `node22-win-x64`。
 - 打包前必须按顺序执行源码同步、`npm ci --omit=dev --no-audit --no-fund`、`patch-nodered.js`、pkg；不能只复制文件后直接打包。
 - `patch-nodered.js` 必须定位 `fuxa-headless\node_modules`，修复 Node-RED registry 以及 Node-RED 4.1.10 telemetry 对 `got` 的加载；旧版 `21-httprequest.js` 只能作为兼容性可选目标，不能假设必然存在。依赖缺失、模式不匹配或验证失败时退出非零。
 - 构建日志必须出现 `[patch-nodered] verification passed` 和 `[BUILD] SUCCESS`；只有看到 `[BUILD] SUCCESS` 才能认为 `artifacts\fuxa-pro-headless.exe` 已被本次构建覆盖。启动日志不得出现 `Cannot find package 'got'`。
@@ -17,7 +17,7 @@
 - `deploy\headless\package.json` 与 `package-lock.json` 是 headless 打包描述（含 pkg 配置与依赖清单，无法重建），必须入库；CI 与 `build-and-push.ps1` 在打包前把它们复制到 `fuxa-headless\`。不允许把这些文件放在被忽略的 `fuxa-headless\` 内，否则 CI 从干净克隆构建会报 `fuxa-headless/package.json is missing`。
 - `fuxa-headless\` 为构建中间目录，必须整体忽略，不得纳入版本控制；`node_modules\`、`artifacts\`、`FuxaPro已部署版\` 同样不入库。入库判定标准是「换一台干净机器能否可靠重建」：能重建的不入库，不可重建的（Agent.exe、GBK 批处理母本、`client\dist`）必须入库。
 - 重新打包只覆盖 `artifacts\fuxa-pro-headless.exe`；不得删除、清空或重新初始化已有的 `artifacts\data\`。该目录保存数据库、Node-RED flows、插件和业务资源。
-- `odbc@2.4.9` 与 `chartjs-node-canvas@3.2.0`（依赖 `canvas@2.11.2`）属于原生插件，必须在目标 Node.js 18 / Windows x64 环境中预置并验证后再交付；不能只验证 npm 包下载成功。它们安装在 `<EXE目录>\data\_pkg\runtime\node_modules\`，**不在构建仓库内，CI 无法验证**，必须在部署机上执行 `node scripts\verify-native-plugins.js`，看到 `[verify-native] ALL CHECKS PASSED` 才算通过。
+- `odbc@2.4.9` 与 `chartjs-node-canvas@3.2.0`（依赖 `canvas@2.11.2`）属于原生插件，必须在目标 Node.js 22 / Windows x64 环境中预置并验证后再交付；不能只验证 npm 包下载成功。它们安装在 `<EXE目录>\data\_pkg\runtime\node_modules\`，**不在构建仓库内，CI 无法验证**，必须在部署机上执行 `node scripts\verify-native-plugins.js`，看到 `[verify-native] ALL CHECKS PASSED` 才算通过。网页安装插件使用部署机系统 npm 编译，部署机 Node 主版本必须与 EXE 内置运行时一致（Node 22，ABI 127）；`node-snap7` 等 NAN 模块换版本后必须重装。
 - 原生插件验证必须至少通过 `require('odbc')` 和 `chartjs-node-canvas` 实际图表渲染；缺少 `canvas.node` 或其 DLL 时不得宣称插件可用。
 
 ## Node-RED 验证
@@ -32,8 +32,8 @@
 - Node-RED 流程保存于 `<EXE目录>\data\_appdata\node-red\flows.json`。
 - 品牌资源内置路径为 `client\dist\assets\customization\`（打入 EXE 快照，打包后不可修改），内置默认品牌为科控物联（`TcScada`）。支持 `<EXE目录>\customization\` 运行时覆盖：外部文件优先、缺失文件回退内置；该目录不在 `data\` 内，迁移时必须单独复制。`docs\customization\` 为回填母本，官方升级覆盖 `client\dist` 后需重新写回。
 - 面向最终用户的 `.bat`（`artifacts\一键安装服务.bat`、`artifacts\一键卸载服务.bat`）必须以 **GBK（代码页 936）编码、CRLF 换行、无 BOM** 保存。这类脚本内部会 `chcp 936`，若文件本身是 UTF-8，cmd 会按 GBK 读文件字节，导致中文全部乱码，并可能把乱码字节当成非法路径报出「文件名、目录名或卷标语法不正确」。不得用编辑器把这类文件另存为 UTF-8；重新生成后须实测回显确认中文正常。
-- 工作分支为 `1.3.5-PRO`，CI 触发分支与 `build-and-push.ps1` 默认分支必须保持一致。
-- 当前操作文档只描述 1.3.5-PRO 和 `fuxa-pro-headless.exe`；旧版本方案必须明确标记为历史，不得混入当前命令。
+- 工作分支为 `1.3.6-PRO`，CI 触发分支与 `build-and-push.ps1` 默认分支必须保持一致。
+- 当前操作文档只描述 1.3.6-PRO 和 `fuxa-pro-headless.exe`；旧版本方案必须明确标记为历史，不得混入当前命令。
 - 当前项目不保留旧版本排查文档；可执行规则以本文件和 build skill 为准。
 
 ## 版本升级（换官方源码）

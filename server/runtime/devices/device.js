@@ -20,6 +20,7 @@ var GpioClient = require('./gpio');
 var WebCamClient = require('./webcam');
 var MELSECclient = require('./melsec');
 var REDISclient = require('./redis');
+var SNMPclient = require('./snmp');
 
 const path = require('path');
 const utils = require('../utils');
@@ -133,6 +134,11 @@ function Device(data, runtime) {
             return null;
         }
         comm = REDISclient.create(data, logger, events, manager, runtime);
+    } else if (data.type === DeviceEnum.SNMP) {
+        if (!SNMPclient) {
+            return null;
+        }
+        comm = SNMPclient.create(data, logger, events, manager, runtime);
     }
     // else if (data.type === DeviceEnum.Template) {
     //     if (!TEMPLATEclient) {
@@ -321,9 +327,13 @@ function Device(data, runtime) {
     /**
      * Call Device to set Tag value
      */
-    this.setValue = async function (tagId, value, fnc) {
-        var fncvalue = this.getValueInFunction(this.getValue(tagId), value, fnc);
-        await comm.setValue(tagId, value);
+    this.setValue = async function (id, value, fnc) {
+        const currentTag = this.getValue(id);
+        const currentValue = currentTag && typeof currentTag === 'object'
+            ? currentTag.value
+            : currentTag;
+        const fncvalue = this.getValueInFunction(currentValue, value, fnc);
+        await comm.setValue(id, fncvalue);
         return this;
     }
 
@@ -373,6 +383,12 @@ function Device(data, runtime) {
                 });
             } else if (data.type === DeviceEnum.REDIS) {
                 comm.browse(path, callback).then(function (result) {
+                    resolve(result);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            } else if (data.type === DeviceEnum.SNMP) {
+                comm.browse(path).then(function (result) {
                     resolve(result);
                 }).catch(function (err) {
                     reject(err);
@@ -450,7 +466,7 @@ function Device(data, runtime) {
      * Bind function to ask project stored property (security)
      */
     this.bindGetProperty = function (fnc) {
-        if (data.type === DeviceEnum.OPCUA || data.type === DeviceEnum.MQTTclient || data.type === DeviceEnum.ODBC) {
+        if (data.type === DeviceEnum.OPCUA || data.type === DeviceEnum.MQTTclient || data.type === DeviceEnum.ODBC || data.type === DeviceEnum.SNMP) {
             comm.bindGetProperty(fnc);
         }
     }
@@ -628,6 +644,8 @@ function loadPlugin(type, module) {
         MELSECclient = require(module);
     } else if (type === DeviceEnum.REDIS) {
         REDISclient = require(module);
+    } else if (type === DeviceEnum.SNMP) {
+        SNMPclient = require(module);
     }
 }
 
@@ -680,6 +698,7 @@ var DeviceEnum = {
     WebCam: 'WebCam',
     MELSEC: 'MELSEC',
     REDIS: 'REDIS',
+    SNMP: 'SNMP',
     // Template: 'template'
 }
 

@@ -1,6 +1,6 @@
 <script type="text/javascript">
     RED.nodes.registerType('set-view',{
-        category: 'FUXA',
+        category: 'APP',
         color: '#a6bbcf',
         defaults: {
             name: {value:""},
@@ -37,8 +37,8 @@
 </script>
 
 <script type="text/x-red" data-help-name="set-view">
-    <p>Set the current view in FUXA.</p>
+    <p>Set the current view in APP.</p>
     <p>The result is set to <code>msg.payload</code>.</p>
-    <p>Use <code>msg.viewName</code> to override the configured view name.</p>
-    <p><strong>Available views:</strong> Dropdown populated from FUXA project views.</p>
+    <p>A non-empty <code>msg.viewName</code> overrides the configured view name. Otherwise, the configured name is used.</p>
+    <p><strong>Available views:</strong> Dropdown populated from APP project views.</p>
 </script>

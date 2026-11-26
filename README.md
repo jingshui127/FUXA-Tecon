@@ -1,8 +1,8 @@
-# FUXA PRO 1.3.5-PRO
+# FUXA PRO 1.3.6-PRO
 
 ## 当前标准运行方式
 
-当前 Windows Headless 版本是 **FUXA PRO 1.3.5-PRO**，正式产物为：
+当前 Windows Headless 版本是 **FUXA PRO 1.3.6-PRO**，正式产物为：
 
 ```text
 artifacts\fuxa-pro-headless.exe
@@ -46,7 +46,7 @@ d:\FUXA\FUXApro最新版
 [BUILD] SUCCESS
 ```
 
-构建目标为 Node.js 18 `node18-win-x64`，pkg 压缩为 `None`。详细规则见：
+构建目标为 Node.js 22 `node22-win-x64`，pkg 压缩为 `None`。详细规则见：
 
 - [.trae/rules/fuxa-pro-build.md](.trae/rules/fuxa-pro-build.md)
 - [.trae/skills/build-fuxa-exe/SKILL.md](.trae/skills/build-fuxa-exe/SKILL.md)

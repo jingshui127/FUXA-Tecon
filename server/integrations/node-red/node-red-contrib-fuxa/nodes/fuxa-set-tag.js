@@ -11,7 +11,7 @@ module.exports = function(RED) {
 
             try {
                 if (!fuxa) {
-                    node.error("FUXA not available in functionGlobalContext", msg);
+                    node.error("APP not available in functionGlobalContext", msg);
                     return done && done();
                 }
 

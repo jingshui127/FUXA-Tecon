@@ -50,5 +50,10 @@
         <h1>FUXA</h1>
         <p id="loadingText">Loading...</p>
     </div>
+    <script>
+        const appName = new URLSearchParams(window.location.search).get('appName') || 'FUXA';
+        document.title = `${appName} - Loading...`;
+        document.querySelector('h1').textContent = appName;
+    </script>
 </body>
 </html>

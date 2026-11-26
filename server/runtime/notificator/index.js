@@ -30,9 +30,12 @@ function NotificatorManager(_runtime) {
     this.start = function () {
         return new Promise(function (resolve, reject) {
             logger.info('notificator check start', true);
-            notifyCheckStatus = setInterval(function () {
-                _checkStatus();     // check in 20 seconds interval
-            }, 20000);
+            if (!notifyCheckStatus) {
+                notifyCheckStatus = setInterval(function () {
+                    _checkStatus();     // check in 20 seconds interval
+                }, 20000);
+            }
+            resolve();
         });
     }
 
@@ -273,7 +276,7 @@ function NotificatorManager(_runtime) {
                         alarmsStatus[alr.type]++;
                     }
                 });
-                Object.keys(alarmsStatus).forEach(async stkey => {
+                Promise.allSettled(Object.keys(alarmsStatus).map(async stkey => {
                     var isActive = alarmsStatus[stkey];
                     var wasActive = subscriptionStatus[stkey];
                     var statusChanged = !wasActive && isActive || (wasActive && isActive && subscriptionStatus[stkey] < alarmsStatus[stkey]);
@@ -294,7 +297,7 @@ function NotificatorManager(_runtime) {
                                 if (notification.checkToNotify(time, statusChanged)) {
                                     try {
                                         // get alarms summary in text format
-                                        var alarmsSummary = runtime.alarmsMgr.getAlarmsString(stkey) || 'FUXA Alarms Error!';
+                                        var alarmsSummary = runtime.alarmsMgr.getAlarmsString(stkey) || 'APP Alarms Error!';
 
                                         const onSuccess = () => {
                                             notification.setNotify(time, stkey);
@@ -342,8 +345,7 @@ function NotificatorManager(_runtime) {
                         }
                     }
                     subscriptionStatus[stkey] = isActive;
-                });
-                resolve(true);
+                })).then(() => resolve(true), reject);
             } catch (err) {
                 reject(err);
             }
@@ -358,18 +360,22 @@ function NotificatorManager(_runtime) {
         return new Promise(async function (resolve, reject) {
             try {
                 var smtpServer = smtp || settings.smtp;
-                if (smtpServer && smtpServer.host && smtpServer.port && smtpServer.username && smtpServer.password) {
+                if (smtpServer && smtpServer.host && smtpServer.port) {
                     // the settings form saves the port as text ("465")
                     const port = Number(smtpServer.port);
-                    const transporter = nodemailer.createTransport({
+                    const transportOptions = {
                         host: smtpServer.host,
                         port: port,
-                        secure: port === 465, // true for 465, false for other ports
-                        auth: {
+                        secure: port === 465 // true for 465, false for other ports
+                    };
+                    // relays that authenticate by IP address have no credentials
+                    if (smtpServer.username) {
+                        transportOptions.auth = {
                             user: smtpServer.username,
                             pass: smtpServer.password
-                        }
-                    });
+                        };
+                    }
+                    const transporter = nodemailer.createTransport(transportOptions);
                     if (!msg.from || smtpServer.mailsender) {
                         msg.from = smtpServer.mailsender || smtpServer.username;
                     }

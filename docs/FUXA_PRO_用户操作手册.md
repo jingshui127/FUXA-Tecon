@@ -4,7 +4,7 @@
 
 FUXA PRO 是基于 FUXA 开源 SCADA 系统的科控物联定制版，支持西门子 S7 PLC 通讯，适用于工业自动化监控场景。
 
-**版本信息：** 1.3.5-PRO  
+**版本信息：** 1.3.6-PRO  
 **技术支持：** QQ 2492123056
 
 ---
@@ -28,7 +28,7 @@ Release 中的 `fuxa-pro-headless.exe` 即最终交付文件，无需解压。
 
 | Artifacts 产物名称            | 说明                                |
 | ------------------------- | --------------------------------- |
-| `fuxa-pro-headless-1.3.5` | 压缩包，解压后得到 `fuxa-pro-headless.exe` |
+| `fuxa-pro-headless-1.3.6` | 压缩包，解压后得到 `fuxa-pro-headless.exe` |
 
 Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数跟随仓库设置（当前上限为 3 天），过期后需重新运行工作流。Release 中的产物名称固定为 `fuxa-pro-headless.exe`，始终为最新构建且长期保留，正式交付建议使用 Release。
 
@@ -65,7 +65,7 @@ Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数�
 [Server] FUXA PRO Headless Server starting...
 [Server] Data directory: <EXE目录>\data
 [Server] Node.js: v18.20.8
-2026-10-23T02:47:35.979Z [INF]  TcScada V.1.3.5-2968
+2026-11-26T02:47:35.979Z [INF]  TcScada V.1.3.6-3098
 2026-10-23T02:47:36.310Z [INF]  TcScada started!
 2026-10-23T02:47:38.006Z [INF]  [Node-RED] Started at /flows (dashboard: /dashboard)
 2026-10-23T02:47:38.011Z [INF]  WebServer is running http://127.0.0.1:1881/
@@ -197,7 +197,7 @@ taskkill /PID <进程ID> /F
 
 | 项目   | 要求                                                                                           |
 | ---- | -------------------------------------------------------------------------------------------- |
-| 操作系统 | Windows 10 / 11 / Server 2016+（x64）。Node.js 18 官方支持 Windows 8.1 及以上，本项目仅在 Windows 10 / 11 实测 |
+| 操作系统 | Windows 10 / 11 / Server 2016+（x64）。Node.js 22 要求 Windows 10 及以上，本项目仅在 Windows 10 / 11 实测 |
 | 架构   | x64                                                                                          |
 | 内存   | 建议 2GB 以上；上千数据点的大规模项目请参考 [Modbus/MQTT 大规模项目准备指南](Modbus_MQTT_大规模项目准备指南.md)（建议 8GB）           |
 | 磁盘   | EXE 本体约 315MB，另需为 `data\` 预留空间，建议 ≥2GB 可用空间                                                  |

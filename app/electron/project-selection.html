@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FUXA Project Selection</title>
+    <title>Project Selection</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -125,7 +125,7 @@
     </style>
 </head>
 <body>
-    <h2>Select a FUXA Project</h2>
+    <h2>Select a Project</h2>
     <div id="errorMessage" class="error-message"></div>
     <div class="table-container">
         <table id="projectsTable">
@@ -147,6 +147,9 @@
         <button class="cancel" onclick="window.electronAPI.cancel()">Cancel</button>
     </div>
     <script>
+        const appName = new URLSearchParams(window.location.search).get('appName') || 'FUXA';
+        document.title = `${appName} Project Selection`;
+        document.querySelector('h2').textContent = `Select a ${appName} Project`;
         const { ipcRenderer } = require('electron');
         window.electronAPI = {
             // Auto-start settings

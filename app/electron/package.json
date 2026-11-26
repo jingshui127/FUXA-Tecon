@@ -5,8 +5,8 @@
     "main": "main.js",
     "scripts": {
         "start": "electron .",
-        "package": "electron-builder --dir",
-        "dist": "electron-builder",
+        "package": "node build-package.js --dir",
+        "dist": "node build-package.js",
         "postinstall": "electron-builder install-app-deps"
     },
     "author": "frangoteam",
@@ -23,10 +23,10 @@
     },
     "build": {
         "appId": "com.frangoteam.fuxa",
-        "productName": "My App",
         "asar": false,
         "files": [
             "main.js",
+            "electron-branding.generated.json",
             "*.html",
             "server/**/*",
             "client/dist/**/*",
@@ -34,7 +34,6 @@
         ],
         "extraResources": [
             { "from": "../../server", "to": "app/server", "filter": ["**/*"] },
-            { "from": "../../server/node_modules", "to": "app/server/node_modules", "filter": ["**/*"] },
             { "from": "../../client/dist", "to": "app/client/dist" }
         ],
         "directories": {
@@ -75,8 +74,6 @@
             "allowToChangeInstallationDirectory": true,
             "createDesktopShortcut": true,
             "createStartMenuShortcut": true,
-            "shortcutName": "My App",
-            "uninstallDisplayName": "My App",
             "deleteAppDataOnUninstall": false
           }
     }

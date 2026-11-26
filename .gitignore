@@ -63,6 +63,7 @@ build/
 fuxa-headless/fuxa-headless/
 fuxa-headless/server/_pkg/
 fuxa-headless/data/
+deploy/headless/_pkg/
 Data/_pkg/
 v1.3.3-extract/
 v1.3.4-extract/

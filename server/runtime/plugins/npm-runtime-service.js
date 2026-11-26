@@ -74,7 +74,7 @@ function createRuntimeService(options) {
                 name: 'fuxa-plugin-runtime',
                 private: true,
                 version: '1.0.0',
-                description: 'FUXA isolated runtime for dynamic npm packages',
+                description: 'APP isolated runtime for dynamic npm packages',
             }, null, 2));
         }
         runtimeRequire = createRequire(runtimePackageJson);

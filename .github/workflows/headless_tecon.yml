@@ -3,7 +3,7 @@ name: Build FUXA PRO Headless EXE
 on:
   workflow_dispatch:
   push:
-    branches: [1.3.5-PRO]
+    branches: [1.3.6-PRO]
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -24,18 +24,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js 18
+    - name: Setup Node.js 22
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22'
 
     - name: Cache npm downloads
       uses: actions/cache@v4
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-node18-npm-${{ hashFiles('server/package-lock.json') }}
+        key: ${{ runner.os }}-node22-npm-${{ hashFiles('server/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-node18-npm-
+          ${{ runner.os }}-node22-npm-
 
     - name: Install server dependencies
       run: |
@@ -82,19 +82,19 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.pkg-cache
-        key: ${{ runner.os }}-pkg-node18-${{ hashFiles('server/package-lock.json') }}
+        key: ${{ runner.os }}-pkg-node22-${{ hashFiles('server/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-pkg-node18-
+          ${{ runner.os }}-pkg-node22-
 
     - name: Install yao-pkg
-      run: npm install -g @yao-pkg/pkg@6.13.1
+      run: npm install -g @yao-pkg/pkg@6.19.0
 
-    - name: Build Standalone EXE (Node.js 18, no compression)
+    - name: Build Standalone EXE (Node.js 22, no compression)
       shell: pwsh
-      run: |
+      run: |-
         $ErrorActionPreference = 'Stop'
         $sw = [Diagnostics.Stopwatch]::StartNew()
-        pkg fuxa-headless/package.json --targets node18-win-x64 --output artifacts/fuxa-pro-headless.exe --public-packages "bindings,@serialport/bindings-cpp"
+        pkg fuxa-headless/package.json --targets node22-win-x64 --output artifacts/fuxa-pro-headless.exe --public-packages "bindings,@serialport/bindings-cpp"
         $sw.Stop()
         Write-Host "pkg build elapsed: $([math]::Round($sw.Elapsed.TotalMinutes, 2)) minutes"
 
@@ -119,8 +119,8 @@ jobs:
         Get-ChildItem 'deploy\Config' -Filter '*.config' | ForEach-Object {
           Copy-Item $_.FullName (Join-Path $stage 'Config') -Force
         }
-        Compress-Archive -Path (Join-Path $stage '*') -DestinationPath 'artifacts\fuxa-pro-agent-1.3.5.zip' -Force
-        Write-Host 'Assembled deploy package: artifacts\fuxa-pro-agent-1.3.5.zip'
+        Compress-Archive -Path (Join-Path $stage '*') -DestinationPath 'artifacts\fuxa-pro-agent-1.3.6.zip' -Force
+        Write-Host 'Assembled deploy package: artifacts\fuxa-pro-agent-1.3.6.zip'
 
     - name: List built files
       shell: bash
@@ -129,10 +129,10 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: fuxa-pro-headless-1.3.5
+        name: fuxa-pro-headless-1.3.6
         path: |
           artifacts/fuxa-pro-headless.exe
-          artifacts/fuxa-pro-agent-1.3.5.zip
+          artifacts/fuxa-pro-agent-1.3.6.zip
 
     - name: Start EXE health check
       shell: powershell
@@ -184,12 +184,12 @@ jobs:
           4. 数据自动保存在 exe 同目录的 `data\` 文件夹下
 
           ### 特性
-          - 内置 Node.js 18 运行时，无需安装任何环境
+          - 内置 Node.js 22 运行时，无需安装任何环境
           - Guardian 守护模式：崩溃后 2 秒自动重启
           - 便携式部署：整个目录可拷贝到其他电脑直接使用
           - 支持 S7/Modbus/MQTT/OPC UA 等全部设备驱动
         files: |
           artifacts/fuxa-pro-headless.exe
-          artifacts/fuxa-pro-agent-1.3.5.zip
+          artifacts/fuxa-pro-agent-1.3.6.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -9,6 +9,14 @@ const deviceUtils = require('../device-utils');
 
 const MAX_MIX_ITEM = 20;
 
+function _parseConnectionIndex(value) {
+    if (typeof value === 'string') {
+        if (!/^\d+$/.test(value.trim())) return NaN;
+        value = Number(value);
+    }
+    return Number.isSafeInteger(value) && value >= 0 ? value : NaN;
+}
+
 function S7client(_data, _logger, _events, _runtime) {
 
     var runtime = _runtime;
@@ -34,11 +42,14 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     this.connect = function () {
         return new Promise(function (resolve, reject) {
-            if (data.property && data.property.rack >= 0 && data.property.slot >= 0) {
+            // rack/slot can be strings (e.g. after a CSV import), node-snap7 requires numbers
+            const rack = data.property ? _parseConnectionIndex(data.property.rack) : NaN;
+            const slot = data.property ? _parseConnectionIndex(data.property.slot) : NaN;
+            if (data.property && rack >= 0 && slot >= 0) {
                 try {
                     if ((!s7client || !s7client.Connected()) && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
-                        s7client.ConnectTo(data.property.address, data.property.rack, data.property.slot, function (err) {
+                        s7client.ConnectTo(data.property.address, rack, slot, function (err) {
                             if (err) {
                                 logger.error(`'${data.name}' connect failed! ${err}`);
                                 _emitStatus('connect-error');
@@ -116,7 +127,15 @@ function S7client(_data, _logger, _events, _runtime) {
                 })
             }
             try {
-                const result = await Promise.all(readVarsfnc);
+                // Native reads may still be running after another read rejects.
+                // Settle the whole batch before disconnecting or starting a new poll.
+                const settled = await Promise.allSettled(readVarsfnc);
+                const failures = settled.filter(read => read.status === 'rejected');
+                if (failures.length) {
+                    const transportFailure = failures.find(read => read.reason && read.reason.connectionLost);
+                    throw (transportFailure || failures[0]).reason;
+                }
+                const result = settled.map(read => read.value);
                 _checkWorking(false);
                 if (result.length) {
                     let varsValueChanged = await _updateVarsValue(result);
@@ -137,15 +156,16 @@ function S7client(_data, _logger, _events, _runtime) {
                 } else {
                     logger.error(`'${data.name}' _readVars error! ${reason}`);
                 }
-                _checkWorking(false);
-                // 连接类错误（PLC 主动断开、网络中断等）时，native 库的 Connected() 标志不会自动更新，
-                // 导致上层 device.js checkStatus() 检测不到断连、不触发重连。
-                // 这里主动断开以重置 native 状态，让 checkStatus() 下次轮询时触发重连。
-                const msg = reason ? (reason.message || String(reason)) : '';
-                if (/connection|reset|refused|timeout|broken pipe|peer/i.test(msg)) {
-                    logger.warn(`'${data.name}' connection lost detected, forcing disconnect to allow reconnect`);
-                    this.disconnect().catch(() => {});
+                if (reason && reason.connectionLost) {
+                    try {
+                        s7client.Disconnect();
+                    } catch (err) {
+                        logger.error(`'${data.name}' disconnect after read error failed! ${err}`);
+                    }
+                    _emitStatus('connect-error');
+                    _clearVarsValue();
                 }
+                _checkWorking(false);
             };
         } else {
             _emitStatus('connect-busy');
@@ -244,16 +264,17 @@ function S7client(_data, _logger, _events, _runtime) {
         if (item) {
             value = await deviceUtils.tagRawCalculator(value, data.tags[sigid], runtime);
             item.value = value;
-            _writeVars([item], (item instanceof DbItem)).then(result => {
+            return _writeVars([item], (item instanceof DbItem)).then(result => {
                 logger.info(`'${data.name}' setValue(${sigid}, ${value})`, true, true);
+                return true;
             }, reason => {
                 if (reason && reason.stack) {
                     logger.error(`'${data.name}' _writeVars error! ${reason.stack}`);
                 } else {
                     logger.error(`'${data.name}' _writeVars error! ${reason}`);
                 }
+                return false;
             });
-            return true;
         }
         return false;
     }
@@ -464,7 +485,9 @@ function S7client(_data, _logger, _events, _runtime) {
             try {
                 s7client.DBRead(DBNr, offset, end - offset, (err, res) => {
                     if (err) {
-                        logger.error(`'${data.name}' ${err}: ${_getErr(err)}`, false);
+                        const reason = _getReadErr(err);
+                        logger.error(`'${data.name}' ${err}: ${reason}`, false);
+                        if (reason.connectionLost) return reject(reason);
                     } else {
                         vars.map(v => {
                             let value = null;
@@ -494,33 +517,59 @@ function S7client(_data, _logger, _events, _runtime) {
     var _readVars = function (vars) {
         return new Promise((resolve, reject) => {
             if (!s7client) return reject(new Error('S7 client disconnected'));
-            try {
-                s7client.ReadMultiVars(vars, (err, res) => {
-                    if (err) return reject(_getErr(err));
-                    let errs = [];
-                    res = vars.map((v, i) => {
-                        let value = null;
-                        if (res[i].Result !== 0) {
-                            errs.push(`${v.name} - ${s7client.ErrorText(res[i].Result)}`);
-                        } else {
-                            try {
-                                if (v.type === 'BOOL') {
-                                    value = datatypes['BYTE'].parser(res[i].Data);
-                                } else {
-                                    value = datatypes[v.type].parser(res[i].Data);
-                                }
-                                v.changed = value !== v.value;
-                                v.value = value;
-                                return v;
-                            } catch { }
-                        }
-                    });
-                    if (errs.length) return reject(_getErr(errs));
-                    resolve(vars);
+            // FIX (S7 通讯未完全修复的两处缺陷)：
+            // 1) 位地址错误：_getTagItem 对 M/I/Q 位返回 Start=字节地址，而 ReadMultiVars 的
+            //    S7WLBit 要求 Start 为位地址，导致位标签读错位（写路径 _writeVars 用 Start*8+bit 是对的）。
+            // 2) node-snap7 ReadMultiVars 对多条 BYTE/BOOL/DINT 请求时奇数索引项被 CPU 拒绝
+            //    (Result=0x2300000)，导致 M/I/Q 区含字节/双字标签时批量读失败。
+            // 方案：改为按 (Area, DBNumber) 分组用 ReadArea 整块读最小字节区间，再按偏移解析，
+            //      与 DB 区 _readDB 语义一致（读整字节 + _updateVarsValue 按 bit 提取）。
+            //      同时绕开 ReadMultiVars 的奇数项缺陷，位标签也读到正确位。
+            var groups = {};
+            vars.forEach(v => {
+                var key = (v.Area || 0) + '|' + (v.dbnum || 0);
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(v);
+            });
+            var tasks = Object.keys(groups).map(key => {
+                var items = groups[key];
+                var area = items[0].Area;
+                var dbnr = items[0].dbnum || 0;
+                var minStart = Number.MAX_SAFE_INTEGER;
+                var maxEnd = 0;
+                items.forEach(v => {
+                    var len = (datatypes[v.type] && datatypes[v.type].bytes) ? datatypes[v.type].bytes : 1;
+                    if (v.Start < minStart) minStart = v.Start;
+                    if (maxEnd < v.Start + len) maxEnd = v.Start + len;
                 });
-            } catch (err) {
-                reject(new Error('S7 ReadMultiVars failed: ' + err.message));
-            }
+                var size = maxEnd - minStart;
+                return new Promise((res, rej) => {
+                    try {
+                        s7client.ReadArea(area, dbnr, minStart, size, s7client.S7WLByte, (err, buf) => {
+                            if (err) return rej(_getReadErr(err));
+                            items.forEach(v => {
+                                var off = v.Start - minStart;
+                                var value = null;
+                                try {
+                                    if (v.type === 'BOOL') {
+                                        // 读整字节，由 _updateVarsValue 按 bit 提取
+                                        value = datatypes['BYTE'].parser(buf.slice(off, off + 1));
+                                    } else {
+                                        // 非 BOOL：parser 第二参数是 offset，v.bit 仅 BOOL 有效，不传
+                                        value = datatypes[v.type].parser(buf.slice(off, off + (datatypes[v.type].bytes || 1)));
+                                    }
+                                    v.changed = value !== v.value;
+                                    v.value = value;
+                                } catch (e) { }
+                            });
+                            res();
+                        });
+                    } catch (e) {
+                        rej(_getReadErr(e));
+                    }
+                });
+            });
+            Promise.all(tasks).then(() => resolve(vars), reason => reject(reason));
         });
     }
 
@@ -692,6 +741,14 @@ function S7client(_data, _logger, _events, _runtime) {
         if (Array.isArray(s7err)) return new Error('Errors: ' + s7err.join('; '));
         return new Error(s7client.ErrorText(s7err));
     }
+
+    var _getReadErr = function (s7err) {
+        const reason = _getErr(s7err);
+        // Snap7: TCP uses bits 0-15, ISO bits 16-19; client/S7 errors
+        // occupy the upper bits and do not by themselves invalidate a socket.
+        reason.connectionLost = Number.isInteger(s7err) && (s7err & 0x000FFFFF) !== 0;
+        return reason;
+    }
 }
 
 module.exports = {
@@ -699,6 +756,12 @@ module.exports = {
         // deviceCloseTimeout = settings.deviceCloseTimeout || 15000;
     },
     create: function (data, logger, events, manager, runtime) {
+        // Optional pure-JS driver, selected per device (default stays 'snap7'):
+        //   property: { ..., driver: "nodes7", tsapLocal, tsapRemote, timeout }
+        if (String((data && data.property && data.property.driver) || '').toLowerCase() === 'nodes7') {
+            const nodes7Driver = require('./nodes7');
+            return nodes7Driver.create(data, logger, events, manager, runtime);
+        }
         if (!loadSnap7Lib(manager)) return null;
         return new S7client(data, logger, events, runtime);
     }

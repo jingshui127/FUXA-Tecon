@@ -163,6 +163,9 @@
         <button class="cancel" onclick="window.close()">Cancel</button>
     </div>
     <script>
+        const appName = new URLSearchParams(window.location.search).get('appName') || 'FUXA';
+        document.title = `${appName} Settings`;
+        document.querySelector('h2').textContent = `${appName} Settings`;
         const { ipcRenderer } = require('electron');
         window.electronAPI = {
             // Auto-start settings

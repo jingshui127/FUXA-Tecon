@@ -47,7 +47,7 @@ function S7client(_data, _logger, _events, _runtime) {
             const slot = data.property ? _parseConnectionIndex(data.property.slot) : NaN;
             if (data.property && rack >= 0 && slot >= 0) {
                 try {
-                    if (!s7client.Connected() && _checkWorking(true)) {
+                    if ((!s7client || !s7client.Connected()) && _checkWorking(true)) {
                         logger.info(`'${data.name}' try to connect ${data.property.address}`, true);
                         s7client.ConnectTo(data.property.address, rack, slot, function (err) {
                             if (err) {
@@ -88,7 +88,8 @@ function S7client(_data, _logger, _events, _runtime) {
     this.disconnect = function () {
         return new Promise(function (resolve) {
             _checkWorking(false);
-            if (!s7client.Connected()) {
+            var connected = !!s7client && s7client.Connected();
+            if (!connected) {
                 // 未连接状态，直接跳过 Disconnect 调用（避免对未连接设备浪费 native 资源）
                 _emitStatus('connect-off');
                 _clearVarsValue();
@@ -294,7 +295,7 @@ function S7client(_data, _logger, _events, _runtime) {
      * Don't work if PLC will disconnect
      */
     this.isConnected = function () {
-        return s7client.Connected();
+        return !!s7client && s7client.Connected();
     }
 
     /**
@@ -482,6 +483,7 @@ function S7client(_data, _logger, _events, _runtime) {
     var _readDB = function (DBNr, vars) {
         return new Promise((resolve, reject) => {
             if (vars.length === 0) return resolve([]);
+            if (!s7client) return reject(new Error('S7 client disconnected'));
 
             let end = 0;
             let offset = Number.MAX_SAFE_INTEGER;
@@ -491,27 +493,31 @@ function S7client(_data, _logger, _events, _runtime) {
                     end = v.Start + datatypes[v.type].bytes;
                 }
             });
-            s7client.DBRead(DBNr, offset, end - offset, (err, res) => {
-                if (err) {
-                    const reason = _getReadErr(err);
-                    logger.error(`'${data.name}' ${err}: ${reason}`, false);
-                    if (reason.connectionLost) return reject(reason);
-                } else {
-                    vars.map(v => {
-                        let value = null;
-                        if (v.type === 'BOOL') {
-                            // check the full byte and send all bit if there is a change
-                            value = datatypes['BYTE'].parser(res, v.Start - offset, -1);
-                        } else {
-                            value = datatypes[v.type].parser(res, v.Start - offset, v.bit);
-                        }
-                        v.changed = value !== v.value;
-                        v.value = value;
-                        return v;
-                    });
-                }
-                resolve(vars);
-            });
+            try {
+                s7client.DBRead(DBNr, offset, end - offset, (err, res) => {
+                    if (err) {
+                        const reason = _getReadErr(err);
+                        logger.error(`'${data.name}' ${err}: ${reason}`, false);
+                        if (reason.connectionLost) return reject(reason);
+                    } else {
+                        vars.map(v => {
+                            let value = null;
+                            if (v.type === 'BOOL') {
+                                // check the full byte and send all bit if there is a change
+                                value = datatypes['BYTE'].parser(res, v.Start - offset, -1);
+                            } else {
+                                value = datatypes[v.type].parser(res, v.Start - offset, v.bit);
+                            }
+                            v.changed = value !== v.value;
+                            v.value = value;
+                            return v;
+                        });
+                    }
+                    resolve(vars);
+                });
+            } catch (err) {
+                reject(new Error('S7 DBRead failed: ' + err.message));
+            }
         });
     }
 
@@ -521,6 +527,7 @@ function S7client(_data, _logger, _events, _runtime) {
      */
     var _readVars = function (vars) {
         return new Promise((resolve, reject) => {
+            if (!s7client) return reject(new Error('S7 client disconnected'));
             // FIX (S7 通讯未完全修复的两处缺陷)：
             // 1) 位地址错误：_getTagItem 对 M/I/Q 位返回 Start=字节地址，而 ReadMultiVars 的
             //    S7WLBit 要求 Start 为位地址，导致位标签读错位（写路径 _writeVars 用 Start*8+bit 是对的）。

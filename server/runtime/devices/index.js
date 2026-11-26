@@ -49,10 +49,17 @@ function stop() {
         // runtime.logger.info('devices.stop-all (' + Object.keys(activeDevices).length + ')');
         var deviceStopfnc = [];
         for (var id in activeDevices) {
+            var dev = activeDevices[id];
             try {
-                deviceStopfnc.push(activeDevices[id].stop());
+                var p = dev.stop();
+                if (p && typeof p.catch === 'function') {
+                    p.catch(function (err) {
+                        runtime.logger.error('devices.stop: ' + dev.name + ' - ' + err.message);
+                    });
+                }
+                deviceStopfnc.push(p);
             } catch (err) {
-                runtime.logger.error('devices.stop: ' + err);
+                runtime.logger.error('devices.stop: ' + dev.name + ' - ' + err.message);
             }
         }
         return Promise.all(deviceStopfnc).then(values => {

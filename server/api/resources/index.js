@@ -7,9 +7,17 @@ const path = require('path');
 var express = require("express");
 const authJwt = require('../jwt-helper');
 const Report = require('../../runtime/jobs/report');
-var fontkit;
 const os = require('os');
 const { resolveWithin } = require('../path-helper');
+
+// fontkit 必须在需要时才加载，避免打包后启动阶段因原生依赖/资源路径导致失败
+let _fontkit = null;
+function getFontkit() {
+    if (!_fontkit) {
+        _fontkit = require('fontkit');
+    }
+    return _fontkit;
+}
 
 var runtime;
 var secureFnc;
@@ -86,11 +94,11 @@ module.exports = {
                     var fileLabel;
                     if (resourcesFilter.fonts.some(suffix => fileName.endsWith(suffix))) {
                         try {
-                            if (!fontkit) { fontkit = require('fontkit'); }
-                            const font = fontkit.openSync(filePath);
+                            const font = getFontkit().openSync(filePath);
                             fileLabel = font.fullName;
                         } catch (err) {
-                            runtime.logger.error(`fontkit load error: ${err.message}`);
+                            runtime.logger.warn('api get resources font: ' + fileName + ': ' + err.message);
+                            fileLabel = fileName;
                         }
                     }
 

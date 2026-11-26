@@ -69,13 +69,25 @@ function createRuntimeService(options) {
     function init() {
         fs.mkdirSync(packageDir, { recursive: true });
         fs.mkdirSync(runtimeDir, { recursive: true });
+        // canvas 2.x 没有 Node 22/24 预编译（仅到 Node 21 ABI），图表插件改用 N-API 的 canvas 3，
+        // 该组合已在 Node 24 + chartjs-node-canvas 3.2.0 + chart.js 2.9.4 下验证渲染通过。
+        const defaultRuntimePackage = {
+            name: 'fuxa-plugin-runtime',
+            private: true,
+            version: '1.0.0',
+            description: 'FUXA isolated runtime for dynamic npm packages',
+            overrides: { canvas: '3.2.3' },
+        };
         if (!fs.existsSync(runtimePackageJson)) {
-            fs.writeFileSync(runtimePackageJson, JSON.stringify({
-                name: 'fuxa-plugin-runtime',
-                private: true,
-                version: '1.0.0',
-                description: 'FUXA isolated runtime for dynamic npm packages',
-            }, null, 2));
+            fs.writeFileSync(runtimePackageJson, JSON.stringify(defaultRuntimePackage, null, 2));
+        } else {
+            try {
+                const existing = JSON.parse(fs.readFileSync(runtimePackageJson, 'utf8'));
+                if (!existing.overrides || !existing.overrides.canvas) {
+                    existing.overrides = Object.assign({}, existing.overrides, { canvas: '3.2.3' });
+                    fs.writeFileSync(runtimePackageJson, JSON.stringify(existing, null, 2));
+                }
+            } catch { /* keep existing file untouched when malformed */ }
         }
         runtimeRequire = createRequire(runtimePackageJson);
     }

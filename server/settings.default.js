@@ -48,7 +48,7 @@ module.exports = {
 
     // DAQ DB to Tokenizer the file and save in archive
     // Default: 24 Hours (1 Day), 0 is disabled only 1 DB file
-    daqTokenizer: 24,
+    daqTimeToken: 24,
 
     // Logs retention
     logs: {

@@ -11,7 +11,7 @@
     "logApiLevel": "tiny",
     "dbDir": "_db",
     "daqEnabled": true,
-    "daqTokenizer": 24,
+    "daqTimeToken": 24,
     "logs": {
       "retention": "none"
     },

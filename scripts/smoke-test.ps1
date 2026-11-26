@@ -83,6 +83,11 @@ try {
             }
         }
     }
+    if ($index.Content -notmatch 'window\.__BRAND__') {
+        $failures.Add('index.html missing window.__BRAND__ (brand injection not applied)')
+    } else {
+        Write-Host '[smoke] PASS index.html contains injected brand'
+    }
 } catch {
     $failures.Add("index.html not readable: $($_.Exception.Message)")
 }

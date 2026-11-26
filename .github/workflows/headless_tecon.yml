@@ -24,18 +24,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js 22
+    - name: Setup Node.js 24
       uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version: '24'
 
     - name: Cache npm downloads
       uses: actions/cache@v4
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-node22-npm-${{ hashFiles('server/package-lock.json') }}
+        key: ${{ runner.os }}-node24-npm-${{ hashFiles('server/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-node22-npm-
+          ${{ runner.os }}-node24-npm-
 
     - name: Install server dependencies
       run: |
@@ -82,19 +82,19 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.pkg-cache
-        key: ${{ runner.os }}-pkg-node22-${{ hashFiles('server/package-lock.json') }}
+        key: ${{ runner.os }}-pkg-node24-${{ hashFiles('server/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-pkg-node22-
+          ${{ runner.os }}-pkg-node24-
 
     - name: Install yao-pkg
       run: npm install -g @yao-pkg/pkg@6.19.0
 
-    - name: Build Standalone EXE (Node.js 22, no compression)
+    - name: Build Standalone EXE (Node.js 24, no compression)
       shell: pwsh
       run: |-
         $ErrorActionPreference = 'Stop'
         $sw = [Diagnostics.Stopwatch]::StartNew()
-        pkg fuxa-headless/package.json --targets node22-win-x64 --output artifacts/fuxa-pro-headless.exe --public-packages "bindings,@serialport/bindings-cpp"
+        pkg fuxa-headless/package.json --targets node24-win-x64 --output artifacts/fuxa-pro-headless.exe --public-packages "bindings,@serialport/bindings-cpp"
         $sw.Stop()
         Write-Host "pkg build elapsed: $([math]::Round($sw.Elapsed.TotalMinutes, 2)) minutes"
 
@@ -184,7 +184,7 @@ jobs:
           4. 数据自动保存在 exe 同目录的 `data\` 文件夹下
 
           ### 特性
-          - 内置 Node.js 22 运行时，无需安装任何环境
+          - 内置 Node.js 24 运行时，无需安装任何环境
           - Guardian 守护模式：崩溃后 2 秒自动重启
           - 便携式部署：整个目录可拷贝到其他电脑直接使用
           - 支持 S7/Modbus/MQTT/OPC UA 等全部设备驱动

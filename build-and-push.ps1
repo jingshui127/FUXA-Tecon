@@ -63,7 +63,7 @@ Write-Output '[BUILD] Patching Node-RED'
 if (`$LASTEXITCODE -ne 0) { throw "Node-RED patch failed: `$LASTEXITCODE" }
 if (-not (Test-Path 'fuxa-headless/node_modules/got/package.json')) { throw 'fuxa-headless/node_modules/got is missing' }
 Write-Output '[BUILD] Packaging EXE'
-& pkg 'fuxa-headless/package.json' --targets node22-win-x64 --output '$OutputPath'
+& pkg 'fuxa-headless/package.json' --targets node24-win-x64 --output '$OutputPath'
 if (`$LASTEXITCODE -ne 0) { throw "pkg failed: `$LASTEXITCODE" }
 Write-Output '[BUILD] Syncing deploy master to artifacts'
 if (-not (Test-Path 'deploy/Agent.exe')) { throw 'deploy/Agent.exe is missing' }

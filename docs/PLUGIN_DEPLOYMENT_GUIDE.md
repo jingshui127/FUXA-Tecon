@@ -6,8 +6,8 @@
 |---|---|
 | 版本 | `1.3.6-PRO` |
 | 产物 | `artifacts\fuxa-pro-headless.exe` |
-| Node.js | 22.x |
-| pkg target | `node22-win-x64` |
+| Node.js | 24.x |
+| pkg target | `node24-win-x64` |
 | pkg compression | `None` |
 
 ## 一、运行时安装插件
@@ -76,7 +76,7 @@ FUXA 默认配置弹窗中的 “Node-RED Flows” 图标仍然跳转到 `/flows
    ```text
    [patch-nodered] verification passed
    ```
-5. 使用 Node.js 22、`node22-win-x64` 和 `compression: "None"` 执行 pkg；
+5. 使用 Node.js 24、`node24-win-x64` 和 `compression: "None"` 执行 pkg；
 6. 确认出现：
    ```text
    [BUILD] SUCCESS
@@ -125,13 +125,15 @@ canvas@2.11.2
 <EXE目录>\data\_pkg\runtime\node_modules\
 ```
 
-并在 Node.js 22 / Windows x64 环境中验证：
+并在 Node.js 24 / Windows x64 环境中验证：
 
 ```powershell
 node -e "require('odbc'); const {ChartJSNodeCanvas}=require('chartjs-node-canvas'); new ChartJSNodeCanvas({width:320,height:180}).renderToBuffer({type:'bar',data:{labels:['A'],datasets:[{data:[1]}]}}).then(()=>console.log('native plugins verified'))"
 ```
 
 验证必须实际加载 `odbc` 并完成图表渲染，同时确认 `canvas\build\Release\canvas.node` 及配套 DLL 存在。出现 `Cannot find module`、`node-pre-gyp` 回退编译或渲染失败时，不能作为可交付版本。
+
+> canvas 2.x 只有到 Node 21 的预编译包，Node 22/24 下安装 `chartjs-node-canvas` 会因 canvas 编译失败。插件运行时 `data\_pkg\runtime\package.json` 必须包含 `"overrides": { "canvas": "3.2.3" }`（`npm-runtime-service.js` 会自动补齐）；canvas 3.2.3 是 N-API 版本，与 `chartjs-node-canvas@3.2.0` + `chart.js@2.9.4` 已实测渲染通过。
 
 重新打包时只替换：
 

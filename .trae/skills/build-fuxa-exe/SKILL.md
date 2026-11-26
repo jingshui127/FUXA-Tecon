@@ -10,7 +10,7 @@ description: "Builds FUXA Headless EXE in one step. Invoke when user asks to 'pa
 
 - 入口：项目根目录 `build-and-push.ps1`
 - 入口脚本：`app/headless/headless-guardian.js`
-- 目标：`node22-win-x64`
+- 目标：`node24-win-x64`
 - 产物：`artifacts\fuxa-pro-headless.exe`
 - 数据：`<EXE目录>\data\`
 
@@ -80,7 +80,7 @@ node -e "require('odbc'); const {ChartJSNodeCanvas}=require('chartjs-node-canvas
 ### 5. pkg 打包
 
 ```powershell
-pkg fuxa-headless/package.json --targets node22-win-x64 --output artifacts/fuxa-pro-headless.exe
+pkg fuxa-headless/package.json --targets node24-win-x64 --output artifacts/fuxa-pro-headless.exe
 ```
 
 ### 6. 输出结果
@@ -127,7 +127,7 @@ foreach ($ref in $refs) {
 ## 注意事项
 
 - 使用 `compression: "None"` 避免 GZip 压缩阶段长时间占用 CPU；实际耗时和文件大小以构建日志为准。
-- 目标 Node.js 版本必须是 22.x；`node-snap7`、`odbc`、`canvas` 等原生插件必须由部署机用 Node 22 重新安装（ABI 127）
+- 目标 Node.js 版本必须是 24.x；`node-snap7`、`odbc`、`canvas` 等原生插件必须由部署机用 Node 24 重新安装（ABI 137）；canvas 2.x 无 Node 24 预编译，插件运行时保留 `overrides.canvas=3.2.3`
 - 工作目录必须是项目根目录 `d:\FUXA\FUXApro最新版`
 - `client/dist` 已预编译，不需要前端构建步骤。
 - `client/dist` 必须在 git 中跟踪（`.gitignore` 保留 `!client/dist/`）。CI 从全新克隆构建时若缺 `main.*.js` / `styles.*.css`，EXE 首页会 404 白屏。

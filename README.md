@@ -46,7 +46,7 @@ d:\FUXA\FUXApro最新版
 [BUILD] SUCCESS
 ```
 
-构建目标为 Node.js 22 `node22-win-x64`，pkg 压缩为 `None`。详细规则见：
+构建目标为 Node.js 24 `node24-win-x64`，pkg 压缩为 `None`。详细规则见：
 
 - [.trae/rules/fuxa-pro-build.md](.trae/rules/fuxa-pro-build.md)
 - [.trae/skills/build-fuxa-exe/SKILL.md](.trae/skills/build-fuxa-exe/SKILL.md)

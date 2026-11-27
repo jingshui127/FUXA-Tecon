@@ -7,7 +7,6 @@ fuxa-headless/Config/
 fuxa-headless/customization/
 
 # Generated Headless copies; source files remain under server/
-fuxa-headless/server/guard.js
 fuxa-headless/server/api/reports/
 fuxa-headless/server/runtime/devices/
 fuxa-headless/server/scripts/

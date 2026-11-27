@@ -294,6 +294,9 @@ function createDefaultPlugins() {
     registry['modbus-serial'] = new Plugin('modbus-serial', './modbus', 'Modbus', '8.0.19', PluginGroupType.connectionDevice, true);
     registry['node-bacnet'] = new Plugin('node-bacnet', './bacnet', 'BACnet', '0.2.4', PluginGroupType.connectionDevice, true);
     registry['node-snap7'] = new Plugin('node-snap7', './s7', 'SiemensS7', '1.0.9', PluginGroupType.connectionDevice, true);
+    // PRO headless ships the pure-JS `nodes7` driver; expose SiemensS7 in the
+    // device type list even when the native node-snap7 package is not installed.
+    registry['nodes7'] = new Plugin('nodes7', './s7', 'SiemensS7', '0.3.18', PluginGroupType.connectionDevice, true);
     registry['ads-client'] = new Plugin('ads-client', './adsclient', 'ADSclient', '2.1.0', PluginGroupType.connectionDevice, true);
     registry['nodepccc'] = new Plugin('nodepccc', './ethernetip', 'EthernetIP', '0.1.17', PluginGroupType.connectionDevice, true);
     registry['st-ethernet-ip'] = new Plugin('st-ethernet-ip', './genericethernetip', 'GenericEthernetIP', '2.7.5', PluginGroupType.connectionDevice, true);

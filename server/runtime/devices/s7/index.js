@@ -758,11 +758,16 @@ module.exports = {
     create: function (data, logger, events, manager, runtime) {
         // Optional pure-JS driver, selected per device (default stays 'snap7'):
         //   property: { ..., driver: "nodes7", tsapLocal, tsapRemote, timeout }
-        if (String((data && data.property && data.property.driver) || '').toLowerCase() === 'nodes7') {
+        const driver = String((data && data.property && data.property.driver) || '').toLowerCase();
+        // PRO headless may ship without the native node-snap7 package: fall back
+        // to the bundled pure-JS nodes7 driver instead of leaving the device offline.
+        if (driver === 'nodes7' || !loadSnap7Lib(manager)) {
+            if (driver !== 'nodes7') {
+                logger.warn(`'${data && data.name}' [s7] node-snap7 not available, using nodes7 driver`);
+            }
             const nodes7Driver = require('./nodes7');
             return nodes7Driver.create(data, logger, events, manager, runtime);
         }
-        if (!loadSnap7Lib(manager)) return null;
         return new S7client(data, logger, events, runtime);
     }
 }

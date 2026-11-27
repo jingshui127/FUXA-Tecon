@@ -1,5 +1,10 @@
 # FUXA PRO 项目规则
 
+## 自有资产权威（skill / 品牌）
+
+- **SKILL 唯一权威**：`E:\FUXA-all\skills\`（fuxa-automation 为独立 git 仓库，完整版含 references/scripts）。本仓库不再维护 `.trae\skills\` 副本（2026-11-27 已删除），需 skill 时引用 `E:\FUXA-all\skills\<name>\SKILL.md`。
+- **品牌母本**：本仓库 `docs\customization\`（`config.json` + `logo.svg` + `favicon.ico`）是品牌唯一事实源，`patch-brand-assets.js` 打包时从这里回填 `client\dist\assets\customization\`。普通版经 `server/brand.js` 直接读 PRO `customization/config.json`（字段映射见 `FUXA-Tecon-Normal\科控物联优化\品牌配置说明.md` §5），不维护两套品牌。
+
 ## 构建与发布
 
 - 当前唯一 Headless 产物是 `artifacts\fuxa-pro-headless.exe`，目标必须是 Node.js 24 `node24-win-x64`。

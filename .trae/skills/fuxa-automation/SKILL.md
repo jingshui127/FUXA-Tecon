@@ -5,6 +5,8 @@ description: "FUXA SCADA/HMI 自动化配置技能。通过 REST API 远程管�
 
 # FUXA 自动化配置技能
 
+> ⚠️ 本目录是 PRO 仓库内的**精简副本**，内容可能落后于完整版。完整/最新 skill 在 `E:\FUXA-all\skills\fuxa-automation\`（2026-11-27 版本 0.34.0，含 PRO 1.3.6、Widget 全量测试、S7 nodes7 修复、稳定性基线）。本副本只保留最基本的 API 操作入口。
+
 ## 概述
 
 本技能通过 **FUXA REST API** 远程管理 FUXA SCADA/HMI 服务器。所有操作都通过 HTTP 请求完成，不需要在本机安装 FUXA。

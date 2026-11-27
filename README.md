@@ -30,8 +30,10 @@ data\
 工作目录：
 
 ```text
-d:\FUXA\FUXApro最新版
+E:\FUXA-all\FUXA-Tecon-PRO
 ```
+
+> 自动构建：push 分支 `1.3.6-PRO` 会触发 GitHub Actions `Build FUXA PRO Headless EXE`，产物上传到 Release `headless-pro-latest`。本地 `build-and-push.ps1` 默认会先 commit/push；只验证打包时用 `-SkipCommit -SkipPush`。
 
 唯一正式构建入口：
 
@@ -55,13 +57,19 @@ d:\FUXA\FUXApro最新版
 ## 项目结构
 
 - `server\`：后端源码
-- `client\`：前端源码和构建结果
+- `client\`：前端构建结果（本维护目录只有 `dist`，无 src）
 - `app\headless\`：Headless 启动入口源码
 - `fuxa-headless\`：正式 Headless 构建输入目录
 - `artifacts\`：本地构建产物和运行时 data，不提交到 Git
 - `docs\`：当前运行、迁移和自动化文档
 - `.trae\rules\`：必须遵守的项目规则
 - `.trae\skills\`：可执行技能和 API 参考
+
+## S7 驱动说明（2026-11-27）
+
+- 默认仍支持 `node-snap7`（native）；同时内置 `nodes7` 纯 JS 驱动，按设备 `property.driver` 选择。
+- 未打包/未安装 `node-snap7` 时，`nodes7` 会注册为 `SiemensS7` 插件，设备类型下拉不会空白；显式 `driver:"snap7"` 的设备自动回退 `nodes7`，日志输出 `[s7] node-snap7 not available, using nodes7 driver`。
+- 通过网页 `/plugins` 安装的 `node-snap7` 存放在 `data\_pkg\runtime\node_modules\`，不是 EXE 内置；迁移数据目录时需一并复制。
 
 ## 文档入口
 

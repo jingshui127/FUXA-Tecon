@@ -16,10 +16,12 @@ description: "Builds FUXA Headless EXE in one step. Invoke when user asks to 'pa
 
 ## 前提条件
 
-- 项目根目录: `d:\FUXA\FUXApro最新版`
+- 项目根目录: `E:\FUXA-all\FUXA-Tecon-PRO`
 - `@yao-pkg/pkg` 已全局安装 (`npm ls -g @yao-pkg/pkg`)
 - `client/dist` 已预编译（无需前端构建）
 - `fuxa-headless/package.json` 打包配置已存在
+
+> **自动构建**：push 分支 `1.3.6-PRO` 会触发 `.github/workflows/headless_tecon.yml`，产物在 Release `headless-pro-latest`。`build-and-push.ps1` 默认先 commit/push；只验证打包时加 `-SkipCommit -SkipPush`。
 
 ## 打包流程
 
@@ -108,6 +110,12 @@ foreach ($path in $paths) {
     $r = Invoke-WebRequest -Uri "http://127.0.0.1:1881$path" -UseBasicParsing -TimeoutSec 10
     if ($r.StatusCode -lt 200 -or $r.StatusCode -ge 400) { throw "Health check failed: $path" }
 }
+
+# S7 插件检查：无 node-snap7 时也必须能显示 S7 类型（2026-11-27 修复）
+$plugins = Invoke-RestMethod -Uri 'http://127.0.0.1:1881/api/plugins' -TimeoutSec 10
+$s7 = $plugins | Where-Object { $_.type -eq 'SiemensS7' -or $_.name -eq 'nodes7' }
+if (-not $s7) { throw 'S7 plugin/nodes7 missing in /api/plugins' }
+$s7 | ConvertTo-Json -Depth 3
 ```
 
 必须再做**前端静态资源检查**，防止出现“健康检查通过但页面白屏”（bundle 未进包时 `/` 仍返回 200）：

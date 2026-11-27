@@ -57,17 +57,13 @@ Artifacts 名称带版本号并自动压缩，需解压后使用；保留天数�
 启动后控制台会显示以下信息（时间戳与路径随实际环境变化）：
 
 ```
-[FUXA PRO] 2026-10-23T02:47:34.582Z | FUXA PRO Headless Guardian starting...
-[FUXA PRO] 2026-10-23T02:47:34.583Z | 科控物联提供技术支持 | QQ: 2492123056
-[FUXA PRO] 2026-10-23T02:47:34.584Z | Working directory: <EXE目录>
-[FUXA PRO] 2026-10-23T02:47:34.588Z | =====================================
-[FUXA PRO] 2026-10-23T02:47:34.590Z | Starting FUXA server (restart #0)...
-[Server] FUXA PRO Headless Server starting...
-[Server] Data directory: <EXE目录>\data
-[Server] Node.js: v18.20.8
-2026-11-26T02:47:35.979Z [INF]  TcScada V.1.3.6-3098
-2026-10-23T02:47:36.310Z [INF]  TcScada started!
-2026-10-23T02:47:38.006Z [INF]  [Node-RED] Started at /flows (dashboard: /dashboard)
+[FUXA] Headless starting...
+[FUXA] Data directory: <EXE目录>\data
+[FUXA] Node.js: v24.x.x
+[FUXA] Port override: 1881            （仅在启动时指定 -p 才出现）
+2026-11-27T02:47:35.979Z [INF]  TcScada V.1.3.6-3098
+2026-11-27T02:47:36.310Z [INF]  TcScada started!
+2026-11-27T02:47:38.006Z [INF]  [Node-RED] Started at /flows (dashboard: /dashboard)
 2026-10-23T02:47:38.011Z [INF]  WebServer is running http://127.0.0.1:1881/
 ```
 

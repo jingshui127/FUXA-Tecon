@@ -185,7 +185,7 @@ jobs:
 
           ### 特性
           - 内置 Node.js 24 运行时，无需安装任何环境
-          - Guardian 守护模式：崩溃后 2 秒自动重启
+          - 单进程运行，崩溃重启由外部守护负责（StarAgent 每 10s 检测 `FuxaPro.exe`）
           - 便携式部署：整个目录可拷贝到其他电脑直接使用
           - 支持 S7/Modbus/MQTT/OPC UA 等全部设备驱动
         files: |

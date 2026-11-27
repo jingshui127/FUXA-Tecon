@@ -19,6 +19,7 @@
 - 重新打包只覆盖 `artifacts\fuxa-pro-headless.exe`；不得删除、清空或重新初始化已有的 `artifacts\data\`。该目录保存数据库、Node-RED flows、插件和业务资源。
 - `odbc@2.4.9` 与 `chartjs-node-canvas@3.2.0`（依赖 `canvas@3.2.3`）属于原生插件，必须在目标 Node.js 24 / Windows x64 环境中预置并验证后再交付；不能只验证 npm 包下载成功。它们安装在 `<EXE目录>\data\_pkg\runtime\node_modules\`，**不在构建仓库内，CI 无法验证**，必须在部署机上执行 `node scripts\verify-native-plugins.js`，看到 `[verify-native] ALL CHECKS PASSED` 才算通过。网页安装插件使用部署机系统 npm 编译，部署机 Node 主版本必须与 EXE 内置运行时一致（Node 24，ABI 137）；`node-snap7` 等 NAN 模块换版本后必须重装。canvas 2.x 仅有到 Node 21 的预编译，插件运行时 `package.json` 必须保留 `overrides.canvas=3.2.3`（`npm-runtime-service.js` 会自动补齐）。
 - 原生插件验证必须至少通过 `require('odbc')` 和 `chartjs-node-canvas` 实际图表渲染；缺少 `canvas.node` 或其 DLL 时不得宣称插件可用。
+- **S7 nodes7 回退（2026-11-27）**：PRO headless 默认不打包 native `node-snap7`。`server/runtime/plugins/index.js` 必须把 `nodes7` 注册为 `SiemensS7` 插件，`server/runtime/devices/s7/index.js create()` 在 snap7 不可用时回退 nodes7；否则会出现设备类型下拉空白（设备仍能通信）。打包后必须检查 `/api/plugins` 能返回 `nodes7`/`SiemensS7`。
 
 ## Node-RED 验证
 

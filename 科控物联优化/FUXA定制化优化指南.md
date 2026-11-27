@@ -28,7 +28,7 @@
 | 文件                                                                  | 操作 | 用途                                                                              |
 | --------------------------------------------------------------------- | :--: | --------------------------------------------------------------------------------- |
 | `app/headless/headless-entry.js`                                 | 新建 | 独立 EXE 入口（fork 启动 server，便携数据目录在 exe 旁，SIGINT/SIGTERM 干净退出） |
-| `server/guard.js`                                                   | 新建 | 开发调试用守护脚本 (`node guard.js -p PORT`)                                    |
+| ~~`server/guard.js`~~ | 已删除 | 2026-11-27 移除：功能是 `headless-guardian.js` 的真子集；源码调试直接 `node main.js -p PORT`（main.js 原生支持 `-p/--port`） |
 | `.github/workflows/headless_packaging.yml`                          | 修改 | GitHub Actions 自动构建配置                                                       |
 | `server/runtime/devices/s7/index.js` | 修改 | `disconnect()` try-catch 保护 + `resolve(true)` + exit handler（见 2.1）；正则版断连重连可剔（上游 `cf9f47c8` 已有结构化判断，见 2.18）；合并读优化见 2.1.1 |
 | `server/runtime/devices/index.js`                                   | 修改 | 设备 start/stop try-catch 保护                                                    |
@@ -195,18 +195,22 @@ process.on('exit', function () {
 | 环境变量 `PORT` | `$env:PORT='1882'; .\FUXA-1.3.6-2919-win-x64.exe` |
 | 默认 | 1881 |
 
-#### 开发调试守护脚本
+#### 开发调试守护脚本（已移除，2026-11-27）
 
-**文件**: `server/guard.js`
+原 `server/guard.js` 已删除。原因：
 
-为 `node main.js` 开发模式提供崩溃自动重启守护，与 EXE 独立入口的干净退出互补：
+- 它只是"spawn `node main.js` + 崩溃后重启"，功能是 `app/headless/headless-guardian.js` 的**真子集**（后者多了双模式、`data/` 便携目录、EXE 正式入口能力）。
+- 源码调试时被自动重启会**掩盖崩溃现场**（进程退出、日志被下一轮覆盖），直接用 `node main.js` 才能看到完整错误栈。
+- 与 S7 崩溃无关：S7 防护（`connectionLost` / `_getReadErr` / `isConnected` / `overload`）官方 1.3.6 已补齐，两版计数一致。
+
+现在源码模式这样跑：
 
 ```powershell
 cd server
-node guard.js -p 1886
+node main.js -p 1886
 ```
 
-启动日志包含配置参数、退出时显示 exit code 含义和运行时长，方便确认崩溃原因。
+需要崩溃自动重启时用 EXE 的 `headless-guardian.js`（打包后即 `fuxa-pro-headless.exe` 的默认行为）。
 
 ### 2.3 视图修改免重启
 
@@ -643,7 +647,7 @@ GH="C:/Program Files/GitHub CLI/gh.exe"
 | | fontkit 懒加载 | `api/resources/index.js:10` 仍顶层 `require('fontkit')` |
 | | 地图源 | `maps-view.component.ts:80` 仍 `tile.openstreetmap.org`，无 `.fr/hot`、无 `bc` 子域 |
 | | 配方模板优先 | `api/recipes/index.js` 的 `getRecipeData` 无模板判定 |
-| ⚪ 官方不会有 | `guard.js`、`brand.js`、`patch-nodered.js`、`headless_packaging.yml` | 工程层定制，上游无对应实现 |
+| ⚪ 官方不会有 | `brand.js`、`patch-nodered.js`、`headless_packaging.yml` | 工程层定制，上游无对应实现（`guard.js` 已于 2026-11-27 移除） |
 
 **S7 真实差异只有 3 处**（`git diff -w --ignore-blank-lines 1e68854c 1.3.6-2918 -- server/runtime/devices/s7/index.js` 实测）：
 
@@ -823,14 +827,14 @@ pkg fuxa-headless/package.json --targets node24-win-x64 --output artifacts/FUXA-
 
 ```powershell
 cd c:\Users\13971\Downloads\FUXA-master\server
-node guard.js -p 2999
+node main.js -p 2999
 ```
 
-本地环境（已具备）：Node.js **18.20.8**、`server/node_modules`、`client/dist`、`server/guard.js`。
+本地环境（已具备）：Node.js **18.20.8**、`server/node_modules`、`client/dist`。
 
 | 改动位置 | 本地源码验证 | 需要重建 EXE |
 | -------- | ------------ | ------------ |
-| `server/**/*.js`（驱动/API） | ✅ 直接 `node guard.js` | 交付时 |
+| `server/**/*.js`（驱动/API） | ✅ 直接 `node main.js -p PORT` | 交付时 |
 | `client/src/**`（前端） | 需先 `npm run build`；**纯字符串级小改可直接改 dist 对应的 `main.*.js` 快速验证** | 交付时（Actions 会现场构建） |
 | `server/package.json`（依赖） | ⚠️ 需 `npm install` | ✅ 必须 |
 | `data/brand.json` | ✅ 启动时读取，改完重启即可 | ❌ 不用 |
@@ -932,7 +936,7 @@ $loc = (curl.exe -sI -H "Authorization: token $token" -H "Accept: application/oc
 | 进程组              |   中   | Windows 使用进程组确保连带终止                      |
 | 父进程监控          |   中   | entry 版 fork 的 server 子进程连带终止             |
 
-> 此问题仅在使用第三方守护程序时出现，直接运行 EXE 或 `node guard.js` 不受影响。
+> 此问题仅在使用第三方守护程序时出现，直接运行 EXE 或 `node main.js` 不受影响。
 
 ### 4.9 GitHub Actions 相关
 
@@ -958,7 +962,7 @@ node-snap7 不支持 Node.js 20+，全部使用 Node.js 18 LTS。
 **解决**:
 
 - **EXE 场景**：无此问题——EXE 里的 dist 是 Actions 现场 `npm run build` 构建的（同源逻辑），`-p 2999` 等任意端口正常
-- **本地源码模式**（`node guard.js -p XXXX`）：必须**先用当前 src 本地构建 dist**（`ng build`），否则 server 服务的是工作区残留的旧 dist
+- **本地源码模式**（`node main.js -p XXXX`）：必须**先用当前 src 本地构建 dist**（`ng build`），否则 server 服务的是工作区残留的旧 dist
 
 **品牌化同理**：改 `brand.json` 无需重建前端（server 运行时注入 `__BRAND__`）；但前端读 `__BRAND__` 的代码（`loadBrandConfig`）必须构建进 dist 才生效。
 
@@ -1082,7 +1086,7 @@ $content = [System.IO.File]::ReadAllText($path)
 - [X] **S7 断连自动重连**（2026-10-22）— 对应官方 issue #2626，`polling()` 检测连接类错误主动 `disconnect()`，提交 `e591dd49`，详见 2.1 节
 - [X] **地图源改为子域轮询**（2026-10-22）— `openstreetmap.fr/hot` + `subdomains:'bc'` + 规范 attribution，提交 `6301cd53`，详见 2.6 节
 - [X] **EXE 下载手段升级**（2026-10-22）— CDN 单连接过慢时用 8 线程 Range 分段并行下载，见 3.5 节
-- [X] **本地源码快速验证流程**（2026-10-22）— 后端改动先用 `node guard.js -p 2999` 验证，再 push 出 EXE，见 3.4 节
+- [X] **本地源码快速验证流程**（2026-10-22）— 后端改动先用 `node main.js -p 2999` 验证，再 push 出 EXE，见 3.4 节（原 `guard.js` 已于 2026-11-27 移除，因其功能被 `headless-guardian.js` 完全覆盖）
 - [X] **S7 读取路径全类型实测与合并读优化**（2026-11-06）— M/I/Q 区位标签读错位 + ReadMultiVars 批量奇数项被拒，改为按 (Area,DBNumber) 分组整块读，端到端验证 20 标签稳定，详见共用文档 [S7通讯实测与地址类型指南.md](S7通讯实测与地址类型指南.md)
 - [X] **报告 PDF 中文方块修复**（2026-11-16）— `report.js` 只注册 Roboto（Latin-only）导致中文画成 `.notdef` 方块；新增 `CJK` 字体族（**四字形全注册**，只给 `normal` 会因 bold 表头整份失败）+ `defaultStyle.font='CJK'` + `fonts/CJK-sc.ttf`，提交 `3dc4ecd`，新 EXE 生成的 PDF `/BaseFont` 为 `BZZZZZ+SimHei`，详见 2.17 节
 
